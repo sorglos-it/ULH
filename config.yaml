@@ -100,8 +100,13 @@ scripts:
         parameter: "uninstall"
         description: "Uninstall MariaDB"
         prompts:
-          - question: "Delete all data, config, and databases?"
+          - question: "Delete databases (/var/lib/mysql)?"
             variable: "DELETE_DATA"
+            type: "yes/no"
+            default: "no"
+          
+          - question: "Delete configuration files (/etc/mysql*)?"
+            variable: "DELETE_CONFIG"
             type: "yes/no"
             default: "no"
       

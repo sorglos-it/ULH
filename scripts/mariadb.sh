@@ -128,32 +128,44 @@ update_mariadb() {
 uninstall_mariadb() {
     log_warn "Uninstalling MariaDB..."
     log_warn "DELETE_DATA setting: $DELETE_DATA"
+    log_warn "DELETE_CONFIG setting: $DELETE_CONFIG"
     
     local pm=$(detect_package_manager)
     
-    if [[ "$DELETE_DATA" == "yes" ]]; then
-        log_error "Removing all MariaDB data, configurations, and databases..."
-        case "$pm" in
-            apt)
+    case "$pm" in
+        apt)
+            if [[ "$DELETE_DATA" == "yes" ]]; then
+                log_error "Removing MariaDB with purge (removes config)..."
                 sudo apt-get purge -y mariadb-server mariadb-client || log_error "Failed to uninstall MariaDB"
-                ;;
-            dnf|yum)
-                sudo $pm remove -y mariadb-server mariadb-client || log_error "Failed to uninstall MariaDB"
-                ;;
-        esac
-        sudo rm -rf /var/lib/mysql /etc/mysql* || log_warn "Some directories could not be removed"
-        log_info "MariaDB and all data removed!"
-    else
-        log_info "Removing MariaDB but keeping data and config..."
-        case "$pm" in
-            apt)
+            else
+                log_info "Removing MariaDB but keeping packages..."
                 sudo apt-get remove -y mariadb-server mariadb-client || log_error "Failed to remove MariaDB"
-                ;;
-            dnf|yum)
-                sudo $pm remove -y mariadb-server mariadb-client || log_error "Failed to remove MariaDB"
-                ;;
-        esac
+            fi
+            ;;
+        dnf|yum)
+            log_info "Removing MariaDB..."
+            sudo $pm remove -y mariadb-server mariadb-client || log_error "Failed to remove MariaDB"
+            ;;
+    esac
+    
+    # Remove data
+    if [[ "$DELETE_DATA" == "yes" ]]; then
+        log_info "Removing databases (/var/lib/mysql)..."
+        sudo rm -rf /var/lib/mysql || log_warn "Could not remove /var/lib/mysql"
+    fi
+    
+    # Remove config
+    if [[ "$DELETE_CONFIG" == "yes" ]]; then
+        log_info "Removing configuration files..."
+        sudo rm -rf /etc/mysql* /etc/my.cnf* || log_warn "Could not remove config files"
+    fi
+    
+    if [[ "$DELETE_DATA" == "yes" ]]; then
+        log_info "MariaDB completely removed (data and config deleted)!"
+    elif [[ "$DELETE_CONFIG" == "yes" ]]; then
         log_info "MariaDB removed! Data preserved in /var/lib/mysql"
+    else
+        log_info "MariaDB removed! Data and config preserved."
     fi
 }
 
