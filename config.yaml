@@ -71,3 +71,60 @@ scripts:
         parameter: "uninstall"
         description: "Uninstall zip and unzip"
         prompts: []
+
+  mariadb:
+    description: "MariaDB database server management"
+    category: "Database"
+    file: "mariadb.sh"
+    needs_sudo: true
+    os_family:
+      - debian
+      - redhat
+    
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install MariaDB"
+        prompts:
+          - question: "Root password for MariaDB?"
+            variable: "ROOT_PASSWORD"
+            type: "text"
+            default: ""
+      
+      - name: "update"
+        parameter: "update"
+        description: "Update MariaDB"
+        prompts: []
+      
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall MariaDB"
+        prompts:
+          - question: "Delete all data, config, and databases?"
+            variable: "DELETE_DATA"
+            type: "yes/no"
+            default: "no"
+      
+      - name: "config"
+        parameter: "config"
+        description: "Configure MariaDB settings"
+        prompts:
+          - question: "Max connections? (leave empty for default)"
+            variable: "MAX_CONNECTIONS"
+            type: "text"
+            default: ""
+          
+          - question: "InnoDB buffer pool size? (e.g., 256M, 1G)"
+            variable: "INNODB_BUFFER"
+            type: "text"
+            default: ""
+          
+          - question: "Bind address? (default: 127.0.0.1)"
+            variable: "BIND_ADDRESS"
+            type: "text"
+            default: "127.0.0.1"
+          
+          - question: "Default character set? (default: utf8mb4)"
+            variable: "CHARSET"
+            type: "text"
+            default: "utf8mb4"
