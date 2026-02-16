@@ -34,14 +34,45 @@ log_error() {
     exit 1
 }
 
+detect_package_manager() {
+    if command -v apt-get &>/dev/null; then
+        echo "apt"
+    elif command -v dnf &>/dev/null; then
+        echo "dnf"
+    elif command -v yum &>/dev/null; then
+        echo "yum"
+    else
+        log_error "Could not detect package manager (apt, dnf, or yum)"
+    fi
+}
+
 install_mariadb() {
     log_info "Installing MariaDB..."
     
-    log_info "Step 1: Updating package lists..."
-    sudo apt-get update >/dev/null 2>&1 || log_error "Failed to update package lists"
+    local pm=$(detect_package_manager)
+    
+    log_info "Step 1: Updating package manager..."
+    case "$pm" in
+        apt)
+            sudo apt-get update >/dev/null 2>&1 || log_error "Failed to update package lists"
+            ;;
+        dnf)
+            sudo dnf check-update >/dev/null 2>&1 || true
+            ;;
+        yum)
+            sudo yum check-update >/dev/null 2>&1 || true
+            ;;
+    esac
     
     log_info "Step 2: Installing MariaDB server..."
-    sudo apt-get install -y mariadb-server || log_error "Failed to install mariadb-server"
+    case "$pm" in
+        apt)
+            sudo apt-get install -y mariadb-server || log_error "Failed to install mariadb-server"
+            ;;
+        dnf|yum)
+            sudo $pm install -y mariadb-server || log_error "Failed to install mariadb-server"
+            ;;
+    esac
     
     log_info "Step 3: Starting MariaDB service..."
     sudo systemctl start mariadb || log_error "Failed to start MariaDB"
@@ -73,11 +104,20 @@ install_mariadb() {
 update_mariadb() {
     log_info "Updating MariaDB..."
     
-    log_info "Updating package lists..."
-    sudo apt-get update >/dev/null 2>&1 || log_error "Failed to update package lists"
+    local pm=$(detect_package_manager)
     
-    log_info "Upgrading MariaDB..."
-    sudo apt-get upgrade -y mariadb-server || log_error "Failed to upgrade MariaDB"
+    log_info "Updating package manager..."
+    case "$pm" in
+        apt)
+            sudo apt-get update >/dev/null 2>&1 || log_error "Failed to update package lists"
+            log_info "Upgrading MariaDB..."
+            sudo apt-get upgrade -y mariadb-server || log_error "Failed to upgrade MariaDB"
+            ;;
+        dnf|yum)
+            log_info "Upgrading MariaDB..."
+            sudo $pm upgrade -y mariadb-server || log_error "Failed to upgrade MariaDB"
+            ;;
+    esac
     
     log_info "Restarting MariaDB service..."
     sudo systemctl restart mariadb || log_error "Failed to restart MariaDB"
@@ -89,14 +129,30 @@ uninstall_mariadb() {
     log_warn "Uninstalling MariaDB..."
     log_warn "DELETE_DATA setting: $DELETE_DATA"
     
+    local pm=$(detect_package_manager)
+    
     if [[ "$DELETE_DATA" == "yes" ]]; then
         log_error "Removing all MariaDB data, configurations, and databases..."
-        sudo apt-get purge -y mariadb-server mariadb-client || log_error "Failed to uninstall MariaDB"
-        sudo rm -rf /var/lib/mysql /etc/mysql || log_warn "Some directories could not be removed"
+        case "$pm" in
+            apt)
+                sudo apt-get purge -y mariadb-server mariadb-client || log_error "Failed to uninstall MariaDB"
+                ;;
+            dnf|yum)
+                sudo $pm remove -y mariadb-server mariadb-client || log_error "Failed to uninstall MariaDB"
+                ;;
+        esac
+        sudo rm -rf /var/lib/mysql /etc/mysql* || log_warn "Some directories could not be removed"
         log_info "MariaDB and all data removed!"
     else
         log_info "Removing MariaDB but keeping data and config..."
-        sudo apt-get remove -y mariadb-server mariadb-client || log_error "Failed to remove MariaDB"
+        case "$pm" in
+            apt)
+                sudo apt-get remove -y mariadb-server mariadb-client || log_error "Failed to remove MariaDB"
+                ;;
+            dnf|yum)
+                sudo $pm remove -y mariadb-server mariadb-client || log_error "Failed to remove MariaDB"
+                ;;
+        esac
         log_info "MariaDB removed! Data preserved in /var/lib/mysql"
     fi
 }
@@ -104,7 +160,15 @@ uninstall_mariadb() {
 configure_mariadb() {
     log_info "Configuring MariaDB..."
     
-    local config_file="/etc/mysql/mariadb.conf.d/50-server.cnf"
+    local pm=$(detect_package_manager)
+    local config_file
+    
+    # Detect config file location based on package manager
+    if [[ "$pm" == "apt" ]]; then
+        config_file="/etc/mysql/mariadb.conf.d/50-server.cnf"
+    else
+        config_file="/etc/my.cnf.d/server.cnf"
+    fi
     
     if [[ ! -f "$config_file" ]]; then
         log_error "MariaDB config file not found: $config_file"
