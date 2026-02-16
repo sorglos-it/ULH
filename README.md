@@ -137,4 +137,14 @@ Make sure `custom.yaml` is in the liauh directory and script path is correct.
 
 ---
 
+## 💝 Support & Donate
+
+If you find LIAUH helpful, please consider supporting its development!
+
+[![PayPal Donate](https://img.shields.io/badge/PayPal-Donate-blue?style=for-the-badge&logo=paypal)](https://www.paypal.com/donate/?hosted_button_id=9U6NJRGR7SE52)
+
+Your support helps maintain and improve LIAUH. Thank you! 🙏
+
+---
+
 **Questions?** See **DOCS.md** for detailed documentation.
