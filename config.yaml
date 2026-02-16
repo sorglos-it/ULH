@@ -48,3 +48,31 @@ scripts:
             variable: "SERVER"
             type: "text"
             default: "cert.my.lan"
+
+  compression:
+    description: "Install compression tools (zip/unzip)"
+    category: "Tools"
+    file: "compression.sh"
+    needs_sudo: true
+    os_family:
+      - debian
+      - redhat
+      - arch
+      - suse
+      - alpine
+    
+    actions:
+      - name: "zip"
+        parameter: "zip"
+        description: "Install zip"
+        prompts: []
+      
+      - name: "unzip"
+        parameter: "unzip"
+        description: "Install unzip"
+        prompts: []
+      
+      - name: "both"
+        parameter: "both"
+        description: "Install zip and unzip"
+        prompts: []
