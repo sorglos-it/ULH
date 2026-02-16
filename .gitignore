@@ -14,3 +14,4 @@ logs/
 
 # Node modules (if ever needed)
 node_modules/
+FETCH_HEAD
