@@ -11,6 +11,6 @@ echo "📥 Cloning LIAUH..."
 cd ~ && git clone https://github.com/sorglos-it/liauh.git
 
 echo "🚀 Starting LIAUH..."
-cd liauh && bash liauh.sh
+cd liauh && exec bash liauh.sh
 
 
