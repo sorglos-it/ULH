@@ -25,6 +25,11 @@ scripts:
             variable: "KEY"
             type: "text"
             default: ""
+      
+      - name: "detach"
+        parameter: "detach"
+        description: "Detach Ubuntu Pro subscription"
+        prompts: []
 
   ca-cert-update:
     description: "Install CA certificate from a server"

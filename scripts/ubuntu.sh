@@ -80,11 +80,23 @@ case "$ACTION" in
         log_info "Your system is now covered by Ubuntu Pro."
         ;;
     
+    detach)
+        log_info "Detaching Ubuntu Pro subscription..."
+        
+        if ! sudo pro detach --assume-yes; then
+            log_error "Failed to detach Ubuntu Pro subscription"
+        fi
+        
+        log_info "Ubuntu Pro subscription detached successfully!"
+        log_info "Your system is no longer covered by Ubuntu Pro."
+        ;;
+    
     *)
         log_error "Unknown action: $ACTION"
         echo "Usage:"
         echo "  ubuntu.sh update                (system update)"
         echo "  ubuntu.sh pro,KEY=your-token    (attach Pro subscription)"
+        echo "  ubuntu.sh detach                (detach Pro subscription)"
         exit 1
         ;;
 esac
