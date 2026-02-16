@@ -161,6 +161,7 @@ Defines all available scripts with categories, actions, and prompts.
 #     needs_sudo: true                # (optional) Only if script requires root access
 #                                     # If omitted or false, script runs as normal user
 #     
+#     os_only: ubuntu                 # (optional) Limit to specific distro (ubuntu, debian, etc.)
 #     os_family: [debian|redhat|arch|suse|alpine]    # (optional) Limit to OS family
 #     os_exclude:                     # (optional) Exclude specific distros
 #       - raspbian
@@ -176,7 +177,26 @@ Defines all available scripts with categories, actions, and prompts.
 #             default: "localhost"    # (optional) Default value
 ```
 
-### Example: Apache2 Script
+### Example 1: Ubuntu-Only Script (using os_only)
+
+```yaml
+scripts:
+  ubuntu-update:
+    description: "Update Ubuntu system (handles 25.04 → 25.10 upgrades)"
+    category: "system"
+    file: "ubuntu-update.sh"
+    needs_sudo: true
+    os_only: ubuntu
+    
+    actions:
+      - name: "update"
+        parameter: "update"
+        prompts: []
+```
+
+**Note:** Use `os_only: ubuntu` for Ubuntu-specific scripts (don't show on Debian, Linux Mint, etc.)
+
+### Example 2: Debian Family Script
 
 ```yaml
 scripts:

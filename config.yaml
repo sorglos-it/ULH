@@ -9,9 +9,7 @@ scripts:
     category: "System Updates"
     file: "ubuntu-update.sh"
     needs_sudo: true
-    os_family:
-      - debian
-    os_exclude: []
+    os_only: ubuntu
     
     actions:
       - name: "update"
