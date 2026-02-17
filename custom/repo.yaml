@@ -1,13 +1,14 @@
 # Custom Repository Configuration for LIAUH
 # 
-# See repo.md for complete documentation, setup guides, and examples.
-# This file defines which repositories to clone/pull on startup.
+# See DOCS.md > "Custom Script Repositories" for complete documentation,
+# setup guides, authentication options, and troubleshooting.
 #
+# This file defines which repositories to clone/pull on startup.
 # Each repository should contain a custom.yaml file defining its scripts.
 
 repositories:
   # Example 1: SSH with custom/keys/ (recommended)
-  # See repo.md for SSH setup instructions
+  # See DOCS.md for SSH setup instructions
   custom-scripts:
     name: "My Custom Scripts"
     url: "git@github.com:your-org/liauh-custom.git"
@@ -18,7 +19,7 @@ repositories:
     auto_update: true
 
   # Example 2: HTTPS with Personal Access Token
-  # See repo.md for GitHub token setup
+  # See DOCS.md for GitHub token setup
   company-tools:
     name: "Company Tools & Scripts"
     url: "https://github.com/your-company/company-tools.git"
