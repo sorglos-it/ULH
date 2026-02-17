@@ -848,6 +848,11 @@ scripts:
         description: "Uninstall PHP"
         prompts: []
       
+      - name: "composer"
+        parameter: "composer"
+        description: "Install Composer (standalone)"
+        prompts: []
+      
       - name: "config"
         parameter: "config"
         description: "Configure PHP"

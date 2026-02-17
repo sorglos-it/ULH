@@ -158,7 +158,7 @@ Make sure `custom.yaml` is in the liauh directory and script path is correct.
 | **python** | Programming Languages | All | `install` (with version), `update`, `uninstall`, `config` |
 | **ruby** | Programming Languages | All | `install` (with version), `update`, `uninstall`, `config` |
 | **golang** | Programming Languages | All | `install`, `update`, `uninstall`, `config` |
-| **php** | Programming Languages | All | `install` (with Composer option), `update`, `uninstall`, `config` |
+| **php** | Programming Languages | All | `install` (with Composer option), `update`, `uninstall`, `composer` (standalone), `config` |
 | **perl** | Programming Languages | All | `install`, `update`, `uninstall`, `cpan-module`, `config` |
 
 **Legend:**

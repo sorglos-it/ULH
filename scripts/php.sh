@@ -52,10 +52,22 @@ install_php() {
     php --version
     
     if [[ "$install_composer" == "yes" ]]; then
-        log_info "Installing Composer..."
-        curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer || log_error "Failed to install Composer"
-        composer --version
+        install_composer_tool
     fi
+}
+
+install_composer_tool() {
+    log_info "Installing Composer..."
+    
+    if ! command -v php &>/dev/null; then
+        log_error "PHP is not installed! Install PHP first."
+    fi
+    
+    log_info "Downloading Composer installer..."
+    curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer || log_error "Failed to install Composer"
+    
+    log_info "Composer installed successfully!"
+    composer --version
 }
 
 update_php() {
@@ -112,6 +124,7 @@ case "$ACTION" in
     update) update_php ;;
     uninstall) uninstall_php ;;
     config) configure_php ;;
+    composer) install_composer_tool ;;
     *) log_error "Unknown action: $ACTION"
-       echo "Usage: php.sh install,COMPOSER=yes|update|uninstall|config,MEMORY_LIMIT=256M,MAX_EXECUTION_TIME=30" ;;
+       echo "Usage: php.sh install,COMPOSER=yes|update|uninstall|config,MEMORY_LIMIT=256M,MAX_EXECUTION_TIME=30|composer" ;;
 esac
