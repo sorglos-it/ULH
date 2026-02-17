@@ -5,8 +5,9 @@ menu_clear() { clear; printf '\033[H\033[2J\033[3J'; }
 
 menu_header() {
     local title="$1" version="${2:-}"
-    local w=76
-    local border=$(printf "%${w}s" | tr ' ' '=')
+    local w=80  # Total width: +76content+
+    local inner=$((w - 2))  # Space between | and |
+    local border=$(printf "%${inner}s" | tr ' ' '=')
     
     echo "+${border}+"
     
@@ -14,12 +15,12 @@ menu_header() {
         local version_str="VERSION: ${version}"
         local vlen=${#version_str}
         local tlen=${#title}
-        local padding=$(( w - tlen - vlen - 2 ))
+        local padding=$(( inner - tlen - vlen ))
         printf "|%s%*s%s|\n" "$title" $padding "" "$version_str"
     else
         local tlen=${#title}
-        local pad=$(( (w - tlen) / 2 ))
-        printf "|%*s%s%*s|\n" $pad "" "$title" $((w - pad - tlen)) ""
+        local pad=$(( (inner - tlen) / 2 ))
+        printf "|%*s%s%*s|\n" $pad "" "$title" $((inner - pad - tlen)) ""
     fi
     
     echo "+${border}+"
