@@ -149,7 +149,11 @@ menu_show_main() {
     menu_clear
     menu_header "LIAUH - Linux Install and Update Helper"
     local -a cats; _get_categories cats
-    local i=1; for c in "${cats[@]}"; do printf "|  %d) %s\n" $i "$c"; ((i++)); done
+    local i=1; for c in "${cats[@]}"; do 
+        local desc=$(yaml_info "$c" description)
+        printf "|  %d) %-20s - %s\n" $i "$c" "$desc"
+        ((i++))
+    done
     
     # Show back button only if coming from repo menu
     if [[ "$CONTEXT_FROM" == "repo" ]]; then
@@ -167,7 +171,7 @@ menu_show_category() {
         echo "|  No scripts available."
     else 
         local i=1; for s in "${scripts[@]}"; do 
-            printf "|  %d) %s - %s\n" $i "$s" "$(yaml_info "$s" description)"
+            printf "|  %d) %-20s - %s\n" $i "$s" "$(yaml_info "$s" description)"
             ((i++))
         done
     fi
@@ -183,7 +187,11 @@ menu_show_actions() {
     else 
         for ((i=0; i<count; i++)); do
             local n=$(yaml_action_name "$1" $i) d=$(yaml_action_description "$1" $i)
-            [[ -n "$d" && "$d" != "null" ]] && printf "|  %d) %s - %s\n" $((i+1)) "$n" "$d" || printf "|  %d) %s\n" $((i+1)) "$n"
+            if [[ -n "$d" && "$d" != "null" ]]; then
+                printf "|  %d) %-20s - %s\n" $((i+1)) "$n" "$d"
+            else
+                printf "|  %d) %s\n" $((i+1)) "$n"
+            fi
         done
     fi
     menu_footer 1
@@ -216,7 +224,7 @@ menu_show_custom_repo() {
     else
         local i=1; for s in "${scripts[@]}"; do 
             local desc=$(_yq_eval ".scripts.$s.description" "$repo_path/custom.yaml" 2>/dev/null)
-            printf "|  %d) %s - %s\n" $i "$s" "$desc"
+            printf "|  %d) %-20s - %s\n" $i "$s" "$desc"
             ((i++))
         done
     fi
@@ -244,7 +252,7 @@ menu_show_custom_repo_actions() {
         for ((i=0; i<count; i++)); do
             local n=$(_yq_eval ".scripts.$script_name.actions[$i].name" "$repo_path/custom.yaml" 2>/dev/null)
             local d=$(_yq_eval ".scripts.$script_name.actions[$i].description" "$repo_path/custom.yaml" 2>/dev/null)
-            [[ -n "$d" && "$d" != "null" ]] && printf "|  %d) %s - %s\n" $((i+1)) "$n" "$d" || printf "|  %d) %s\n" $((i+1)) "$n"
+            [[ -n "$d" && "$d" != "null" ]] && printf "|  %d) %-20s - %s\n" $((i+1)) "$n" "$d" || printf "|  %d) %s\n" $((i+1)) "$n"
         done
     fi
     menu_footer 1
