@@ -9,9 +9,13 @@
 git clone https://github.com/sorglos-it/liauh.git && cd liauh && bash liauh.sh
 ```
 
-### From GitHub
+### From GitHub (weget)
 ```bash
 wget -qO - https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash
+```
+
+### From GitHub (curl)
+```bash
 curl -sSL https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash
 ```
 
