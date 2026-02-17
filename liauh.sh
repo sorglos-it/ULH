@@ -34,8 +34,10 @@ _auto_update() {
         msg_info "Updating LIAUH ($behind commit(s) behind)..."
         
         if git pull origin main &>/dev/null || git pull origin master &>/dev/null; then
-            msg_ok "LIAUH updated successfully!"
-            return 0
+            msg_ok "LIAUH updated successfully - restarting..."
+            echo ""
+            # Restart self with updated code
+            exec "$0" "$@"
         else
             msg_warn "Auto-update failed - proceeding anyway"
             return 1
