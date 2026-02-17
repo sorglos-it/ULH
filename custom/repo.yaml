@@ -8,7 +8,7 @@ repositories:
   custom-scripts:
     name: "My Custom Scripts"
     url: "https://github.com/your-org/liauh-custom.git"
-    path: "custom/custom-scripts"
+    path: "custom-scripts"
     auth_method: "https_token"
     token: "${LIAUH_CUSTOM_TOKEN}"  # GitHub Personal Access Token
     enabled: false  # Set to true when ready
@@ -18,9 +18,9 @@ repositories:
   company-tools:
     name: "Company Tools & Scripts"
     url: "git@github.com:your-company/company-tools.git"
-    path: "custom/company-tools"
+    path: "company-tools"
     auth_method: "ssh"
-    ssh_key: "~/.ssh/id_rsa"  # Path to SSH private key
+    ssh_key: "id_rsa"  # SSH key filename in custom/keys/ (or full path)
     ssh_passphrase: "${SSH_KEY_PASSPHRASE}"  # Optional if key is encrypted
     enabled: false  # Set to true when ready
     auto_update: true
@@ -29,7 +29,7 @@ repositories:
   team-scripts:
     name: "Team Scripts"
     url: "https://your-gitserver.com/team/scripts.git"
-    path: "custom/team-scripts"
+    path: "team-scripts"
     auth_method: "https_basic"
     username: "${GIT_USERNAME}"
     password: "${GIT_PASSWORD}"
@@ -40,7 +40,7 @@ repositories:
   community-addons:
     name: "Community Addons"
     url: "https://github.com/public-org/liauh-addons.git"
-    path: "custom/community-addons"
+    path: "community-addons"
     auth_method: "none"
     enabled: false
     auto_update: false
@@ -69,6 +69,10 @@ update_settings:
 #   ├── liauh.sh (main)
 #   ├── custom/
 #   │   ├── repo.yaml (this file)
+#   │   ├── keys/                ← SSH keys directory
+#   │   │   ├── id_rsa
+#   │   │   ├── company_key
+#   │   │   └── ...
 #   │   ├── custom-scripts/      ← Cloned from GitHub
 #   │   │   ├── custom.yaml      ← Defines scripts in this repo
 #   │   │   ├── scripts/
@@ -104,13 +108,22 @@ update_settings:
 # 3. "ssh"
 #    For: Private repos via SSH with SSH keys
 #    Recommended for: Personal use, long-term automation
-#    Fields: ssh_key (path), ssh_passphrase (optional)
+#    Fields: ssh_key (filename or path), ssh_passphrase (optional)
+#    ssh_key can be:
+#      - Filename in custom/keys/: "id_rsa" (recommended for secrets)
+#      - Full path: "~/.ssh/id_rsa" or "/home/user/.ssh/key"
 #    Setup:
-#      1. Generate key: ssh-keygen -t ed25519 -f ~/.ssh/id_rsa
-#      2. Add public key to GitHub: Settings > SSH and GPG keys
-#      3. Start SSH agent: eval $(ssh-agent -s)
-#      4. Add key: ssh-add ~/.ssh/id_rsa
-#      5. Reference in config: ssh_key: "~/.ssh/id_rsa"
+#      Option A - Use custom/keys/ (recommended):
+#        1. cp ~/.ssh/id_rsa custom/keys/id_rsa
+#        2. chmod 600 custom/keys/id_rsa
+#        3. Add public key to GitHub
+#        4. Reference in config: ssh_key: "id_rsa"
+#      Option B - Use ~/.ssh/:
+#        1. Generate key: ssh-keygen -t ed25519 -f ~/.ssh/id_rsa
+#        2. Add public key to GitHub: Settings > SSH and GPG keys
+#        3. Start SSH agent: eval $(ssh-agent -s)
+#        4. Add key: ssh-add ~/.ssh/id_rsa
+#        5. Reference in config: ssh_key: "~/.ssh/id_rsa"
 #
 # 4. "https_basic"
 #    For: Private repos with username/password
@@ -138,22 +151,33 @@ update_settings:
 # Quick Start
 # ============================================================================
 #
-# 1. Create a GitHub personal access token:
-#    https://github.com/settings/tokens/new
+# Option 1: SSH with custom/keys/ (Recommended)
+# ─────────────────────────────────────────
+# 1. Copy your SSH key to custom/keys/:
+#    cp ~/.ssh/id_rsa custom/keys/id_rsa
+#    chmod 600 custom/keys/id_rsa
+#
+# 2. Update the "company-tools" repository above:
+#    url: "git@github.com:YOUR-ORG/your-repo.git"
+#    ssh_key: "id_rsa"
+#    enabled: true
+#
+# 3. Create a custom.yaml in your repo
+#
+# 4. Run liauh.sh - your scripts will appear in the menu!
+#
+# Option 2: HTTPS with Personal Access Token
+# ────────────────────────────────────────
+# 1. Create token: https://github.com/settings/tokens/new
 #    Select: repo (full control of private repositories)
 #
-# 2. Set the token in your environment:
+# 2. Set token in environment:
 #    export LIAUH_CUSTOM_TOKEN="ghp_xxxxxxxxxxxx"
 #
 # 3. Update the "custom-scripts" repository above:
 #    url: "https://github.com/YOUR-ORG/liauh-custom.git"
 #    enabled: true
 #
-# 4. Create a custom.yaml in your repo:
-#    scripts:
-#      my-tool:
-#        description: "My custom tool"
-#        path: "scripts/my-tool.sh"
-#        needs_sudo: false
+# 4. Create a custom.yaml in your repo
 #
 # 5. Run liauh.sh - your scripts will appear in the menu!

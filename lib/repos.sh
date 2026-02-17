@@ -57,11 +57,9 @@ repo_sync_one() {
         return 1
     fi
     
-    # Resolve path - if relative, make it relative to LIAUH_DIR
-    if [[ "$path" == ./* ]]; then
-        path="${LIAUH_DIR}/${path:2}"
-    elif [[ "$path" != /* ]]; then
-        path="${LIAUH_DIR}/$path"
+    # Resolve path - automatically prefix with custom/
+    if [[ "$path" != /* ]]; then
+        path="${LIAUH_DIR}/custom/${path}"
     fi
     
     if [[ -d "$path/.git" ]]; then
@@ -96,10 +94,21 @@ repo_clone() {
     # Create parent directory if needed
     mkdir -p "$(dirname "$path")" || return 1
     
+    # Setup SSH auth if needed
+    if [[ "$auth_method" == "ssh" ]]; then
+        local ssh_key
+        ssh_key=$(yq eval ".repositories.$repo_name.ssh_key" "$repo_config" 2>/dev/null)
+        ssh_key=$(repo_resolve_ssh_key "$ssh_key")
+        if [[ -n "$ssh_key" && -f "$ssh_key" ]]; then
+            export GIT_SSH_COMMAND="ssh -i $ssh_key"
+        fi
+    fi
+    
     retry_count=0
     while [[ $retry_count -lt $max_retries ]]; do
         if git clone "$auth_url" "$path" 2>/dev/null; then
             log_info "Successfully cloned '$repo_name'"
+            unset GIT_SSH_COMMAND
             return 0
         fi
         
@@ -111,6 +120,7 @@ repo_clone() {
     done
     
     log_error "Failed to clone '$repo_name' after $max_retries attempts"
+    unset GIT_SSH_COMMAND
     return 1
 }
 
@@ -136,14 +146,16 @@ repo_pull() {
         # Setup auth for SSH if needed
         if [[ "$auth_method" == "ssh" ]]; then
             local ssh_key
-            ssh_key=$(yq eval ".repositories | to_entries[] | select(.value.path == \"$path\") | .value.ssh_key" "$repo_config" 2>/dev/null)
-            if [[ -n "$ssh_key" && "$ssh_key" != "null" ]]; then
+            ssh_key=$(yq eval ".repositories.$repo_name.ssh_key" "$repo_config" 2>/dev/null)
+            ssh_key=$(repo_resolve_ssh_key "$ssh_key")
+            if [[ -n "$ssh_key" && -f "$ssh_key" ]]; then
                 export GIT_SSH_COMMAND="ssh -i $ssh_key"
             fi
         fi
         
         if git pull origin main 2>/dev/null || git pull origin master 2>/dev/null; then
             log_info "Successfully updated '$repo_name'"
+            unset GIT_SSH_COMMAND
             cd - > /dev/null
             return 0
         fi
@@ -157,6 +169,7 @@ repo_pull() {
     done
     
     log_error "Failed to update '$repo_name' after $max_retries attempts"
+    unset GIT_SSH_COMMAND
     return 1
 }
 
@@ -223,4 +236,37 @@ repo_expand_var() {
     done
     
     echo "$value"
+}
+
+# Resolve SSH key path (can be filename in custom/keys/ or full path)
+repo_resolve_ssh_key() {
+    local ssh_key="$1"
+    
+    [[ -z "$ssh_key" || "$ssh_key" == "null" ]] && return 1
+    
+    # Expand environment variables first
+    ssh_key=$(repo_expand_var "$ssh_key")
+    
+    # Absolute path or ~ path - use as-is
+    if [[ "$ssh_key" == /* || "$ssh_key" == ~* ]]; then
+        echo "$ssh_key"
+        return 0
+    fi
+    
+    # Relative filename - try custom/keys/ first, then ~/.ssh/
+    local key_in_custom="${LIAUH_DIR}/custom/keys/${ssh_key}"
+    if [[ -f "$key_in_custom" ]]; then
+        echo "$key_in_custom"
+        return 0
+    fi
+    
+    # Fallback to ~/.ssh/
+    local key_in_home="${HOME}/.ssh/${ssh_key}"
+    if [[ -f "$key_in_home" ]]; then
+        echo "$key_in_home"
+        return 0
+    fi
+    
+    # Last resort - return as-is (will fail later if not found)
+    echo "$ssh_key"
 }

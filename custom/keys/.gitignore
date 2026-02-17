@@ -1,0 +1,3 @@
+# Ignore SSH keys (keep them local, never commit to git)
+*
+!.gitignore
