@@ -3,13 +3,20 @@
 # LIAUH Installation Script
 # Installs dependencies and starts LIAUH
 
+# Use sudo only if not root
+if [[ $EUID -eq 0 ]]; then
+    SUDO=""
+else
+    SUDO="sudo"
+fi
+
 echo "📦 Installing dependencies..."
-if ! sudo apt-get update; then
+if ! $SUDO apt-get update; then
     echo "❌ Failed to update package lists"
     exit 1
 fi
 
-if ! sudo apt-get install -y git; then
+if ! $SUDO apt-get install -y git; then
     echo "❌ Failed to install git"
     exit 1
 fi
