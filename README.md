@@ -1,140 +1,168 @@
 # LIAUH - Linux Install and Update Helper
 
-**v0.3** | Unified system management framework with interactive menu system
+**v0.3** | Unified system management framework for all Linux distributions
 
 ## 🚀 Installation
 
-### Quick Start (One-liner)
+### One-liner (Auto-install)
 ```bash
-git clone https://github.com/sorglos-it/liauh.git && cd liauh && bash liauh.sh
+wget -qO - https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash && cd ~/liauh && bash liauh.sh
+curl -sSL https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash && cd ~/liauh && bash liauh.sh
 ```
 
-### From GitHub (weget)
+### Manual Install
 ```bash
-wget -qO - https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash
-```
-
-### From GitHub (curl)
-```bash
-curl -sSL https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash
-```
-
-## 📖 Usage
-
-### Start LIAUH
-```bash
+git clone https://github.com/sorglos-it/liauh.git
+cd liauh
 bash liauh.sh
 ```
 
-### Menu Structure
+## ✨ Features
 
+- **Multi-Distribution** - Debian, Ubuntu, Red Hat, Arch, SUSE, Alpine, Proxmox
+- **60+ Scripts** - System management, web servers, databases, languages, tools
+- **Auto-Updates** - Self-updates on startup with transparent restart
+- **Custom Repos** - Clone your own script repositories with git authentication
+- **Interactive Menu** - Clean, intuitive box-based CLI interface
+- **All Distros** - Every script supports all 5 major distribution families
+- **Zero Dependencies** - Just bash, git, and standard Linux tools
+
+## 📖 Usage
+
+```bash
+cd ~/liauh
+bash liauh.sh
 ```
-+==============================================================================+
-| LIAUH - Linux Install and Update Helper                         VERSION: 0.3 |
-+==============================================================================+
-|
-   1) LIAUH - Linux Install and Update Helper
-   2) Demo Scripts
-|
-+==============================================================================+
-|   q) Quit                                    ubuntu (debian) · v25.10 |
-+==============================================================================+
 
-  Choose:
+Menu flow:
+```
+1. Repository Selector
+   ├─ LIAUH Scripts
+   │  └─ Categories
+   │     └─ Scripts
+   │        └─ Actions
+   └─ Custom Repos
+      └─ Scripts
+         └─ Actions
 ```
 
-**Select a Repository:**
-- **LIAUH Scripts** - 13 built-in system management scripts
-- **Custom Repos** - Add your own script repositories (enabled via config)
+## 🛠️ System Scripts (60+)
 
-**Then navigate:**
-Categories → Scripts → Actions
+### Essential Tools (13)
+curl, wget, git, vim, nano, htop, tmux, screen, openssh, net-tools, build-essential, jq, ufw
 
-### CLI Options
+### Webservers (2)
+Apache, Nginx
 
-| Option | Effect |
-|--------|--------|
-| `bash liauh.sh` | Start menu (auto-checks for updates) |
-| `bash liauh.sh --no-update` | Skip auto-update check |
-| `bash liauh.sh --debug` | Enable verbose output |
-| `bash liauh.sh --check-update` | Check for updates only |
+### Databases (1)
+MariaDB
 
-## ✨ Key Features
+### Containerization (3)
+Docker, Portainer, Portainer Agent
 
-- **Interactive Menu** - Clean, intuitive box-based UI
-- **Multi-OS Support** - Debian, Ubuntu, Red Hat, Arch, SUSE, Alpine, Proxmox
-- **Auto-Update** - Keeps LIAUH current from GitHub
-- **Custom Script Repos** - Clone multiple repositories with independent configs
-- **Flexible Auth** - SSH keys, Personal Access Tokens, public repos
-- **Smart SSH Keys** - Auto-resolve from `custom/keys/` or `~/.ssh/`
-- **Interactive Prompts** - Text input, yes/no, selection menus
-- **Selective Sudo** - Individual scripts run elevated, LIAUH stays unprivileged
-- **Zero Dependencies** - Just bash, git, and standard tools
-- **Production Ready** - 15 tested scripts (13 system + 2 reference)
+### Programming Languages (6)
+Node.js, Python, Ruby, Go, PHP, Perl
 
-## 🏗️ Architecture
+### Logging & Monitoring (4)
+rsyslog, syslog-ng, fail2ban, logrotate
 
-- **liauh.sh** - Main entry point (945 lines)
-- **lib/** - 7 focused libraries (colors, core, yaml, menu, execute, repos)
-- **scripts/** - 13 production + 2 reference scripts
-- **custom/** - User repositories (ignored by git)
-- **config.yaml** - System scripts configuration
-- **custom/repo.yaml** - Custom repository definitions
+### Networking (3)
+bind-utils, WireGuard, OpenVPN
 
-## 📋 System Scripts
+### System Management (6)
+Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox, PiKVM v3
 
-| Category | Scripts |
-|----------|---------|
-| System Updates | `ubuntu.sh`, `debian.sh` |
-| System Config | `linux.sh` (network, DNS, users) |
-| Web Servers | `apache.sh`, `nginx.sh` |
-| Containers | `docker.sh`, `portainer.sh` |
-| Databases | `mariadb.sh` |
-| Appliances | `proxmox.sh`, `pikvm-v3.sh` |
-| Tools | `compression.sh`, `ca-cert-update.sh` |
-
-See **[SCRIPTS.md](SCRIPTS.md)** for full reference.
+See **[SCRIPTS.md](SCRIPTS.md)** for complete reference.
 
 ## 🔧 Custom Repositories
 
-Add your own scripts:
+Add your own scripts with git authentication (SSH, Token, Basic Auth):
 
-1. Create or clone a repository with `custom.yaml`
-2. Edit `custom/repo.yaml`:
 ```yaml
+# custom/repo.yaml
 repositories:
   my-scripts:
-    name: "My Scripts"
-    url: "https://github.com/user/my-scripts.git"
+    name: "My Custom Scripts"
+    url: "git@github.com:user/my-scripts.git"
     path: "my-scripts"
-    auth_method: "none"
+    auth_method: "ssh"
     enabled: true
     auto_update: false
 ```
 
-3. LIAUH handles cloning, updates, and execution
+See **[DOCS.md](DOCS.md#custom-repositories)** for setup.
 
-See **[DOCS.md](DOCS.md)** for authentication setup.
+## 🏗️ Architecture
+
+```
+liauh/
+├── liauh.sh              # Entry point (self-updating)
+├── lib/                  # 7 focused libraries
+├── scripts/              # 60+ production scripts
+├── custom/               # Your custom repos
+├── config.yaml           # System scripts config
+├── README.md            # This file
+├── DOCS.md              # Comprehensive guide
+└── SCRIPTS.md           # Script reference
+```
 
 ## 📚 Documentation
 
-- **[DOCS.md](DOCS.md)** - Comprehensive guide, architecture, configuration
-- **[SCRIPTS.md](SCRIPTS.md)** - System scripts reference table
-- **[CHANGES.md](CHANGES.md)** - Version history
+- **[DOCS.md](DOCS.md)** - Complete guide: architecture, configuration, templates, troubleshooting
+- **[SCRIPTS.md](SCRIPTS.md)** - All 60+ scripts with categories and descriptions
 
-## 💻 Requirements
+## 🖥️ Supported Distributions
 
-- Linux (Debian, Red Hat, Arch, SUSE, Alpine, or compatible)
+- ✅ Debian / Ubuntu / Linux Mint
+- ✅ Red Hat / Fedora / CentOS / Rocky / AlmaLinux
+- ✅ Arch / Manjaro
+- ✅ SUSE / openSUSE
+- ✅ Alpine
+- ✅ Proxmox VE
+- ✅ PiKVM v3
+
+## 💾 Requirements
+
+- Linux (any major distro)
 - Bash 4.0+
-- Git (for updates)
-- `sudo` access (if scripts need root)
+- Git
+- `sudo` access (for system-level operations)
+
+## 🚀 Quick Start
+
+1. **Install**: `bash install.sh` or clone repo
+2. **Run**: `bash liauh.sh`
+3. **Select**: Choose System Management or Custom Repo
+4. **Navigate**: Category → Script → Action
+5. **Configure**: Follow prompts (or accept defaults)
+
+## 🔐 Security
+
+- Scripts run **individually with sudo** (LIAUH stays unprivileged)
+- SSH keys stored in **custom/keys/** (protected by .gitignore)
+- No hardcoded credentials (use environment variables)
+- All scripts pass **syntax validation** (bash -n)
+
+## 📝 Creating Scripts
+
+Use the template: `scripts/_template.sh`
+
+```bash
+cp scripts/_template.sh scripts/my-script.sh
+```
+
+See **[DOCS.md - Script Development](DOCS.md#script-development)** for detailed guide.
+
+## 🤝 Contributing
+
+Contributions welcome! See **[DOCS.md](DOCS.md)** for script development guidelines.
 
 ## 📄 License
 
 MIT License - Free for personal and commercial use
 
-**Author:** Thomas Weirich (Sorglos IT)
-
 ---
 
-**Questions?** Check **[DOCS.md](DOCS.md)** for detailed answers.
+**Questions?** Check **[DOCS.md](DOCS.md)** or open an issue on GitHub.
+
+**GitHub**: https://github.com/sorglos-it/liauh
