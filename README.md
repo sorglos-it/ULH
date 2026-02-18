@@ -20,7 +20,7 @@ bash liauh.sh
 ## ✨ Features
 
 - **Multi-Distribution** - Debian, Ubuntu, Red Hat, Arch, SUSE, Alpine, Proxmox
-- **60+ Scripts** - System management, web servers, databases, languages, tools
+- **38 Scripts** - System management, web servers, databases, languages, tools
 - **Auto-Updates** - Self-updates on startup with transparent restart
 - **Custom Repos** - Clone your own script repositories with git authentication
 - **Interactive Menu** - Clean, intuitive box-based CLI interface
@@ -46,7 +46,7 @@ Menu flow:
          └─ Actions
 ```
 
-## 🛠️ System Scripts (60+)
+## 🛠️ System Scripts (38)
 
 ### Essential Tools (13)
 curl, wget, git, vim, nano, htop, tmux, screen, openssh, net-tools, build-essential, jq, ufw
@@ -54,11 +54,11 @@ curl, wget, git, vim, nano, htop, tmux, screen, openssh, net-tools, build-essent
 ### Webservers (2)
 Apache, Nginx
 
-### Databases (1)
-MariaDB
+### Databases (3)
+MariaDB, PostgreSQL, MySQL
 
-### Containerization (3)
-Docker, Portainer, Portainer Agent
+### Containerization (2)
+Docker, Portainer
 
 ### Programming Languages (6)
 Node.js, Python, Ruby, Go, PHP, Perl
@@ -69,7 +69,7 @@ rsyslog, syslog-ng, fail2ban, logrotate
 ### Networking (3)
 bind-utils, WireGuard, OpenVPN
 
-### System Management (6)
+### System Management (5)
 Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox, PiKVM v3
 
 See **[SCRIPTS.md](SCRIPTS.md)** for complete reference.
@@ -98,7 +98,7 @@ See **[DOCS.md](DOCS.md#custom-repositories)** for setup.
 liauh/
 ├── liauh.sh              # Entry point (self-updating)
 ├── lib/                  # 7 focused libraries
-├── scripts/              # 60+ production scripts
+├── scripts/              # 38 system management scripts + custom repos
 ├── custom/               # Your custom repos
 ├── config.yaml           # System scripts config
 ├── README.md            # This file
@@ -109,7 +109,7 @@ liauh/
 ## 📚 Documentation
 
 - **[DOCS.md](DOCS.md)** - Complete guide: architecture, configuration, templates, troubleshooting
-- **[SCRIPTS.md](SCRIPTS.md)** - All 60+ scripts with categories and descriptions
+- **[SCRIPTS.md](SCRIPTS.md)** - All 38 scripts with categories and descriptions
 
 ## 🖥️ Supported Distributions
 

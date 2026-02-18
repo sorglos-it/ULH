@@ -38,16 +38,16 @@ liauh/
 │   ├── menu.sh          # Menu display + navigation
 │   ├── execute.sh       # Script execution engine
 │   └── repos.sh         # Repository sync + management
-├── scripts/             # 60+ system management scripts
-│   ├── curl.sh, wget.sh, git.sh ... (essential tools)
+├── scripts/             # 38 system management scripts
+│   ├── curl.sh, wget.sh, git.sh, vim.sh, nano.sh, htop.sh, tmux.sh, screen.sh,
+│   │   openssh.sh, net-tools.sh, build-essential.sh, jq.sh, ufw.sh (essential tools)
 │   ├── apache.sh, nginx.sh (web servers)
-│   ├── mariadb.sh (databases)
+│   ├── mariadb.sh, postgres.sh, mysql.sh (databases)
 │   ├── docker.sh, portainer.sh (containers)
 │   ├── nodejs.sh, python.sh, ruby.sh, golang.sh, php.sh, perl.sh (languages)
-│   ├── rsyslog.sh, fail2ban.sh (monitoring)
-│   ├── wireguard.sh, openvpn.sh (networking)
-│   ├── linux.sh (system configuration)
-│   ├── proxmox.sh, pikvm-v3.sh (appliances)
+│   ├── rsyslog.sh, syslog-ng.sh, fail2ban.sh, logrotate.sh (logging & monitoring)
+│   ├── bind-utils.sh, wireguard.sh, openvpn.sh (networking)
+│   ├── linux.sh, ubuntu.sh, debian.sh, proxmox.sh, pikvm-v3.sh (system management)
 │   └── _template.sh (reference template for new scripts)
 ├── custom/              # User repositories (git-ignored except repo.yaml)
 │   ├── repo.yaml        # Repository configuration

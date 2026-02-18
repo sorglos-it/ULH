@@ -1,95 +1,133 @@
 # LIAUH Scripts Reference
 
-**v0.3** | Complete catalog of 60+ system management scripts
+**v0.3** | Complete catalog of 38 system management scripts
 
 All scripts support **install**, **update**, **uninstall**, and **config** actions (where applicable).
 
 ---
 
-## Menu Structure (5 Categories)
+## Script Categories (8 Categories, 38 Scripts)
 
-LIAUH menu organized into 5 main categories:
+LIAUH organizes scripts into 8 logical categories:
 
-1. **Database**
-2. **Programming Languages**
-3. **System**
-4. **Tools**
-5. **Webserver**
-
----
-
-## Database
-
-| Script | Description | Supports |
-|--------|-------------|----------|
-| **mariadb** | MariaDB database server | Debian, Red Hat |
+1. **Essential Tools** (13)
+2. **Webservers** (2)
+3. **Databases** (3)
+4. **Containerization** (2)
+5. **Programming Languages** (6)
+6. **Logging & Monitoring** (4)
+7. **Networking** (3)
+8. **System Management** (5)
 
 ---
 
-## Programming Languages
+## Essential Tools (13)
+
+Core utilities for system administration and development:
 
 | Script | Description | Supports |
 |--------|-------------|----------|
-| **nodejs** | Node.js + npm | All 5 distros |
-| **python** | Python 3 + pip | All 5 distros |
-| **ruby** | Ruby + gem | All 5 distros |
-| **golang** | Go programming language | All 5 distros |
-| **php** | PHP + cli | All 5 distros |
-| **perl** | Perl + modules | All 5 distros |
-
----
-
-## System
-
-Essential tools and system management:
-
-| Script | Description | Supports |
-|--------|-------------|----------|
-| **curl** | HTTP/HTTPS requests | All 5 distros |
-| **wget** | HTTP/FTP downloads | All 5 distros |
-| **git** | Version control system | All 5 distros |
+| **curl** | HTTP/HTTPS requests utility | All 5 distros |
+| **wget** | HTTP/FTP downloads utility | All 5 distros |
+| **git** | Distributed version control system | All 5 distros |
 | **vim** | Advanced text editor | All 5 distros |
 | **nano** | Simple text editor | All 5 distros |
-| **htop** | System resource monitor | All 5 distros |
+| **htop** | Interactive system resource monitor | All 5 distros |
 | **tmux** | Terminal multiplexer | All 5 distros |
 | **screen** | Terminal multiplexer | All 5 distros |
-| **openssh** | SSH server/client | All 5 distros |
-| **net-tools** | Network utilities | All 5 distros |
-| **build-essential** | Dev tools & compilers | All 5 distros |
+| **openssh** | SSH server and client | All 5 distros |
+| **net-tools** | Network utilities (ifconfig, netstat, etc.) | All 5 distros |
+| **build-essential** | Development tools and compilers | All 5 distros |
 | **jq** | JSON query processor | All 5 distros |
 | **ufw** | Uncomplicated Firewall | All 5 distros |
-| **linux** | Network, DNS, users, groups, CA certs | All 5 distros |
-| **ubuntu** | Ubuntu-specific management | Ubuntu only |
-| **debian** | Debian-specific management | Debian only |
-| **proxmox** | Proxmox VE management | Proxmox only |
-| **pikvm-v3** | PiKVM v3 appliance management | Arch (PiKVM) only |
 
 ---
 
-## Tools
+## Webservers (2)
 
-Logging, monitoring, networking, and utilities:
-
-| Script | Description | Supports |
-|--------|-------------|----------|
-| **rsyslog** | System logging daemon | All 5 distros |
-| **syslog-ng** | Advanced system logging | All 5 distros |
-| **fail2ban** | Brute-force attack protection | All 5 distros |
-| **logrotate** | Log rotation utility | All 5 distros |
-| **bind-utils** | DNS tools (dig, nslookup) | All 5 distros |
-| **wireguard** | Modern VPN protocol | All 5 distros |
-| **openvpn** | OpenVPN tunneling | All 5 distros |
-| **docker** | Docker container runtime | All 5 distros |
-| **portainer** | Container management UI | All 5 distros |
-
----
-
-## Webserver
+Web application and static content servers:
 
 | Script | Description | Supports |
 |--------|-------------|----------|
 | **apache** | Apache HTTP Server | All 5 distros |
 | **nginx** | Nginx HTTP Server | All 5 distros |
+
+---
+
+## Databases (3)
+
+Data persistence and management:
+
+| Script | Description | Supports |
+|--------|-------------|----------|
+| **mariadb** | MariaDB relational database server | Debian, Red Hat |
+| **postgres** | PostgreSQL relational database | All 5 distros |
+| **mysql** | MySQL relational database | All 5 distros |
+
+---
+
+## Containerization (2)
+
+Container runtime and management platforms:
+
+| Script | Description | Supports |
+|--------|-------------|----------|
+| **docker** | Docker container runtime | All 5 distros |
+| **portainer** | Portainer container management UI | All 5 distros |
+
+---
+
+## Programming Languages (6)
+
+Runtime environments and interpreters:
+
+| Script | Description | Supports |
+|--------|-------------|----------|
+| **nodejs** | Node.js JavaScript runtime + npm | All 5 distros |
+| **python** | Python 3 interpreter + pip | All 5 distros |
+| **ruby** | Ruby interpreter + gem package manager | All 5 distros |
+| **golang** | Go programming language compiler | All 5 distros |
+| **php** | PHP interpreter + CLI | All 5 distros |
+| **perl** | Perl interpreter + modules | All 5 distros |
+
+---
+
+## Logging & Monitoring (4)
+
+System logging, log management, and security monitoring:
+
+| Script | Description | Supports |
+|--------|-------------|----------|
+| **rsyslog** | System logging daemon | All 5 distros |
+| **syslog-ng** | Advanced system logging engine | All 5 distros |
+| **fail2ban** | Brute-force attack protection | All 5 distros |
+| **logrotate** | Log rotation and compression utility | All 5 distros |
+
+---
+
+## Networking (3)
+
+Network tools, VPN, and connectivity:
+
+| Script | Description | Supports |
+|--------|-------------|----------|
+| **bind-utils** | DNS tools (dig, nslookup, host) | All 5 distros |
+| **wireguard** | Modern, high-performance VPN protocol | All 5 distros |
+| **openvpn** | Open-source VPN tunneling solution | All 5 distros |
+
+---
+
+## System Management (5)
+
+OS-level management and specialized appliances:
+
+| Script | Description | Supports |
+|--------|-------------|----------|
+| **linux** | Core Linux system configuration (network, DNS, users, groups, CA certs) | All 5 distros |
+| **ubuntu** | Ubuntu-specific system management | Ubuntu only |
+| **debian** | Debian-specific system management | Debian only |
+| **proxmox** | Proxmox VE virtualization platform management | Proxmox only |
+| **pikvm-v3** | PiKVM v3 appliance configuration and management | Arch (PiKVM) only |
 
 ---
 
@@ -107,19 +145,28 @@ Logging, monitoring, networking, and utilities:
 
 ---
 
-## Usage Examples
+## Quick Start Examples
 
 ### Install Node.js
-From menu: **System** → **Programming Languages** → **nodejs** → **install**
+From LIAUH menu:
+1. Select **Programming Languages** category
+2. Select **nodejs** script
+3. Choose **install** action
+4. Follow configuration prompts
 
-### Configure Network
-From menu: **System** → **System** → **linux** → **network**
-- Enter interface name (eth0)
-- Choose DHCP or static IP
+### Configure Linux Network
+From LIAUH menu:
+1. Select **System Management** category
+2. Select **linux** script
+3. Choose **network** or **dns** action
+4. Enter interface name (eth0) and IP settings
 
 ### Install MariaDB
-From menu: **Database** → **Database** → **mariadb** → **install**
-- Optional prompts for configuration
+From LIAUH menu:
+1. Select **Databases** category
+2. Select **mariadb** script
+3. Choose **install** action
+4. Provide root password when prompted
 
 ---
 

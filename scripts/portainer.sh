@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Portainer Main (Server) Management Script
-# Install, update, and manage Portainer Docker management UI
+# portainer - Portainer Docker Management UI
+# Install, update, and manage Portainer Docker management platform
 
 set -e
 

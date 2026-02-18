@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Linux System Configuration Script
+# linux - Linux System Configuration Script
 # Manage network, DNS, hostname, users, and groups on Linux systems
 
 set -e

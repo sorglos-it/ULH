@@ -1,5 +1,7 @@
 #!/bin/bash
-# System Information Demo Script
+
+# system-info - System Information Display Utility
+# Displays system information including hostname, OS, kernel, uptime, and disk usage
 
 ACTION="${1%%,*}"
 

@@ -1,5 +1,7 @@
 #!/bin/bash
-# File Backup Demo Script
+
+# file-backup - File Backup Utility
+# Backs up files with timestamped copies to a specified directory
 
 ACTION="${1%%,*}"
 FULL_PARAMS="$1"

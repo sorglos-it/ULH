@@ -1,0 +1,139 @@
+# LIAUH - Project Memory
+
+**v0.3** | 38 production scripts with unified system management framework
+
+## Current Status
+
+- **Status**: Stable & Maintained
+- **Scripts**: 38 system management scripts
+- **Last Update**: 2026-02-18
+
+## Architecture
+
+```
+liauh/
+├── liauh.sh              # Main entry point (auto-updating, 945 lines)
+├── lib/                  # 7 focused libraries
+│   ├── core.sh          # OS detection, logging, utilities
+│   ├── colors.sh        # ANSI color definitions
+│   ├── yaml.sh          # YAML parsing via yq binary
+│   ├── menu.sh          # Menu display + navigation
+│   ├── execute.sh       # Script execution engine
+│   └── repos.sh         # Repository sync + management
+├── scripts/             # 38 system management scripts
+├── custom/              # User repositories (git-ignored except repo.yaml)
+├── config.yaml          # System scripts configuration
+├── README.md            # Quick start guide
+├── DOCS.md              # Comprehensive documentation
+├── SCRIPTS.md           # Script reference table
+└── MEMORY.md            # Project memory (this file)
+```
+
+## Supported Distributions
+
+- ✅ Debian / Ubuntu / Linux Mint
+- ✅ Red Hat / Fedora / CentOS / Rocky / AlmaLinux
+- ✅ Arch / Manjaro
+- ✅ SUSE / openSUSE
+- ✅ Alpine
+- ✅ Proxmox VE
+- ✅ PiKVM v3
+
+## v0.3 - 38 Scripts Implemented & Tested
+
+### Script Categories (8 Categories)
+
+1. **Essential Tools** (13)
+   - curl, wget, git, vim, nano, htop, tmux, screen, openssh, net-tools, build-essential, jq, ufw
+
+2. **Webservers** (2)
+   - Apache, Nginx
+
+3. **Databases** (3)
+   - MariaDB, PostgreSQL, MySQL
+
+4. **Containerization** (2)
+   - Docker, Portainer
+
+5. **Programming Languages** (6)
+   - Node.js, Python, Ruby, Go, PHP, Perl
+
+6. **Logging & Monitoring** (4)
+   - rsyslog, syslog-ng, fail2ban, logrotate
+
+7. **Networking** (3)
+   - bind-utils, WireGuard, OpenVPN
+
+8. **System Management** (5)
+   - Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox, PiKVM v3
+
+### Testing Status
+- **Total Scripts**: 38
+- **Tested**: 38/38 ✓
+- **All Distro Support**: 5 major families covered
+
+## Key Features
+
+- **Multi-Distribution Support** - All scripts work on Debian, Red Hat, Arch, SUSE, Alpine
+- **Auto-Updates** - Self-updates on startup with transparent restart
+- **Custom Repositories** - Clone your own script repositories with git authentication
+- **Interactive Menu** - Clean, intuitive box-based CLI interface
+- **Zero Dependencies** - Just bash, git, and standard Linux tools
+- **Syntax Validation** - All scripts pass bash -n checks
+- **Focused Libraries** - Each file handles one responsibility
+
+## Development Guidelines
+
+- Use the template: `scripts/_template.sh`
+- Support all 5 distribution families
+- Proper error handling with logging functions
+- Service management with systemctl
+- Parameter parsing via comma-separated format
+- Clean formatting and descriptive variable names
+
+## Database Support
+
+- **MariaDB** - Supported on Debian, Red Hat
+- **PostgreSQL** - All 5 distribution families
+- **MySQL** - All 5 distribution families
+
+All database scripts support: install, update, uninstall, config actions
+
+## Custom Repository Support
+
+- SSH authentication (recommended)
+- HTTPS token-based auth
+- HTTPS basic auth
+- Public (no auth)
+
+SSH keys stored in `custom/keys/` (protected by .gitignore)
+
+## Known Capabilities
+
+- Self-updating without user interaction
+- Clean menu system with consistent 80-char formatting
+- Repository auto-sync on startup (configurable)
+- Flexible prompt system (text, yes/no, number types)
+- Context-aware menus with proper navigation
+
+## Recent Changes (v0.3)
+
+- Added PostgreSQL database support (all distros)
+- Added MySQL database support (all distros)
+- Updated database category from 1 → 3 databases
+- Total script count: 36 → 38
+- All documentation updated
+
+## Security Notes
+
+- Scripts run individually with sudo (LIAUH stays unprivileged)
+- SSH keys stored in custom/keys/ (git-ignored)
+- No hardcoded credentials (environment variables)
+- All scripts syntax-checked before execution
+
+## References
+
+- **GitHub**: https://github.com/sorglos-it/liauh
+- **Docs**: [DOCS.md](DOCS.md)
+- **Scripts**: [SCRIPTS.md](SCRIPTS.md)
+- **License**: MIT

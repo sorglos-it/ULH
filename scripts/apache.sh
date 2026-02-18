@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Apache Web Server Management
+# apache - Apache Web Server Management
 # Install, update, uninstall, and configure Apache for all distributions
 
 set -e

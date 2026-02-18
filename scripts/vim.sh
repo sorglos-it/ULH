@@ -1,7 +1,13 @@
 #!/bin/bash
 
+# vim - Vi IMproved text editor
+# Install, update, uninstall, and configure vim on all Linux distributions
+
 set -e
 
+# ============================================================================
+# Parameter Parsing
+# ============================================================================
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -12,13 +18,22 @@ if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
     done <<< "${PARAMS_REST//,/$'\n'}"
 fi
 
+# ============================================================================
+# Color Codes for Terminal Output
+# ============================================================================
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
+# Log success messages with green checkmark
 log_info() { printf "${GREEN}✓${NC} %s\n" "$1"; }
+
+# Log error messages with red X and exit
 log_error() { printf "${RED}✗${NC} %s\n" "$1"; exit 1; }
 
+# ============================================================================
+# Operating System Detection and Package Manager Configuration
+# ============================================================================
 detect_os() {
     source /etc/os-release || log_error "Cannot detect OS"
     OS_DISTRO="${ID,,}"
@@ -33,6 +48,11 @@ detect_os() {
     esac
 }
 
+# ============================================================================
+# Vim Installation, Update, Uninstall, and Configuration Functions
+# ============================================================================
+
+# Install vim text editor
 install_vim() {
     log_info "Installing vim..."
     detect_os
@@ -42,6 +62,7 @@ install_vim() {
     vim --version | head -1
 }
 
+# Update vim to the latest version
 update_vim() {
     log_info "Updating vim..."
     detect_os
@@ -51,6 +72,7 @@ update_vim() {
     vim --version | head -1
 }
 
+# Uninstall vim from the system
 uninstall_vim() {
     log_info "Uninstalling vim..."
     detect_os
@@ -58,12 +80,16 @@ uninstall_vim() {
     log_info "vim uninstalled successfully!"
 }
 
+# Display vim configuration information and instructions
 configure_vim() {
     log_info "vim configuration"
     log_info "Edit ~/.vimrc for configuration"
     [[ -f ~/.vimrc ]] && log_info "Found ~/.vimrc" || log_info "No ~/.vimrc found - create with: vim ~/.vimrc"
 }
 
+# ============================================================================
+# Main Action Dispatcher
+# ============================================================================
 case "$ACTION" in
     install) install_vim ;;
     update) update_vim ;;

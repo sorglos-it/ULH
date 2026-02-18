@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# mariadb - MariaDB Database Server Management
-# Install, update, uninstall, and configure MariaDB for all distributions
+# mysql - MySQL relational database
+# Install, update, uninstall, and configure MySQL for all distributions
 
 set -e
 
@@ -42,36 +42,41 @@ detect_os() {
             PKG_UPDATE="apt-get update"
             PKG_INSTALL="apt-get install -y"
             PKG_UNINSTALL="apt-get remove -y"
-            PKG="mariadb-server"
-            CONF_FILE="/etc/mysql/mariadb.conf.d/50-server.cnf"
+            PKG="mysql-server"
+            CONF_FILE="/etc/mysql/mysql.conf.d/mysqld.cnf"
+            SERVICE="mysql"
             ;;
         fedora|rhel|centos|rocky|alma)
             PKG_UPDATE="dnf check-update || true"
             PKG_INSTALL="dnf install -y"
             PKG_UNINSTALL="dnf remove -y"
-            PKG="mariadb-server"
-            CONF_FILE="/etc/my.cnf.d/mariadb-server.cnf"
+            PKG="mysql-server"
+            CONF_FILE="/etc/my.cnf"
+            SERVICE="mysqld"
             ;;
         arch|manjaro|endeavouros)
             PKG_UPDATE="pacman -Sy"
             PKG_INSTALL="pacman -S --noconfirm"
             PKG_UNINSTALL="pacman -R --noconfirm"
-            PKG="mariadb"
+            PKG="mysql"
             CONF_FILE="/etc/mysql/my.cnf"
+            SERVICE="mysqld"
             ;;
         opensuse*|sles)
             PKG_UPDATE="zypper refresh"
             PKG_INSTALL="zypper install -y"
             PKG_UNINSTALL="zypper remove -y"
-            PKG="mariadb"
+            PKG="mysql-community-server"
             CONF_FILE="/etc/my.cnf"
+            SERVICE="mysqld"
             ;;
         alpine)
             PKG_UPDATE="apk update"
             PKG_INSTALL="apk add"
             PKG_UNINSTALL="apk del"
-            PKG="mariadb"
+            PKG="mysql"
             CONF_FILE="/etc/my.cnf"
+            SERVICE="mysqld"
             ;;
         *)
             log_error "Unsupported distribution: $OS_DISTRO"
@@ -79,70 +84,87 @@ detect_os() {
     esac
 }
 
-install_mariadb() {
-    log_info "Installing MariaDB..."
+install_mysql() {
+    log_info "Installing MySQL..."
     detect_os
     
+    # Update package manager
     sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $PKG || log_error "Failed to install MariaDB"
     
-    sudo systemctl enable mariadb
-    sudo systemctl start mariadb
+    # Install MySQL
+    sudo $PKG_INSTALL $PKG || log_error "Failed to install MySQL"
     
-    log_info "MariaDB installed and started!"
+    # Enable and start service
+    sudo systemctl enable $SERVICE
+    sudo systemctl start $SERVICE
+    
+    log_info "MySQL installed and started!"
+    mysql --version || true
 }
 
-update_mariadb() {
-    log_info "Updating MariaDB..."
+update_mysql() {
+    log_info "Updating MySQL..."
     detect_os
     
+    # Update package manager
     sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $PKG || log_error "Failed to update MariaDB"
-    sudo systemctl restart mariadb
     
-    log_info "MariaDB updated!"
+    # Update MySQL
+    sudo $PKG_INSTALL $PKG || log_error "Failed to update MySQL"
+    
+    # Restart service
+    sudo systemctl restart $SERVICE
+    
+    log_info "MySQL updated!"
 }
 
-uninstall_mariadb() {
-    log_warn "Uninstalling MariaDB..."
+uninstall_mysql() {
+    log_warn "Uninstalling MySQL..."
     detect_os
     
-    sudo systemctl stop mariadb || true
-    sudo systemctl disable mariadb || true
-    sudo $PKG_UNINSTALL $PKG || log_error "Failed to uninstall MariaDB"
+    # Stop and disable service
+    sudo systemctl stop $SERVICE || true
+    sudo systemctl disable $SERVICE || true
     
-    [[ "$DELETE_DATA" == "yes" ]] && sudo rm -rf /var/lib/mysql || true
+    # Uninstall MySQL
+    sudo $PKG_UNINSTALL $PKG || log_error "Failed to uninstall MySQL"
+    
+    # Remove data if requested
+    [[ "$DELETE_DATA" == "yes" ]] && sudo rm -rf /var/lib/mysql* || true
     [[ "$DELETE_CONFIG" == "yes" ]] && sudo rm -rf /etc/mysql* || true
     
-    log_info "MariaDB uninstalled!"
+    log_info "MySQL uninstalled!"
 }
 
-config_mariadb() {
-    log_info "Configuring MariaDB..."
+config_mysql() {
+    log_info "Configuring MySQL..."
     detect_os
     
-    [[ ! -f "$CONF_FILE" ]] && log_error "Config file not found: $CONF_FILE"
+    # Display connection information
+    log_info "MySQL Configuration:"
+    log_info "Default user: root"
+    log_info "Default port: 3306"
+    log_info "Socket location: /var/run/mysqld/mysqld.sock"
     
-    [[ -n "$MAX_CONNECTIONS" ]] && sudo sed -i "s/^max_connections.*/max_connections = $MAX_CONNECTIONS/" "$CONF_FILE"
-    [[ -n "$INNODB_BUFFER" ]] && sudo sed -i "s/^innodb_buffer_pool_size.*/innodb_buffer_pool_size = $INNODB_BUFFER/" "$CONF_FILE"
-    [[ -n "$BIND_ADDRESS" ]] && sudo sed -i "s/^bind-address.*/bind-address = $BIND_ADDRESS/" "$CONF_FILE"
+    # Ensure service is enabled and running
+    sudo systemctl enable $SERVICE
+    sudo systemctl start $SERVICE
     
-    sudo systemctl restart mariadb
-    log_info "MariaDB configured!"
+    log_info "MySQL configured and running!"
 }
 
 case "$ACTION" in
     install)
-        install_mariadb
+        install_mysql
         ;;
     update)
-        update_mariadb
+        update_mysql
         ;;
     uninstall)
-        uninstall_mariadb
+        uninstall_mysql
         ;;
     config)
-        config_mariadb
+        config_mysql
         ;;
     *)
         log_error "Unknown action: $ACTION"

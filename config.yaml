@@ -1,473 +1,783 @@
-# ============================================================================
-# LIAUH Configuration - System Scripts
-# Path prefix: scripts/
-# ============================================================================
+categories:
+  Essential Tools:
+    description: "System utilities and tools"
+  Web Servers:
+    description: "HTTP/HTTPS web servers"
+  Database:
+    description: "Database management systems"
+  Containerization:
+    description: "Container and orchestration tools"
+  Programming Languages:
+    description: "Development language runtimes"
+  Logging & Monitoring:
+    description: "System logging and monitoring"
+  Networking:
+    description: "Network tools and VPN"
+  System Management:
+    description: "System configuration and management"
 
 scripts:
-  debian:
-    description: "Debian system update"
-    category: "System Updates"
-    file: "debian.sh"
-    needs_sudo: true
-    os_only: debian
-    
-    actions:
-      - name: "update"
-        parameter: "update"
-        description: "Update Debian system to latest version"
-        prompts: []
-
-  ubuntu:
-    description: "Ubuntu system management (updates & Pro)"
-    category: "System Updates"
-    file: "ubuntu.sh"
-    needs_sudo: true
-    os_only: ubuntu
-    
-    actions:
-      - name: "update"
-        parameter: "update"
-        description: "Update system (handles 25.04 → 25.10 upgrades)"
-        prompts: []
-      
-      - name: "ubuntu-pro"
-        parameter: "pro"
-        description: "Attach Ubuntu Pro subscription"
-        prompts:
-          - question: "Ubuntu Pro subscription token?"
-            variable: "KEY"
-            type: "text"
-            default: ""
-      
-      - name: "detach"
-        parameter: "detach"
-        description: "Detach Ubuntu Pro subscription"
-        prompts: []
-
-  mariadb:
-    description: "MariaDB database server management"
-    category: "Database"
-    file: "mariadb.sh"
-    needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-    
+  # Essential Tools (13)
+  curl:
+    description: "HTTP requests utility"
+    category: "Essential Tools"
+    file: "curl.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
     actions:
       - name: "install"
         parameter: "install"
-        description: "Install MariaDB"
-        prompts:
-          - question: "Root password for MariaDB?"
-            variable: "ROOT_PASSWORD"
-            type: "text"
-            default: ""
-      
+        description: "Install curl"
       - name: "update"
         parameter: "update"
-        description: "Update MariaDB"
-        prompts: []
-      
+        description: "Update curl"
       - name: "uninstall"
         parameter: "uninstall"
-        description: "Uninstall MariaDB"
-        prompts:
-          - question: "Delete databases (/var/lib/mysql)?"
-            variable: "DELETE_DATA"
-            type: "yes/no"
-            default: "no"
-          
-          - question: "Delete configuration files (/etc/mysql*)?"
-            variable: "DELETE_CONFIG"
-            type: "yes/no"
-            default: "no"
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure MariaDB settings"
-        prompts:
-          - question: "Max connections? (leave empty for default)"
-            variable: "MAX_CONNECTIONS"
-            type: "text"
-            default: ""
-          
-          - question: "InnoDB buffer pool size? (e.g., 256M, 1G)"
-            variable: "INNODB_BUFFER"
-            type: "text"
-            default: ""
-          
-          - question: "Bind address? (default: 127.0.0.1)"
-            variable: "BIND_ADDRESS"
-            type: "text"
-            default: "127.0.0.1"
-          
-          - question: "Default character set? (default: utf8mb4)"
-            variable: "CHARSET"
-            type: "text"
-            default: "utf8mb4"
+        description: "Uninstall curl"
 
-  docker:
-    description: "Docker container platform management"
-    category: "Tools"
-    file: "docker.sh"
-    needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-    
+  wget:
+    description: "HTTP/FTP download utility"
+    category: "Essential Tools"
+    file: "wget.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
     actions:
       - name: "install"
         parameter: "install"
-        description: "Install Docker"
-        prompts: []
-      
+        description: "Install wget"
       - name: "update"
         parameter: "update"
-        description: "Update Docker"
-        prompts: []
-      
+        description: "Update wget"
       - name: "uninstall"
         parameter: "uninstall"
-        description: "Uninstall Docker"
-        prompts:
-          - question: "Delete Docker images?"
-            variable: "DELETE_IMAGES"
-            type: "yes/no"
-            default: "no"
-          
-          - question: "Delete Docker volumes?"
-            variable: "DELETE_VOLUMES"
-            type: "yes/no"
-            default: "no"
-      
+        description: "Uninstall wget"
+
+  git:
+    description: "Version control system"
+    category: "Essential Tools"
+    file: "git.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install git"
+      - name: "update"
+        parameter: "update"
+        description: "Update git"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall git"
       - name: "config"
         parameter: "config"
-        description: "Configure Docker daemon"
+        description: "Configure git user"
         prompts:
-          - question: "Storage driver? (e.g., overlay2, btrfs - leave empty for default)"
-            variable: "STORAGE_DRIVER"
+          - question: "Git username?"
+            variable: "GIT_USER"
             type: "text"
             default: ""
-          
-          - question: "Log driver? (e.g., json-file, syslog - leave empty for default)"
-            variable: "LOG_DRIVER"
+          - question: "Git email?"
+            variable: "GIT_EMAIL"
             type: "text"
             default: ""
-          
-          - question: "Registry mirror URL? (leave empty for none)"
-            variable: "REGISTRY_MIRROR"
-            type: "text"
-            default: ""
-          
-          - question: "Max concurrent downloads? (leave empty for default)"
-            variable: "MAX_CONCURRENT_DOWNLOADS"
+
+  vim:
+    description: "Advanced text editor"
+    category: "Essential Tools"
+    file: "vim.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install vim"
+      - name: "update"
+        parameter: "update"
+        description: "Update vim"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall vim"
+      - name: "config"
+        parameter: "config"
+        description: "Configure vim"
+
+  nano:
+    description: "Simple text editor"
+    category: "Essential Tools"
+    file: "nano.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install nano"
+      - name: "update"
+        parameter: "update"
+        description: "Update nano"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall nano"
+
+  htop:
+    description: "System resource monitor"
+    category: "Essential Tools"
+    file: "htop.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install htop"
+      - name: "update"
+        parameter: "update"
+        description: "Update htop"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall htop"
+
+  tmux:
+    description: "Terminal multiplexer"
+    category: "Essential Tools"
+    file: "tmux.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install tmux"
+      - name: "update"
+        parameter: "update"
+        description: "Update tmux"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall tmux"
+      - name: "config"
+        parameter: "config"
+        description: "Configure tmux"
+
+  screen:
+    description: "Terminal multiplexer"
+    category: "Essential Tools"
+    file: "screen.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install screen"
+      - name: "update"
+        parameter: "update"
+        description: "Update screen"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall screen"
+
+  openssh:
+    description: "SSH server and client"
+    category: "Essential Tools"
+    file: "openssh.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install and enable SSH"
+      - name: "update"
+        parameter: "update"
+        description: "Update SSH"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall SSH"
+
+  net-tools:
+    description: "Network utilities (ifconfig, netstat)"
+    category: "Essential Tools"
+    file: "net-tools.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install net-tools"
+      - name: "update"
+        parameter: "update"
+        description: "Update net-tools"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall net-tools"
+
+  build-essential:
+    description: "Development tools and compilers"
+    category: "Essential Tools"
+    file: "build-essential.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install build tools"
+      - name: "update"
+        parameter: "update"
+        description: "Update build tools"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall build tools"
+
+  jq:
+    description: "JSON query processor"
+    category: "Essential Tools"
+    file: "jq.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install jq"
+      - name: "update"
+        parameter: "update"
+        description: "Update jq"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall jq"
+
+  ufw:
+    description: "Uncomplicated Firewall"
+    category: "Essential Tools"
+    file: "ufw.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install firewall"
+      - name: "enable"
+        parameter: "enable"
+        description: "Enable firewall"
+      - name: "disable"
+        parameter: "disable"
+        description: "Disable firewall"
+      - name: "config"
+        parameter: "config"
+        description: "Configure firewall rule"
+        prompts:
+          - question: "Port to allow?"
+            variable: "PORT"
             type: "number"
-            default: ""
+            default: "80"
 
+  # Web Servers (2)
   apache:
-    description: "Apache web server management"
-    category: "Webserver"
+    description: "Apache HTTP Server"
+    category: "Web Servers"
     file: "apache.sh"
     needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
+    os_family: [debian, redhat, arch, suse, alpine]
     actions:
       - name: "install"
         parameter: "install"
         description: "Install Apache"
-        prompts: []
-      
       - name: "update"
         parameter: "update"
         description: "Update Apache"
-        prompts: []
-      
       - name: "uninstall"
         parameter: "uninstall"
         description: "Uninstall Apache"
         prompts:
-          - question: "Delete configuration files?"
+          - question: "Delete config files?"
             variable: "DELETE_CONFIG"
             type: "yes/no"
             default: "no"
-      
       - name: "vhosts"
         parameter: "vhosts"
-        description: "Configure Virtual Hosts"
+        description: "Configure virtual hosts"
         prompts:
-          - question: "Virtual host name? (e.g., example.com)"
+          - question: "Virtual host name?"
             variable: "VHOST_NAME"
             type: "text"
-            default: "example.com"
-          
-          - question: "Document root? (e.g., /var/www/example)"
+            default: ""
+          - question: "Document root?"
             variable: "VHOST_ROOT"
             type: "text"
-            default: "/var/www/example"
-      
-      - name: "default"
-        parameter: "default"
-        description: "Configure default settings"
-        prompts:
-          - question: "Server admin email? (e.g., admin@example.com)"
-            variable: "SERVER_ADMIN"
-            type: "text"
-            default: "admin@localhost"
-          
-          - question: "Modules to enable? (comma-separated: rewrite,ssl,proxy)"
-            variable: "ENABLE_MODULES"
-            type: "text"
-            default: ""
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure performance and logging"
-        prompts:
-          - question: "Max request workers? (leave empty for default)"
-            variable: "MAX_REQUESTS"
-            type: "number"
-            default: ""
-          
-          - question: "Log level? (debug, info, notice, warn, error, crit, alert, emerg)"
-            variable: "LOG_LEVEL"
-            type: "text"
-            default: "warn"
+            default: "/var/www/html"
 
   nginx:
-    description: "Nginx web server management"
-    category: "Webserver"
+    description: "Nginx HTTP Server"
+    category: "Web Servers"
     file: "nginx.sh"
     needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
+    os_family: [debian, redhat, arch, suse, alpine]
     actions:
       - name: "install"
         parameter: "install"
         description: "Install Nginx"
-        prompts: []
-      
       - name: "update"
         parameter: "update"
         description: "Update Nginx"
-        prompts: []
-      
       - name: "uninstall"
         parameter: "uninstall"
         description: "Uninstall Nginx"
         prompts:
-          - question: "Delete configuration files?"
+          - question: "Delete config files?"
             variable: "DELETE_CONFIG"
             type: "yes/no"
             default: "no"
-      
       - name: "vhosts"
         parameter: "vhosts"
-        description: "Configure Server Block (Virtual Host)"
+        description: "Configure server blocks"
         prompts:
-          - question: "Server name? (e.g., example.com)"
+          - question: "Server name?"
             variable: "SERVER_NAME"
             type: "text"
-            default: "example.com"
-          
-          - question: "Root path? (e.g., /var/www/example)"
+            default: ""
+          - question: "Root path?"
             variable: "ROOT_PATH"
             type: "text"
-            default: "/var/www/example"
-      
-      - name: "default"
-        parameter: "default"
-        description: "Configure default settings"
-        prompts:
-          - question: "Enable gzip compression?"
-            variable: "ENABLE_GZIP"
-            type: "yes/no"
-            default: "yes"
-          
-          - question: "Client max body size? (e.g., 100M - leave empty for default)"
-            variable: "CLIENT_MAX_BODY"
-            type: "text"
-            default: ""
-          
-          - question: "Hide Nginx version?"
-            variable: "HIDE_VERSION"
-            type: "yes/no"
-            default: "yes"
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure performance and logging"
-        prompts:
-          - question: "Worker processes? (leave empty for auto)"
-            variable: "WORKER_PROCESSES"
-            type: "number"
-            default: ""
-          
-          - question: "Worker connections per process? (leave empty for default)"
-            variable: "WORKER_CONNECTIONS"
-            type: "number"
-            default: ""
-          
-          - question: "Error log level? (debug, info, warn, error, crit, alert, emerg)"
-            variable: "LOG_LEVEL"
-            type: "text"
-            default: "warn"
+            default: "/var/www/html"
 
-  portainer:
-    description: "Portainer Docker management UI (Main/Server)"
-    category: "Tools"
-    file: "portainer.sh"
+  # Database (3)
+  mariadb:
+    description: "MariaDB database server"
+    category: "Database"
+    file: "mariadb.sh"
     needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
+    os_family: [debian, redhat]
     actions:
       - name: "install"
         parameter: "install"
-        description: "Install Portainer Main"
-        prompts:
-          - question: "Edge Agent port? (default: 8000)"
-            variable: "EDGE_PORT"
-            type: "number"
-            default: "8000"
-          
-          - question: "Web UI port? (default: 9000)"
-            variable: "WEB_PORT"
-            type: "number"
-            default: "9000"
-      
+        description: "Install MariaDB"
       - name: "update"
         parameter: "update"
-        description: "Update Portainer"
-        prompts:
-          - question: "Edge Agent port? (default: 8000)"
-            variable: "EDGE_PORT"
-            type: "number"
-            default: "8000"
-          
-          - question: "Web UI port? (default: 9000)"
-            variable: "WEB_PORT"
-            type: "number"
-            default: "9000"
-      
+        description: "Update MariaDB"
       - name: "uninstall"
         parameter: "uninstall"
-        description: "Uninstall Portainer"
+        description: "Uninstall MariaDB"
         prompts:
-          - question: "Delete Portainer data?"
+          - question: "Delete data?"
             variable: "DELETE_DATA"
             type: "yes/no"
             default: "no"
+          - question: "Delete config?"
+            variable: "DELETE_CONFIG"
+            type: "yes/no"
+            default: "no"
+      - name: "config"
+        parameter: "config"
+        description: "Configure MariaDB"
+        prompts:
+          - question: "Max connections?"
+            variable: "MAX_CONNECTIONS"
+            type: "number"
+            default: "100"
+          - question: "InnoDB buffer pool (e.g., 512M)?"
+            variable: "INNODB_BUFFER"
+            type: "text"
+            default: "512M"
+          - question: "Bind address?"
+            variable: "BIND_ADDRESS"
+            type: "text"
+            default: "127.0.0.1"
 
+  postgres:
+    description: "PostgreSQL database server"
+    category: "Database"
+    file: "postgres.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install PostgreSQL"
+      - name: "update"
+        parameter: "update"
+        description: "Update PostgreSQL"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall PostgreSQL"
+      - name: "config"
+        parameter: "config"
+        description: "Configure PostgreSQL"
+
+  mysql:
+    description: "MySQL database server"
+    category: "Database"
+    file: "mysql.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install MySQL"
+      - name: "update"
+        parameter: "update"
+        description: "Update MySQL"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall MySQL"
+      - name: "config"
+        parameter: "config"
+        description: "Configure MySQL"
+
+  # Containerization (3)
+  docker:
+    description: "Docker container runtime"
+    category: "Containerization"
+    file: "docker.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install Docker"
+      - name: "update"
+        parameter: "update"
+        description: "Update Docker"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall Docker"
+        prompts:
+          - question: "Delete container images?"
+            variable: "DELETE_IMAGES"
+            type: "yes/no"
+            default: "no"
+      - name: "config"
+        parameter: "config"
+        description: "Configure Docker"
+        prompts:
+          - question: "Storage driver (overlay2, etc)?"
+            variable: "STORAGE_DRIVER"
+            type: "text"
+            default: "overlay2"
+          - question: "Log driver (json-file, etc)?"
+            variable: "LOG_DRIVER"
+            type: "text"
+            default: "json-file"
+
+  portainer:
+    description: "Portainer container management UI"
+    category: "Containerization"
+    file: "portainer.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install Portainer"
+      - name: "update"
+        parameter: "update"
+        description: "Update Portainer"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall Portainer"
+
+  # Programming Languages (6)
+  nodejs:
+    description: "Node.js runtime and npm"
+    category: "Programming Languages"
+    file: "nodejs.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install Node.js"
+      - name: "update"
+        parameter: "update"
+        description: "Update Node.js"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall Node.js"
+
+  python:
+    description: "Python 3 runtime and pip"
+    category: "Programming Languages"
+    file: "python.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install Python"
+      - name: "update"
+        parameter: "update"
+        description: "Update Python"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall Python"
+
+  ruby:
+    description: "Ruby runtime and gem"
+    category: "Programming Languages"
+    file: "ruby.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install Ruby"
+      - name: "update"
+        parameter: "update"
+        description: "Update Ruby"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall Ruby"
+
+  golang:
+    description: "Go programming language"
+    category: "Programming Languages"
+    file: "golang.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install Go"
+      - name: "update"
+        parameter: "update"
+        description: "Update Go"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall Go"
+
+  php:
+    description: "PHP runtime and CLI"
+    category: "Programming Languages"
+    file: "php.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install PHP"
+      - name: "update"
+        parameter: "update"
+        description: "Update PHP"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall PHP"
+
+  perl:
+    description: "Perl runtime and modules"
+    category: "Programming Languages"
+    file: "perl.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install Perl"
+      - name: "update"
+        parameter: "update"
+        description: "Update Perl"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall Perl"
+
+  # Logging & Monitoring (4)
+  rsyslog:
+    description: "System logging daemon"
+    category: "Logging & Monitoring"
+    file: "rsyslog.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install rsyslog"
+      - name: "update"
+        parameter: "update"
+        description: "Update rsyslog"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall rsyslog"
+      - name: "config"
+        parameter: "config"
+        description: "Configure rsyslog"
+
+  syslog-ng:
+    description: "Advanced system logging"
+    category: "Logging & Monitoring"
+    file: "syslog-ng.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install syslog-ng"
+      - name: "update"
+        parameter: "update"
+        description: "Update syslog-ng"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall syslog-ng"
+      - name: "config"
+        parameter: "config"
+        description: "Configure syslog-ng"
+
+  fail2ban:
+    description: "Brute-force attack protection"
+    category: "Logging & Monitoring"
+    file: "fail2ban.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install fail2ban"
+      - name: "update"
+        parameter: "update"
+        description: "Update fail2ban"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall fail2ban"
+      - name: "config"
+        parameter: "config"
+        description: "Configure fail2ban"
+
+  logrotate:
+    description: "Log rotation utility"
+    category: "Logging & Monitoring"
+    file: "logrotate.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install logrotate"
+      - name: "update"
+        parameter: "update"
+        description: "Update logrotate"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall logrotate"
+      - name: "config"
+        parameter: "config"
+        description: "Configure logrotate"
+
+  # Networking (3)
+  bind-utils:
+    description: "DNS tools (dig, nslookup, host)"
+    category: "Networking"
+    file: "bind-utils.sh"
+    needs_sudo: false
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install bind-utils"
+      - name: "update"
+        parameter: "update"
+        description: "Update bind-utils"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall bind-utils"
+      - name: "config"
+        parameter: "config"
+        description: "DNS tools info"
+
+  wireguard:
+    description: "Modern VPN protocol"
+    category: "Networking"
+    file: "wireguard.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install WireGuard"
+      - name: "update"
+        parameter: "update"
+        description: "Update WireGuard"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall WireGuard"
+      - name: "config"
+        parameter: "config"
+        description: "Configure WireGuard"
+
+  openvpn:
+    description: "OpenVPN tunneling protocol"
+    category: "Networking"
+    file: "openvpn.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install OpenVPN"
+      - name: "update"
+        parameter: "update"
+        description: "Update OpenVPN"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall OpenVPN"
+      - name: "config"
+        parameter: "config"
+        description: "Configure OpenVPN"
+
+  # System Management (6)
   linux:
-    description: "Linux system configuration"
-    category: "System"
+    description: "Network, DNS, users, groups configuration"
+    category: "System Management"
     file: "linux.sh"
     needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    os_exclude:
-      - proxmox
-    
+    os_family: [debian, redhat, arch, suse, alpine]
     actions:
       - name: "network"
         parameter: "network"
-        description: "Configure network (DHCP or Static IP)"
+        description: "Configure network interface"
         prompts:
-          - question: "Network interface? (e.g., eth0, ens0)"
+          - question: "Interface name (eth0, etc)?"
             variable: "INTERFACE"
             type: "text"
             default: "eth0"
-          
-          - question: "Use DHCP?"
+          - question: "Use DHCP? (yes/no)"
             variable: "DHCP_MODE"
             type: "yes/no"
             default: "yes"
-          
-          - question: "IPv4 address and netmask? (e.g., 192.168.1.100/24 - only for static)"
+          - question: "IP address (if static)?"
             variable: "IP_ADDRESS"
             type: "text"
             default: ""
-          
-          - question: "IPv4 gateway? (only for static)"
+          - question: "Gateway (if static)?"
             variable: "GATEWAY"
             type: "text"
             default: ""
-          
-          - question: "IPv6 address and prefix? (e.g., fd00::100/64 - optional)"
-            variable: "IPV6_ADDRESS"
-            type: "text"
-            default: ""
-          
-          - question: "IPv6 gateway? (optional)"
-            variable: "IPV6_GATEWAY"
-            type: "text"
-            default: ""
-          
-          - question: "DNS server?"
-            variable: "DNS_SERVER"
-            type: "text"
-            default: "8.8.8.8"
-      
       - name: "dns"
         parameter: "dns"
-        description: "Configure DNS server"
+        description: "Configure DNS"
         prompts:
-          - question: "DNS server address?"
+          - question: "DNS server? (e.g., 8.8.8.8)"
             variable: "DNS_SERVER"
             type: "text"
             default: "8.8.8.8"
-      
       - name: "hostname"
         parameter: "hostname"
-        description: "Change system hostname"
+        description: "Set hostname"
         prompts:
           - question: "New hostname?"
             variable: "HOSTNAME"
             type: "text"
-            default: "linux-host"
-      
+            default: ""
       - name: "user-add"
         parameter: "user-add"
-        description: "Add new user"
+        description: "Add user account"
         prompts:
           - question: "Username?"
             variable: "USERNAME"
             type: "text"
             default: ""
-          
-          - question: "Shell? (e.g., /bin/bash, /bin/zsh)"
+          - question: "Shell? (/bin/bash, /bin/sh, etc)"
             variable: "SHELL"
             type: "text"
             default: "/bin/bash"
-      
       - name: "user-delete"
         parameter: "user-delete"
-        description: "Delete user"
+        description: "Delete user account"
         prompts:
           - question: "Username to delete?"
             variable: "USERNAME"
             type: "text"
             default: ""
-      
       - name: "user-password"
         parameter: "user-password"
         description: "Change user password"
@@ -476,21 +786,18 @@ scripts:
             variable: "USERNAME"
             type: "text"
             default: ""
-          
           - question: "New password?"
             variable: "PASSWORD"
             type: "text"
             default: ""
-      
       - name: "group-create"
         parameter: "group-create"
-        description: "Create new group"
+        description: "Create user group"
         prompts:
           - question: "Group name?"
             variable: "GROUPNAME"
             type: "text"
             default: ""
-      
       - name: "user-to-group"
         parameter: "user-to-group"
         description: "Add user to group"
@@ -499,462 +806,94 @@ scripts:
             variable: "USERNAME"
             type: "text"
             default: ""
-          
           - question: "Group name?"
             variable: "GROUPNAME"
             type: "text"
             default: ""
-      
       - name: "ca-cert"
         parameter: "ca-cert"
-        description: "Install CA certificate from a server"
+        description: "Install CA certificate"
         prompts:
           - question: "CA server hostname? (e.g., cert.my.lan)"
             variable: "SERVER"
             type: "text"
             default: "cert.my.lan"
-      
       - name: "install-zip"
         parameter: "install-zip"
         description: "Install zip and unzip"
-        prompts: []
-      
       - name: "uninstall-zip"
         parameter: "uninstall-zip"
         description: "Uninstall zip and unzip"
-        prompts: []
+
+  ubuntu:
+    description: "Ubuntu system management"
+    category: "System Management"
+    file: "ubuntu.sh"
+    needs_sudo: true
+    os_only: "ubuntu"
+    actions:
+      - name: "update"
+        parameter: "update"
+        description: "Update Ubuntu system"
+      - name: "pro"
+        parameter: "pro"
+        description: "Attach Ubuntu Pro"
+        prompts:
+          - question: "Ubuntu Pro key?"
+            variable: "KEY"
+            type: "text"
+            default: ""
+      - name: "detach"
+        parameter: "detach"
+        description: "Detach Ubuntu Pro"
+
+  debian:
+    description: "Debian system management"
+    category: "System Management"
+    file: "debian.sh"
+    needs_sudo: true
+    os_only: "debian"
+    actions:
+      - name: "update"
+        parameter: "update"
+        description: "Update Debian system"
+      - name: "dist-upgrade"
+        parameter: "dist-upgrade"
+        description: "Distribution upgrade"
 
   proxmox:
     description: "Proxmox VE management"
-    category: "System"
+    category: "System Management"
     file: "proxmox.sh"
     needs_sudo: true
-    os_only: proxmox
-    
+    os_only: "proxmox"
     actions:
-      - name: "stop-all"
-        parameter: "stop-all"
-        description: "Stop all VMs and LXC containers"
-        prompts: []
-      
-      - name: "language"
-        parameter: "language"
-        description: "Change system language"
-        prompts:
-          - question: "Language? (e.g., de_DE, en_US, en_GB, fr_FR, es_ES, it_IT)"
-            variable: "LANGUAGE"
-            type: "text"
-            default: "de_DE"
-      
-      - name: "qemu-guest-agent"
-        parameter: "qemu-guest-agent"
-        description: "Install QEMU Guest Agent"
-        prompts: []
-      
-      - name: "lxc-ssh-root"
-        parameter: "lxc-ssh-root"
-        description: "Enable SSH root login for LXC (Ubuntu)"
-        prompts: []
-      
-      - name: "lxc-to-template"
-        parameter: "lxc-to-template"
-        description: "Convert LXC container to template"
-        prompts:
-          - question: "Container ID (CTID)?"
-            variable: "CTID"
-            type: "number"
-            default: ""
-      
-      - name: "template-to-lxc"
-        parameter: "template-to-lxc"
-        description: "Convert template to LXC container"
-        prompts:
-          - question: "Container ID (CTID)?"
-            variable: "CTID"
-            type: "number"
-            default: ""
-      
-      - name: "unlock-lxc"
-        parameter: "unlock-lxc"
-        description: "Unlock LXC container"
-        prompts:
-          - question: "Container ID (CTID)?"
-            variable: "CTID"
-            type: "number"
-            default: ""
-
-  nodejs:
-    description: "Node.js and npm management"
-    category: "Programming Languages"
-    file: "nodejs.sh"
-    needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
-    actions:
-      - name: "install"
-        parameter: "install"
-        description: "Install Node.js"
-        prompts:
-          - question: "Node.js version? (default: latest)"
-            variable: "VERSION"
-            type: "text"
-            default: "latest"
-      
       - name: "update"
         parameter: "update"
-        description: "Update Node.js"
-        prompts: []
-      
-      - name: "uninstall"
-        parameter: "uninstall"
-        description: "Uninstall Node.js"
-        prompts: []
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure Node.js/npm"
-        prompts:
-          - question: "npm prefix? (leave empty for default)"
-            variable: "NPM_PREFIX"
-            type: "text"
-            default: ""
-          
-          - question: "NODE_PATH? (leave empty for default)"
-            variable: "NODE_PATH"
-            type: "text"
-            default: ""
-
-  python:
-    description: "Python and pip management"
-    category: "Programming Languages"
-    file: "python.sh"
-    needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
-    actions:
-      - name: "install"
-        parameter: "install"
-        description: "Install Python"
-        prompts:
-          - question: "Python version? (default: 3)"
-            variable: "VERSION"
-            type: "text"
-            default: "3"
-      
-      - name: "update"
-        parameter: "update"
-        description: "Update Python"
-        prompts: []
-      
-      - name: "uninstall"
-        parameter: "uninstall"
-        description: "Uninstall Python"
-        prompts: []
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure Python/pip"
-        prompts:
-          - question: "Require virtualenv for pip?"
-            variable: "PIP_REQUIRE_VIRTUALENV"
-            type: "yes/no"
-            default: "no"
-          
-          - question: "PYTHONPATH? (leave empty for default)"
-            variable: "PYTHONPATH"
-            type: "text"
-            default: ""
-
-  ruby:
-    description: "Ruby and gem management"
-    category: "Programming Languages"
-    file: "ruby.sh"
-    needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
-    actions:
-      - name: "install"
-        parameter: "install"
-        description: "Install Ruby"
-        prompts:
-          - question: "Ruby version? (default: latest)"
-            variable: "VERSION"
-            type: "text"
-            default: "latest"
-      
-      - name: "update"
-        parameter: "update"
-        description: "Update Ruby"
-        prompts: []
-      
-      - name: "uninstall"
-        parameter: "uninstall"
-        description: "Uninstall Ruby"
-        prompts: []
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure Ruby/gem"
-        prompts:
-          - question: "GEM_HOME? (leave empty for default)"
-            variable: "GEM_HOME"
-            type: "text"
-            default: ""
-          
-          - question: "GEM_PATH? (leave empty for default)"
-            variable: "GEM_PATH"
-            type: "text"
-            default: ""
-
-  golang:
-    description: "Go programming language"
-    category: "Programming Languages"
-    file: "golang.sh"
-    needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
-    actions:
-      - name: "install"
-        parameter: "install"
-        description: "Install Go"
-        prompts: []
-      
-      - name: "update"
-        parameter: "update"
-        description: "Update Go"
-        prompts: []
-      
-      - name: "uninstall"
-        parameter: "uninstall"
-        description: "Uninstall Go"
-        prompts: []
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure Go"
-        prompts:
-          - question: "GOPATH? (leave empty for default)"
-            variable: "GOPATH"
-            type: "text"
-            default: ""
-          
-          - question: "GOROOT? (leave empty for default)"
-            variable: "GOROOT"
-            type: "text"
-            default: ""
-
-  php:
-    description: "PHP and composer management"
-    category: "Programming Languages"
-    file: "php.sh"
-    needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
-    actions:
-      - name: "install"
-        parameter: "install"
-        description: "Install PHP"
-        prompts:
-          - question: "Install Composer?"
-            variable: "COMPOSER"
-            type: "yes/no"
-            default: "no"
-      
-      - name: "update"
-        parameter: "update"
-        description: "Update PHP"
-        prompts: []
-      
-      - name: "uninstall"
-        parameter: "uninstall"
-        description: "Uninstall PHP"
-        prompts: []
-      
-      - name: "composer"
-        parameter: "composer"
-        description: "Install Composer (standalone)"
-        prompts: []
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure PHP"
-        prompts:
-          - question: "memory_limit? (e.g., 256M)"
-            variable: "MEMORY_LIMIT"
-            type: "text"
-            default: ""
-          
-          - question: "max_execution_time? (seconds)"
-            variable: "MAX_EXECUTION_TIME"
-            type: "text"
-            default: ""
-
-  perl:
-    description: "Perl and CPAN management"
-    category: "Programming Languages"
-    file: "perl.sh"
-    needs_sudo: true
-    os_family:
-      - debian
-      - redhat
-      - arch
-      - suse
-      - alpine
-    
-    actions:
-      - name: "install"
-        parameter: "install"
-        description: "Install Perl"
-        prompts: []
-      
-      - name: "update"
-        parameter: "update"
-        description: "Update Perl"
-        prompts: []
-      
-      - name: "uninstall"
-        parameter: "uninstall"
-        description: "Uninstall Perl"
-        prompts: []
-      
-      - name: "cpan-module"
-        parameter: "cpan-module"
-        description: "Install CPAN module"
-        prompts:
-          - question: "CPAN module name? (e.g., LWP::UserAgent)"
-            variable: "MODULE"
-            type: "text"
-            default: ""
-      
-      - name: "config"
-        parameter: "config"
-        description: "Configure Perl"
-        prompts:
-          - question: "PERL5LIB? (leave empty for default)"
-            variable: "PERL5LIB"
-            type: "text"
-            default: ""
+        description: "Update Proxmox"
+      - name: "maintenance-mode"
+        parameter: "maintenance-mode"
+        description: "Toggle maintenance mode"
 
   pikvm-v3:
-    description: "PiKVM v3 management"
-    category: "System Updates"
+    description: "PiKVM v3 appliance management"
+    category: "System Management"
     file: "pikvm-v3.sh"
     needs_sudo: true
-    os_only: arch
-    
+    os_only: "arch"
     actions:
       - name: "update"
         parameter: "update"
-        description: "Update PiKVM v3 system"
-        prompts: []
-      
+        description: "Update PiKVM v3"
       - name: "mount-iso"
         parameter: "mount-iso"
-        description: "Mount ISO directory (rw, create symlink)"
-        prompts: []
-      
+        description: "Mount ISO directory (rw)"
       - name: "dismount-iso"
         parameter: "dismount-iso"
         description: "Dismount ISO directory (ro)"
-        prompts: []
-      
       - name: "oled-enable"
         parameter: "oled-enable"
         description: "Enable OLED display"
-        prompts: []
-      
       - name: "vnc-enable"
         parameter: "vnc-enable"
-        description: "Enable VNC (with DE keymap)"
-        prompts: []
-      
-      - name: "vnc-user"
-        parameter: "vnc-user"
-        description: "Set VNC user credentials"
-        prompts:
-          - question: "VNC username?"
-            variable: "VNC_USERNAME"
-            type: "text"
-            default: "admin"
-          
-          - question: "VNC password?"
-            variable: "VNC_PASSWORD"
-            type: "text"
-            default: "admin"
-      
-      - name: "hostname"
-        parameter: "hostname"
-        description: "Change hostname"
-        prompts:
-          - question: "New hostname? (e.g., pikvm.my.lan)"
-            variable: "HOSTNAME"
-            type: "text"
-            default: "pikvm.my.lan"
-      
-      - name: "rtc-enable"
-        parameter: "rtc-enable"
-        description: "Enable RTC (for Geekworm RTC module)"
-        prompts: []
-      
-      - name: "atx-disable"
-        parameter: "atx-disable"
-        description: "Disable ATX menu"
-        prompts: []
-      
-      - name: "create-usb-img"
-        parameter: "create-usb-img"
-        description: "Create USB stick IMG file"
-        prompts:
-          - question: "USB size in GB? (e.g., 16)"
-            variable: "USB_SIZE_GB"
-            type: "number"
-            default: "16"
-          
-          - question: "IMG filename? (e.g., usb_stick_16gb.img)"
-            variable: "USB_NAME"
-            type: "text"
-            default: "usb_stick_16gb.img"
-      
-      - name: "setup"
-        parameter: "setup"
-        description: "Setup SSL certificate from Step-CA"
-        prompts:
-          - question: "Step-CA server? (e.g., ca.my.lan)"
-            variable: "CA_SERVER"
-            type: "text"
-            default: "ca.my.lan"
-          
-          - question: "PiKVM domain? (e.g., pikvm.my.lan)"
-            variable: "PIKVM_DOMAIN"
-            type: "text"
-            default: "pikvm.my.lan"
-          
-          - question: "ACME server URL?"
-            variable: "ACME_SERVER"
-            type: "text"
-            default: "https://ca.my.lan/acme/acme/directory"
+        description: "Enable VNC server"

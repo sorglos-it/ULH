@@ -1,5 +1,7 @@
 #!/bin/bash
-# Hello World Demo Script
+
+# hello - Hello World Demo Script
+# Simple greeting demonstration script with customizable name parameter
 
 ACTION="${1:-run}"
 

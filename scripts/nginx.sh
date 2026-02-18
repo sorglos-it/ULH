@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Nginx Web Server Management
+# nginx - Nginx Web Server Management
 # Install, update, uninstall, and configure Nginx for all distributions
 
 set -e
