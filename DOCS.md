@@ -450,7 +450,7 @@ All menus use consistent 80-character box formatting:
 
 ```
 +==============================================================================+
-| LIAUH - Linux Install and Update Helper                         VERSION: 0.3 |
+| LIAUH - Linux Install and Update Helper                         VERSION: 0.4 |
 +==============================================================================+
 |
    [menu items here]
@@ -577,4 +577,4 @@ execute_custom_repo_action  # Run custom repo script
 
 ---
 
-**Last Updated:** 2026-02-17 | **Version:** 0.3
+**Last Updated:** 2026-02-19 | **Version:** 0.4
