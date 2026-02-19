@@ -122,7 +122,12 @@ execute_action() {
     if [[ "$needs_sudo" == "true" ]]; then
         # Execute with sudo - password cached by sudo itself
         # Script receives full parameter string and must parse it
-        sudo bash "$script_path" "$param_string" || exit_code=$?
+        # Only use sudo if not running as root
+        if [[ $EUID -ne 0 ]]; then
+            sudo bash "$script_path" "$param_string" || exit_code=$?
+        else
+            bash "$script_path" "$param_string" || exit_code=$?
+        fi
     else
         bash "$script_path" "$param_string" || exit_code=$?
     fi
@@ -208,7 +213,12 @@ execute_custom_repo_action() {
     
     local exit_code=0
     if [[ "$needs_sudo" == "true" ]]; then
-        sudo bash "$script_path" "$param_string" || exit_code=$?
+        # Only use sudo if not running as root
+        if [[ $EUID -ne 0 ]]; then
+            sudo bash "$script_path" "$param_string" || exit_code=$?
+        else
+            bash "$script_path" "$param_string" || exit_code=$?
+        fi
     else
         bash "$script_path" "$param_string" || exit_code=$?
     fi
