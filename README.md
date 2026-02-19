@@ -148,7 +148,8 @@ liauh/
 To add scripts to your custom repository:
 
 ```bash
-cp custom/myrepo/scripts/_template.sh custom/myrepo/scripts/my-script.sh
+mkdir -p custom/myrepo/scripts
+cp scripts/_template.sh custom/myrepo/scripts/my-script.sh
 ```
 
 See **[DOCS.md - Script Development](DOCS.md#script-development)** for detailed guide and how to integrate custom repositories.
