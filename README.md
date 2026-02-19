@@ -46,7 +46,7 @@ Menu flow:
          └─ Actions
 ```
 
-## 🛠️ System Scripts (44)
+## 🛠️ System Scripts (45)
 
 ### Essential Tools (11)
 curl, wget, git, vim, nano, htop, tmux, screen, build-essential, jq, locate
@@ -98,7 +98,7 @@ See **[DOCS.md](DOCS.md#custom-repositories)** for setup.
 liauh/
 ├── liauh.sh              # Entry point (self-updating)
 ├── lib/                  # 7 focused libraries
-├── scripts/              # 42 system management scripts + custom repos
+├── scripts/              # 45 system management scripts + custom repos
 ├── custom/               # Your custom repos
 ├── config.yaml           # System scripts config
 ├── README.md            # This file
@@ -109,7 +109,7 @@ liauh/
 ## 📚 Documentation
 
 - **[DOCS.md](DOCS.md)** - Complete guide: architecture, configuration, templates, troubleshooting
-- **[SCRIPTS.md](SCRIPTS.md)** - All 43 scripts with categories and descriptions
+- **[SCRIPTS.md](SCRIPTS.md)** - All 45 scripts with categories and descriptions
 
 ## 🖥️ Supported Distributions
 
