@@ -111,7 +111,7 @@ Network tools, VPN, DNS ad-blocking, file sharing, and connectivity:
 | Script | Description | Supports |
 |--------|-------------|----------|
 | **openssh** | SSH server and client for secure remote access | All 5 distros |
-| **net-tools** | Network utilities (ifconfig, netstat, etc.) | All 5 distros |
+| **net-tools** | Network utilities (ifconfig, netstat) | All 5 distros |
 | **bind-utils** | DNS tools (dig, nslookup, host) | All 5 distros |
 | **wireguard** | Modern, high-performance VPN protocol | All 5 distros |
 | **openvpn** | Open-source VPN tunneling solution | All 5 distros |
@@ -132,7 +132,7 @@ OS-level management and specialized appliances:
 | **linux** | Core Linux system configuration (network, DNS, users, groups, CA certs) | All 5 distros |
 | **ubuntu** | Ubuntu-specific system management | Ubuntu only |
 | **debian** | Debian-specific system management | Debian only |
-| **proxmox** | Proxmox VE virtualization platform management | Proxmox only |
+| **proxmox** | Proxmox VE virtualization platform management (update, maintenance-mode, list-lxc, list-lxc-running) | Proxmox only |
 | **pikvm-v3** | PiKVM v3 appliance configuration and management | Arch (PiKVM) only |
 | **remotely** | Remotely remote desktop and support software | Debian, Ubuntu, RHEL, CentOS, Rocky, Alma, Fedora, openSUSE, SLES, Amazon Linux |
 

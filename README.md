@@ -70,7 +70,7 @@ rsyslog, syslog-ng, fail2ban, logrotate
 OpenSSH, net-tools, bind-utils, WireGuard, OpenVPN, UFW, Pi-hole, AdGuard Home, Samba, cifs-utils
 
 ### System Management (6)
-Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox, PiKVM v3, Remotely
+Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox (virtualization + LXC), PiKVM v3, Remotely
 
 See **[SCRIPTS.md](SCRIPTS.md)** for complete reference.
 

@@ -65,7 +65,7 @@ liauh/
    - OpenSSH, net-tools, bind-utils, WireGuard, OpenVPN, UFW, Pi-hole, AdGuard Home, Samba, cifs-utils
 
 8. **System Management** (6)
-   - Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox, PiKVM v3, Remotely
+   - Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox (4 actions: update, maintenance-mode, list-lxc, list-lxc-running), PiKVM v3, Remotely
 
 ### Testing Status
 - **Total Scripts**: 45
@@ -116,7 +116,7 @@ SSH keys stored in `custom/keys/` (protected by .gitignore)
 - Flexible prompt system (text, yes/no, number types)
 - Context-aware menus with proper navigation
 
-## Recent Changes (v0.4)
+## Recent Changes (v0.4+)
 
 - Added locate fast file search utility (indexed database)
 - Updated Essential Tools category: 10 → 11 scripts
@@ -126,6 +126,10 @@ SSH keys stored in `custom/keys/` (protected by .gitignore)
 - Updated System Management category: 5 → 6 scripts
 - Total script count: 43 → 44 → 45
 - Enhanced networking, file sharing, and remote support capabilities
+- **Proxmox Enhanced (v0.4+)**:
+  - Added `list-lxc` action: Display all LXC containers (running and offline)
+  - Added `list-lxc-running` action: Display running LXC containers with live IPs
+  - Proxmox now supports 4 actions: update, maintenance-mode, list-lxc, list-lxc-running
 - All documentation updated
 
 ## Security Notes
