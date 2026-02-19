@@ -143,15 +143,15 @@ liauh/
 - No hardcoded credentials (use environment variables)
 - All scripts pass **syntax validation** (bash -n)
 
-## 📝 Creating Scripts
+## 📝 Creating Custom Scripts
 
-Use the template: `scripts/_template.sh`
+To add scripts to your custom repository:
 
 ```bash
-cp scripts/_template.sh scripts/my-script.sh
+cp custom/myrepo/scripts/_template.sh custom/myrepo/scripts/my-script.sh
 ```
 
-See **[DOCS.md - Script Development](DOCS.md#script-development)** for detailed guide.
+See **[DOCS.md - Script Development](DOCS.md#script-development)** for detailed guide and how to integrate custom repositories.
 
 ## 🤝 Contributing
 
