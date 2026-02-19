@@ -5,6 +5,13 @@
 
 set -e
 
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"

@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -74,8 +83,8 @@ install_htop() {
     log_info "Installing htop..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL htop || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL htop || log_error "Failed"
     
     log_info "htop installed!"
     htop --version
@@ -86,8 +95,8 @@ update_htop() {
     log_info "Updating htop..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL htop || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL htop || log_error "Failed"
     
     log_info "htop updated!"
     htop --version
@@ -98,7 +107,7 @@ uninstall_htop() {
     log_info "Uninstalling htop..."
     detect_os
     
-    sudo $PKG_UNINSTALL htop || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL htop || log_error "Failed"
     
     log_info "htop uninstalled!"
 }

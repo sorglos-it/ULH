@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,10 +74,10 @@ install_syslog_ng() {
     log_info "Installing syslog-ng..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL syslog-ng || log_error "Failed"
-    sudo systemctl enable syslog-ng
-    sudo systemctl start syslog-ng
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL syslog-ng || log_error "Failed"
+    $SUDO_PREFIX systemctl enable syslog-ng
+    $SUDO_PREFIX systemctl start syslog-ng
     
     log_info "syslog-ng installed and started!"
 }
@@ -78,8 +87,8 @@ update_syslog_ng() {
     log_info "Updating syslog-ng..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL syslog-ng || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL syslog-ng || log_error "Failed"
     
     log_info "syslog-ng updated!"
 }
@@ -89,9 +98,9 @@ uninstall_syslog_ng() {
     log_info "Uninstalling syslog-ng..."
     detect_os
     
-    sudo systemctl stop syslog-ng
-    sudo systemctl disable syslog-ng
-    sudo $PKG_UNINSTALL syslog-ng || log_error "Failed"
+    $SUDO_PREFIX systemctl stop syslog-ng
+    $SUDO_PREFIX systemctl disable syslog-ng
+    $SUDO_PREFIX $PKG_UNINSTALL syslog-ng || log_error "Failed"
     
     log_info "syslog-ng uninstalled!"
 }
@@ -99,7 +108,7 @@ uninstall_syslog_ng() {
 # Configure syslog-ng
 configure_syslog_ng() {
     log_info "syslog-ng configuration"
-    log_info "Edit /etc/syslog-ng/syslog-ng.conf and restart: sudo systemctl restart syslog-ng"
+    log_info "Edit /etc/syslog-ng/syslog-ng.conf and restart: $SUDO_PREFIX systemctl restart syslog-ng"
 }
 
 # Route to appropriate action

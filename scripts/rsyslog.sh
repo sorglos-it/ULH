@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,10 +74,10 @@ install_rsyslog() {
     log_info "Installing rsyslog..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL rsyslog || log_error "Failed"
-    sudo systemctl enable rsyslog
-    sudo systemctl start rsyslog
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL rsyslog || log_error "Failed"
+    $SUDO_PREFIX systemctl enable rsyslog
+    $SUDO_PREFIX systemctl start rsyslog
     
     log_info "rsyslog installed and started!"
 }
@@ -78,8 +87,8 @@ update_rsyslog() {
     log_info "Updating rsyslog..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL rsyslog || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL rsyslog || log_error "Failed"
     
     log_info "rsyslog updated!"
 }
@@ -89,9 +98,9 @@ uninstall_rsyslog() {
     log_info "Uninstalling rsyslog..."
     detect_os
     
-    sudo systemctl stop rsyslog
-    sudo systemctl disable rsyslog
-    sudo $PKG_UNINSTALL rsyslog || log_error "Failed"
+    $SUDO_PREFIX systemctl stop rsyslog
+    $SUDO_PREFIX systemctl disable rsyslog
+    $SUDO_PREFIX $PKG_UNINSTALL rsyslog || log_error "Failed"
     
     log_info "rsyslog uninstalled!"
 }
@@ -99,7 +108,7 @@ uninstall_rsyslog() {
 # Configure rsyslog
 configure_rsyslog() {
     log_info "rsyslog configuration"
-    log_info "Edit /etc/rsyslog.conf and restart: sudo systemctl restart rsyslog"
+    log_info "Edit /etc/rsyslog.conf and restart: $SUDO_PREFIX systemctl restart rsyslog"
 }
 
 # Route to appropriate action

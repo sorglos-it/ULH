@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -73,8 +82,8 @@ install_wget() {
     log_info "Installing wget..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL wget || log_error "Failed to install wget"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL wget || log_error "Failed to install wget"
     
     log_info "wget installed successfully!"
     wget --version | head -1
@@ -84,8 +93,8 @@ update_wget() {
     log_info "Updating wget..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL wget || log_error "Failed to update wget"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL wget || log_error "Failed to update wget"
     
     log_info "wget updated successfully!"
     wget --version | head -1
@@ -95,7 +104,7 @@ uninstall_wget() {
     log_info "Uninstalling wget..."
     detect_os
     
-    sudo $PKG_UNINSTALL wget || log_error "Failed to uninstall wget"
+    $SUDO_PREFIX $PKG_UNINSTALL wget || log_error "Failed to uninstall wget"
     
     log_info "wget uninstalled successfully!"
 }

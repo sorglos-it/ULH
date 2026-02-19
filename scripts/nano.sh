@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -74,8 +83,8 @@ install_nano() {
     log_info "Installing nano..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL nano || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL nano || log_error "Failed"
     
     log_info "nano installed!"
     nano --version | head -1
@@ -86,8 +95,8 @@ update_nano() {
     log_info "Updating nano..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL nano || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL nano || log_error "Failed"
     
     log_info "nano updated!"
     nano --version | head -1
@@ -98,7 +107,7 @@ uninstall_nano() {
     log_info "Uninstalling nano..."
     detect_os
     
-    sudo $PKG_UNINSTALL nano || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL nano || log_error "Failed"
     
     log_info "nano uninstalled!"
 }

@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -134,14 +143,14 @@ setup_microsoft_repo() {
     
     if [[ "$PKG_TYPE" == "deb" ]]; then
         # Debian/Ubuntu
-        curl -sSL "https://packages.microsoft.com/keys/microsoft.asc" | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+        curl -sSL "https://packages.microsoft.com/keys/microsoft.asc" | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
         
         MS_REPO_URL="https://packages.microsoft.com/config/$MS_REPO_DISTRO/$OS_VERSION/packages-microsoft-prod.deb"
         
         log_info "Downloading Microsoft repository package..."
-        sudo curl -sSL "$MS_REPO_URL" -o /tmp/packages-microsoft-prod.deb
+        $SUDO_PREFIX curl -sSL "$MS_REPO_URL" -o /tmp/packages-microsoft-prod.deb
         
-        sudo dpkg -i /tmp/packages-microsoft-prod.deb || log_error "Failed to install Microsoft repository"
+        $SUDO_PREFIX dpkg -i /tmp/packages-microsoft-prod.deb || log_error "Failed to install Microsoft repository"
         rm -f /tmp/packages-microsoft-prod.deb
         
     else
@@ -149,9 +158,9 @@ setup_microsoft_repo() {
         MS_REPO_URL="https://packages.microsoft.com/config/$MS_REPO_DISTRO/$OS_VERSION/packages-microsoft-prod.rpm"
         
         log_info "Downloading Microsoft repository package..."
-        sudo curl -sSL "$MS_REPO_URL" -o /tmp/packages-microsoft-prod.rpm
+        $SUDO_PREFIX curl -sSL "$MS_REPO_URL" -o /tmp/packages-microsoft-prod.rpm
         
-        sudo rpm -ivh /tmp/packages-microsoft-prod.rpm || log_error "Failed to install Microsoft repository"
+        $SUDO_PREFIX rpm -ivh /tmp/packages-microsoft-prod.rpm || log_error "Failed to install Microsoft repository"
         rm -f /tmp/packages-microsoft-prod.rpm
     fi
     
@@ -195,20 +204,20 @@ install_remotely() {
     fi
     
     # Update package manager and install repository
-    sudo $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_UPDATE || true
     setup_microsoft_repo
-    sudo $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_UPDATE || true
     
     # Install required dependencies
     log_info "Installing dependencies..."
     
     if [[ "$PKG_TYPE" == "deb" ]]; then
-        sudo $PKG_INSTALL apt-transport-https
-        sudo $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
-        sudo $PKG_INSTALL libx11-dev libxrandr-dev libxtst-dev libxcb-shape0 xclip unzip jq curl || log_error "Failed to install dependencies"
+        $SUDO_PREFIX $PKG_INSTALL apt-transport-https
+        $SUDO_PREFIX $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
+        $SUDO_PREFIX $PKG_INSTALL libx11-dev libxrandr-dev libxtst-dev libxcb-shape0 xclip unzip jq curl || log_error "Failed to install dependencies"
     else
-        sudo $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
-        sudo $PKG_INSTALL libX11-devel libXrandr-devel libXtst-devel libxcb-devel xclip unzip jq curl || log_error "Failed to install dependencies"
+        $SUDO_PREFIX $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
+        $SUDO_PREFIX $PKG_INSTALL libX11-devel libXrandr-devel libXtst-devel libxcb-devel xclip unzip jq curl || log_error "Failed to install dependencies"
     fi
     
     # Generate device ID or use existing one
@@ -223,8 +232,8 @@ install_remotely() {
     fi
     
     # Create installation directory
-    sudo mkdir -p "$INSTALL_DIR"
-    sudo mkdir -p "$LOG_DIR"
+    $SUDO_PREFIX mkdir -p "$INSTALL_DIR"
+    $SUDO_PREFIX mkdir -p "$LOG_DIR"
     
     # Download and extract Remotely
     log_info "Downloading Remotely agent..."
@@ -239,7 +248,7 @@ install_remotely() {
     fi
     
     log_info "Extracting Remotely agent..."
-    if ! sudo unzip -o "$TEMP_ZIP" -d "$INSTALL_DIR" 2>&1 | tail -5; then
+    if ! $SUDO_PREFIX unzip -o "$TEMP_ZIP" -d "$INSTALL_DIR" 2>&1 | tail -5; then
         log_warn "unzip command encountered issues, checking if files were extracted..."
     fi
     
@@ -251,8 +260,8 @@ install_remotely() {
     rm -f "$TEMP_ZIP"
     
     # Make executables
-    sudo chmod +x "$INSTALL_DIR/Remotely_Agent" || true
-    sudo chmod +x "$INSTALL_DIR/Desktop/Remotely_Desktop" || true
+    $SUDO_PREFIX chmod +x "$INSTALL_DIR/Remotely_Agent" || true
+    $SUDO_PREFIX chmod +x "$INSTALL_DIR/Desktop/Remotely_Desktop" || true
     
     # Create connection info JSON
     log_info "Creating connection configuration..."
@@ -264,8 +273,8 @@ install_remotely() {
   \"ServerVerificationToken\": \"\"
 }"
     
-    echo "$CONNECTION_JSON" | sudo tee "$CONFIG_FILE" > /dev/null
-    sudo chmod 600 "$CONFIG_FILE"
+    echo "$CONNECTION_JSON" | tee "$CONFIG_FILE" > /dev/null
+    $SUDO_PREFIX chmod 600 "$CONFIG_FILE"
     
     # Create systemd service file
     log_info "Creating systemd service..."
@@ -289,17 +298,17 @@ SyslogIdentifier=remotely-agent
 [Install]
 WantedBy=multi-user.target"
     
-    echo "$SERVICE_CONTENT" | sudo tee "$SERVICE_FILE" > /dev/null
-    sudo systemctl daemon-reload
+    echo "$SERVICE_CONTENT" | tee "$SERVICE_FILE" > /dev/null
+    $SUDO_PREFIX systemctl daemon-reload
     
     # Enable and start service
     log_info "Enabling and starting Remotely service..."
-    sudo systemctl enable remotely
-    sudo systemctl start remotely
+    $SUDO_PREFIX systemctl enable remotely
+    $SUDO_PREFIX systemctl start remotely
     
     # Verify installation
     sleep 2
-    if sudo systemctl is-active --quiet remotely; then
+    if $SUDO_PREFIX systemctl is-active --quiet remotely; then
         log_info "Remotely service started successfully!"
     else
         log_warn "Remotely service did not start. Check logs with: journalctl -u remotely -n 50"
@@ -314,7 +323,7 @@ WantedBy=multi-user.target"
     echo "  ├─ OrganizationID: $ORGANIZATION_ID"
     echo "  └─ Config: $CONFIG_FILE"
     echo ""
-    echo "  Status: sudo systemctl status remotely"
+    echo "  Status: $SUDO_PREFIX systemctl status remotely"
     echo "  Logs:   journalctl -u remotely -f"
 }
 
@@ -345,9 +354,9 @@ update_remotely() {
     fi
     
     # Update package manager
-    sudo $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_UPDATE || true
     setup_microsoft_repo
-    sudo $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_UPDATE || true
     
     # Download latest agent
     log_info "Downloading latest Remotely agent..."
@@ -359,32 +368,32 @@ update_remotely() {
     
     # Backup current installation
     log_info "Backing up current installation..."
-    sudo cp -r "$INSTALL_DIR" "${INSTALL_DIR}.backup"
+    $SUDO_PREFIX cp -r "$INSTALL_DIR" "${INSTALL_DIR}.backup"
     
     # Extract and update
     log_info "Extracting updated agent..."
-    sudo unzip -o "$TEMP_ZIP" -d "$INSTALL_DIR" || {
+    $SUDO_PREFIX unzip -o "$TEMP_ZIP" -d "$INSTALL_DIR" || {
         log_warn "Extraction failed, restoring backup..."
-        sudo rm -rf "$INSTALL_DIR"
-        sudo mv "${INSTALL_DIR}.backup" "$INSTALL_DIR"
+        $SUDO_PREFIX rm -rf "$INSTALL_DIR"
+        $SUDO_PREFIX mv "${INSTALL_DIR}.backup" "$INSTALL_DIR"
         log_error "Update failed"
     }
     
     rm -f "$TEMP_ZIP"
     
     # Make executables
-    sudo chmod +x "$INSTALL_DIR/Remotely_Agent" || true
-    sudo chmod +x "$INSTALL_DIR/Desktop/Remotely_Desktop" || true
+    $SUDO_PREFIX chmod +x "$INSTALL_DIR/Remotely_Agent" || true
+    $SUDO_PREFIX chmod +x "$INSTALL_DIR/Desktop/Remotely_Desktop" || true
     
     # Remove backup
-    sudo rm -rf "${INSTALL_DIR}.backup"
+    $SUDO_PREFIX rm -rf "${INSTALL_DIR}.backup"
     
     # Restart service
     log_info "Restarting Remotely service..."
-    sudo systemctl restart remotely
+    $SUDO_PREFIX systemctl restart remotely
     
     sleep 2
-    if sudo systemctl is-active --quiet remotely; then
+    if $SUDO_PREFIX systemctl is-active --quiet remotely; then
         log_info "Remotely updated successfully!"
     else
         log_warn "Remotely service did not start. Check logs with: journalctl -u remotely -n 50"
@@ -412,25 +421,25 @@ uninstall_remotely() {
     
     # Stop and disable service
     log_info "Stopping Remotely service..."
-    sudo systemctl stop remotely || true
-    sudo systemctl disable remotely || true
+    $SUDO_PREFIX systemctl stop remotely || true
+    $SUDO_PREFIX systemctl disable remotely || true
     
     # Remove service file
-    sudo rm -f "$SERVICE_FILE"
-    sudo systemctl daemon-reload
+    $SUDO_PREFIX rm -f "$SERVICE_FILE"
+    $SUDO_PREFIX systemctl daemon-reload
     
     # Remove installation
     if [[ "$KEEP_CONFIG" == "yes" ]]; then
         log_info "Keeping configuration files at: $CONFIG_FILE"
-        sudo rm -rf "$INSTALL_DIR"/*
+        $SUDO_PREFIX rm -rf "$INSTALL_DIR"/*
         # Restore just the config
-        sudo cp "$CONFIG_FILE" /tmp/ConnectionInfo.json.bak || true
-        sudo rm -rf "$INSTALL_DIR"
-        sudo mkdir -p "$INSTALL_DIR"
-        sudo mv /tmp/ConnectionInfo.json.bak "$CONFIG_FILE" || true
+        $SUDO_PREFIX cp "$CONFIG_FILE" /tmp/ConnectionInfo.json.bak || true
+        $SUDO_PREFIX rm -rf "$INSTALL_DIR"
+        $SUDO_PREFIX mkdir -p "$INSTALL_DIR"
+        $SUDO_PREFIX mv /tmp/ConnectionInfo.json.bak "$CONFIG_FILE" || true
     else
         log_info "Removing installation and configuration..."
-        sudo rm -rf "$INSTALL_DIR"
+        $SUDO_PREFIX rm -rf "$INSTALL_DIR"
     fi
     
     # Ask about removing Microsoft repository
@@ -441,11 +450,11 @@ uninstall_remotely() {
         detect_os
         
         if [[ "$PKG_TYPE" == "deb" ]]; then
-            sudo apt-key del "BC528686B50D79E339D3721CEB3E94ADBE1229CF" || true
-            sudo rm -f /usr/share/keyrings/microsoft-archive-keyring.gpg
-            sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+            $SUDO_PREFIX apt-key del "BC528686B50D79E339D3721CEB3E94ADBE1229CF" || true
+            $SUDO_PREFIX rm -f /usr/share/keyrings/microsoft-archive-keyring.gpg
+            $SUDO_PREFIX rm -f /etc/apt/sources.list.d/microsoft-prod.list
         else
-            sudo rpm --erase packages-microsoft-prod || true
+            $SUDO_PREFIX rpm --erase packages-microsoft-prod || true
         fi
     fi
     
@@ -487,7 +496,7 @@ config_remotely() {
     
     # Backup configuration
     log_info "Backing up configuration..."
-    sudo cp "$CONFIG_FILE" "${CONFIG_FILE}.backup"
+    $SUDO_PREFIX cp "$CONFIG_FILE" "${CONFIG_FILE}.backup"
     
     # Update JSON with new values while preserving DeviceID and ServerVerificationToken
     log_info "Updating configuration..."
@@ -500,15 +509,15 @@ config_remotely() {
         '{DeviceID: $deviceid, Host: $host, OrganizationID: $orgid, ServerVerificationToken: $token}' \
         <<< '{}')
     
-    echo "$NEW_CONFIG" | sudo tee "$CONFIG_FILE" > /dev/null
-    sudo chmod 600 "$CONFIG_FILE"
+    echo "$NEW_CONFIG" | tee "$CONFIG_FILE" > /dev/null
+    $SUDO_PREFIX chmod 600 "$CONFIG_FILE"
     
     # Restart service
     log_info "Restarting Remotely service..."
-    sudo systemctl restart remotely
+    $SUDO_PREFIX systemctl restart remotely
     
     sleep 2
-    if sudo systemctl is-active --quiet remotely; then
+    if $SUDO_PREFIX systemctl is-active --quiet remotely; then
         log_info "Configuration updated successfully!"
     else
         log_warn "Service did not start. Check logs with: journalctl -u remotely -n 50"

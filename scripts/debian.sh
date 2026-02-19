@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -44,9 +53,9 @@ update_debian() {
     log_info "Updating Debian..."
     detect_os
     
-    sudo apt-get update || true
-    sudo apt-get upgrade -y || log_error "Failed"
-    sudo apt-get autoremove -y || true
+    $SUDO_PREFIX apt-get update || true
+    $SUDO_PREFIX apt-get upgrade -y || log_error "Failed"
+    $SUDO_PREFIX apt-get autoremove -y || true
     
     log_info "Debian updated!"
 }
@@ -56,8 +65,8 @@ dist_upgrade_debian() {
     log_info "Distribution upgrade..."
     detect_os
     
-    sudo apt-get update || true
-    sudo apt-get dist-upgrade -y || log_error "Failed"
+    $SUDO_PREFIX apt-get update || true
+    $SUDO_PREFIX apt-get dist-upgrade -y || log_error "Failed"
     
     log_info "Debian dist-upgrade complete!"
 }

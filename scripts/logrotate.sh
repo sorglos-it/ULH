@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,8 +74,8 @@ install_logrotate() {
     log_info "Installing logrotate..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL logrotate || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL logrotate || log_error "Failed"
     
     log_info "logrotate installed!"
 }
@@ -76,8 +85,8 @@ update_logrotate() {
     log_info "Updating logrotate..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL logrotate || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL logrotate || log_error "Failed"
     
     log_info "logrotate updated!"
 }
@@ -87,7 +96,7 @@ uninstall_logrotate() {
     log_info "Uninstalling logrotate..."
     detect_os
     
-    sudo $PKG_UNINSTALL logrotate || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL logrotate || log_error "Failed"
     
     log_info "logrotate uninstalled!"
 }

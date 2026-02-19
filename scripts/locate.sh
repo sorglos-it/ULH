@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -85,11 +94,11 @@ install_locate() {
     log_info "Installing locate package..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $LOCATE_PKG || log_error "Failed to install $LOCATE_PKG"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL $LOCATE_PKG || log_error "Failed to install $LOCATE_PKG"
     
     log_info "Building locate database (this may take a moment)..."
-    sudo updatedb || log_error "Failed to build locate database"
+    $SUDO_PREFIX updatedb || log_error "Failed to build locate database"
     
     log_info "locate installed and database initialized successfully!"
     locate --version 2>/dev/null || locate --help 2>/dev/null | head -2
@@ -99,7 +108,7 @@ update_locate() {
     log_info "Updating locate database..."
     detect_os
     
-    sudo updatedb || log_error "Failed to update locate database"
+    $SUDO_PREFIX updatedb || log_error "Failed to update locate database"
     
     log_info "locate database updated successfully!"
     
@@ -120,11 +129,11 @@ uninstall_locate() {
     read -p "Remove locate database files? (y/n) " -n 1 -r
     echo
     
-    sudo $PKG_UNINSTALL $LOCATE_PKG || log_error "Failed to uninstall $LOCATE_PKG"
+    $SUDO_PREFIX $PKG_UNINSTALL $LOCATE_PKG || log_error "Failed to uninstall $LOCATE_PKG"
     
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         log_info "Removing database files..."
-        sudo rm -f "$DB_PATH" 2>/dev/null || true
+        $SUDO_PREFIX rm -f "$DB_PATH" 2>/dev/null || true
     fi
     
     log_info "locate uninstalled successfully!"
@@ -154,8 +163,8 @@ configure_locate() {
     printf "  locate -S                    - Show database statistics\n"
     
     printf "\n${YELLOW}Manual Database Update:${NC}\n"
-    printf "  sudo updatedb                - Rebuild entire database\n"
-    printf "  sudo updatedb --prune-bind-mounts=no  - Include bind mounts\n"
+    printf "  $SUDO_PREFIX updatedb                - Rebuild entire database\n"
+    printf "  $SUDO_PREFIX updatedb --prune-bind-mounts=no  - Include bind mounts\n"
     
     printf "\n${YELLOW}Configuration Files:${NC}\n"
     if [[ -d /etc/updatedb.conf.d ]]; then

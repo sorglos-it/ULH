@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,8 +74,8 @@ install_ruby() {
     log_info "Installing Ruby..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ruby ruby-dev || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL ruby ruby-dev || log_error "Failed"
     
     log_info "Ruby installed!"
 }
@@ -76,8 +85,8 @@ update_ruby() {
     log_info "Updating Ruby..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ruby ruby-dev || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL ruby ruby-dev || log_error "Failed"
     
     log_info "Ruby updated!"
 }
@@ -87,7 +96,7 @@ uninstall_ruby() {
     log_info "Uninstalling Ruby..."
     detect_os
     
-    sudo $PKG_UNINSTALL ruby ruby-dev || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL ruby ruby-dev || log_error "Failed"
     
     log_info "Ruby uninstalled!"
 }

@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -75,8 +84,8 @@ install_curl() {
     log_info "Installing curl..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL curl || log_error "Failed to install curl"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL curl || log_error "Failed to install curl"
     
     log_info "curl installed successfully!"
     curl --version | head -1
@@ -86,8 +95,8 @@ update_curl() {
     log_info "Updating curl..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL curl || log_error "Failed to update curl"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL curl || log_error "Failed to update curl"
     
     log_info "curl updated successfully!"
     curl --version | head -1
@@ -97,7 +106,7 @@ uninstall_curl() {
     log_info "Uninstalling curl..."
     detect_os
     
-    sudo $PKG_UNINSTALL curl || log_error "Failed to uninstall curl"
+    $SUDO_PREFIX $PKG_UNINSTALL curl || log_error "Failed to uninstall curl"
     
     log_info "curl uninstalled successfully!"
 }

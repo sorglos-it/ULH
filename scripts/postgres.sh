@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -89,14 +98,14 @@ install_postgres() {
     detect_os
     
     # Update package manager
-    sudo $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_UPDATE || true
     
     # Install PostgreSQL
-    sudo $PKG_INSTALL $PKG || log_error "Failed to install PostgreSQL"
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed to install PostgreSQL"
     
     # Enable and start service
-    sudo systemctl enable $SERVICE
-    sudo systemctl start $SERVICE
+    $SUDO_PREFIX systemctl enable $SERVICE
+    $SUDO_PREFIX systemctl start $SERVICE
     
     log_info "PostgreSQL installed and started!"
     psql --version || true
@@ -107,13 +116,13 @@ update_postgres() {
     detect_os
     
     # Update package manager
-    sudo $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_UPDATE || true
     
     # Update PostgreSQL
-    sudo $PKG_INSTALL $PKG || log_error "Failed to update PostgreSQL"
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed to update PostgreSQL"
     
     # Restart service
-    sudo systemctl restart $SERVICE
+    $SUDO_PREFIX systemctl restart $SERVICE
     
     log_info "PostgreSQL updated!"
 }
@@ -123,15 +132,15 @@ uninstall_postgres() {
     detect_os
     
     # Stop and disable service
-    sudo systemctl stop $SERVICE || true
-    sudo systemctl disable $SERVICE || true
+    $SUDO_PREFIX systemctl stop $SERVICE || true
+    $SUDO_PREFIX systemctl disable $SERVICE || true
     
     # Uninstall PostgreSQL
-    sudo $PKG_UNINSTALL $PKG || log_error "Failed to uninstall PostgreSQL"
+    $SUDO_PREFIX $PKG_UNINSTALL $PKG || log_error "Failed to uninstall PostgreSQL"
     
     # Remove data if requested
-    [[ "$DELETE_DATA" == "yes" ]] && sudo rm -rf /var/lib/pgsql* || true
-    [[ "$DELETE_CONFIG" == "yes" ]] && sudo rm -rf /etc/postgresql* || true
+    [[ "$DELETE_DATA" == "yes" ]] && $SUDO_PREFIX rm -rf /var/lib/pgsql* || true
+    [[ "$DELETE_CONFIG" == "yes" ]] && $SUDO_PREFIX rm -rf /etc/postgresql* || true
     
     log_info "PostgreSQL uninstalled!"
 }
@@ -147,8 +156,8 @@ config_postgres() {
     log_info "Socket location: /var/run/postgresql"
     
     # Ensure service is enabled and running
-    sudo systemctl enable $SERVICE
-    sudo systemctl start $SERVICE
+    $SUDO_PREFIX systemctl enable $SERVICE
+    $SUDO_PREFIX systemctl start $SERVICE
     
     log_info "PostgreSQL configured and running!"
 }

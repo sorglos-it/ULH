@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -81,8 +90,8 @@ install_adguard() {
     detect_os
     
     # Install dependencies
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL curl wget || true
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL curl wget || true
     
     # Download and run official installer
     log_info "Downloading official AdGuard Home installer..."
@@ -115,7 +124,7 @@ update_adguard() {
     
     # Restart service
     if systemctl is-active --quiet AdGuardHome; then
-        sudo systemctl restart AdGuardHome || log_error "Failed to restart AdGuard Home"
+        $SUDO_PREFIX systemctl restart AdGuardHome || log_error "Failed to restart AdGuard Home"
     fi
     
     log_info "AdGuard Home updated successfully!"
@@ -133,7 +142,7 @@ uninstall_adguard() {
     
     # Stop service
     if systemctl is-active --quiet AdGuardHome; then
-        sudo systemctl stop AdGuardHome || log_warn "Could not stop service"
+        $SUDO_PREFIX systemctl stop AdGuardHome || log_warn "Could not stop service"
     fi
     
     # Ask about config
@@ -144,7 +153,7 @@ uninstall_adguard() {
     
     # Run official uninstall if available
     if [[ -f "/opt/AdGuardHome/AdGuardHome" ]]; then
-        sudo /opt/AdGuardHome/AdGuardHome -s uninstall || log_warn "Uninstall script had issues"
+        $SUDO_PREFIX /opt/AdGuardHome/AdGuardHome -s uninstall || log_warn "Uninstall script had issues"
     fi
     
     log_info "AdGuard Home uninstalled successfully!"

@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # ============================================================================
 # Parameter Parsing
 # ============================================================================
@@ -56,8 +65,8 @@ detect_os() {
 install_vim() {
     log_info "Installing vim..."
     detect_os
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL vim || log_error "Failed to install vim"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL vim || log_error "Failed to install vim"
     log_info "vim installed successfully!"
     vim --version | head -1
 }
@@ -66,8 +75,8 @@ install_vim() {
 update_vim() {
     log_info "Updating vim..."
     detect_os
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL vim || log_error "Failed to update vim"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL vim || log_error "Failed to update vim"
     log_info "vim updated successfully!"
     vim --version | head -1
 }
@@ -76,7 +85,7 @@ update_vim() {
 uninstall_vim() {
     log_info "Uninstalling vim..."
     detect_os
-    sudo $PKG_UNINSTALL vim || log_error "Failed to uninstall vim"
+    $SUDO_PREFIX $PKG_UNINSTALL vim || log_error "Failed to uninstall vim"
     log_info "vim uninstalled successfully!"
 }
 

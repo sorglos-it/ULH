@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -79,8 +88,8 @@ install_wireguard() {
     log_info "Installing wireguard..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $PKG || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed"
     
     log_info "wireguard installed!"
 }
@@ -90,8 +99,8 @@ update_wireguard() {
     log_info "Updating wireguard..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $PKG || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed"
     
     log_info "wireguard updated!"
 }
@@ -101,7 +110,7 @@ uninstall_wireguard() {
     log_info "Uninstalling wireguard..."
     detect_os
     
-    sudo $PKG_UNINSTALL $PKG || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL $PKG || log_error "Failed"
     
     log_info "wireguard uninstalled!"
 }
@@ -110,7 +119,7 @@ uninstall_wireguard() {
 configure_wireguard() {
     log_info "wireguard configuration"
     log_info "Generate keys: wg genkey | tee privatekey | wg pubkey > publickey"
-    log_info "Create /etc/wireguard/wg0.conf and bring up: sudo wg-quick up wg0"
+    log_info "Create /etc/wireguard/wg0.conf and bring up: $SUDO_PREFIX wg-quick up wg0"
 }
 
 # Route to appropriate action

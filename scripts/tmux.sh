@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -66,8 +75,8 @@ install_tmux() {
     log_info "Installing tmux..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL tmux || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL tmux || log_error "Failed"
     
     log_info "tmux installed!"
     tmux -V
@@ -78,8 +87,8 @@ update_tmux() {
     log_info "Updating tmux..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL tmux || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL tmux || log_error "Failed"
     
     log_info "tmux updated!"
     tmux -V
@@ -90,7 +99,7 @@ uninstall_tmux() {
     log_info "Uninstalling tmux..."
     detect_os
     
-    sudo $PKG_UNINSTALL tmux || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL tmux || log_error "Failed"
     
     log_info "tmux uninstalled!"
 }

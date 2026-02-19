@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,8 +74,8 @@ install_php() {
     log_info "Installing PHP..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL php php-cli || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL php php-cli || log_error "Failed"
     
     log_info "PHP installed!"
 }
@@ -76,8 +85,8 @@ update_php() {
     log_info "Updating PHP..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL php php-cli || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL php php-cli || log_error "Failed"
     
     log_info "PHP updated!"
 }
@@ -87,7 +96,7 @@ uninstall_php() {
     log_info "Uninstalling PHP..."
     detect_os
     
-    sudo $PKG_UNINSTALL php php-cli || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL php php-cli || log_error "Failed"
     
     log_info "PHP uninstalled!"
 }

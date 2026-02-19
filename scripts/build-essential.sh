@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -70,8 +79,8 @@ install_build_essential() {
     log_info "Installing build-essential..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $PKG || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed"
     
     log_info "build-essential installed!"
 }
@@ -81,8 +90,8 @@ update_build_essential() {
     log_info "Updating build-essential..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $PKG || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed"
     
     log_info "build-essential updated!"
 }
@@ -92,7 +101,7 @@ uninstall_build_essential() {
     log_info "Uninstalling build-essential..."
     detect_os
     
-    sudo $PKG_UNINSTALL $PKG || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL $PKG || log_error "Failed"
     
     log_info "build-essential uninstalled!"
 }

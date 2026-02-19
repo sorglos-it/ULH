@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -83,11 +92,11 @@ install_nginx() {
     log_info "Installing Nginx..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL nginx || log_error "Failed to install Nginx"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL nginx || log_error "Failed to install Nginx"
     
-    sudo systemctl enable $SVC_NAME
-    sudo systemctl start $SVC_NAME
+    $SUDO_PREFIX systemctl enable $SVC_NAME
+    $SUDO_PREFIX systemctl start $SVC_NAME
     
     log_info "Nginx installed and started!"
 }
@@ -96,9 +105,9 @@ update_nginx() {
     log_info "Updating Nginx..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL nginx || log_error "Failed to update Nginx"
-    sudo systemctl restart $SVC_NAME
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL nginx || log_error "Failed to update Nginx"
+    $SUDO_PREFIX systemctl restart $SVC_NAME
     
     log_info "Nginx updated!"
 }
@@ -107,11 +116,11 @@ uninstall_nginx() {
     log_warn "Uninstalling Nginx..."
     detect_os
     
-    sudo systemctl stop $SVC_NAME || true
-    sudo systemctl disable $SVC_NAME || true
-    sudo $PKG_UNINSTALL nginx || log_error "Failed to uninstall Nginx"
+    $SUDO_PREFIX systemctl stop $SVC_NAME || true
+    $SUDO_PREFIX systemctl disable $SVC_NAME || true
+    $SUDO_PREFIX $PKG_UNINSTALL nginx || log_error "Failed to uninstall Nginx"
     
-    [[ "$DELETE_CONFIG" == "yes" ]] && sudo rm -rf $CONF_DIR || true
+    [[ "$DELETE_CONFIG" == "yes" ]] && $SUDO_PREFIX rm -rf $CONF_DIR || true
     
     log_info "Nginx uninstalled!"
 }
@@ -127,7 +136,7 @@ config_server() {
     log_info "Root: $ROOT_PATH"
     log_info "Configure $CONF_DIR/sites-available/ manually"
     
-    sudo systemctl restart $SVC_NAME
+    $SUDO_PREFIX systemctl restart $SVC_NAME
     log_info "Configuration updated!"
 }
 

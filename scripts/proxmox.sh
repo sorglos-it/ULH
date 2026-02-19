@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -58,20 +67,20 @@ install_guest_agent() {
     
     case "${OS_ID}" in
         debian | ubuntu)
-            sudo apt-get update -qq
-            sudo apt-get install -y qemu-guest-agent
+            $SUDO_PREFIX apt-get update -qq
+            $SUDO_PREFIX apt-get install -y qemu-guest-agent
             ;;
         rhel | centos | rocky | fedora | alma)
-            sudo dnf install -y qemu-guest-agent
+            $SUDO_PREFIX dnf install -y qemu-guest-agent
             ;;
         arch | manjaro)
-            sudo pacman -S --noconfirm qemu-guest-agent
+            $SUDO_PREFIX pacman -S --noconfirm qemu-guest-agent
             ;;
         suse | opensuse | opensuse-leap | opensuse-tumbleweed)
-            sudo zypper install -y qemu-guest-agent
+            $SUDO_PREFIX zypper install -y qemu-guest-agent
             ;;
         alpine)
-            sudo apk add --no-cache qemu-guest-agent
+            $SUDO_PREFIX apk add --no-cache qemu-guest-agent
             ;;
         *)
             log_error "Unsupported distribution: ${OS_ID}"
@@ -80,8 +89,8 @@ install_guest_agent() {
     
     # Start and enable service
     log_info "Starting and enabling qemu-guest-agent service..."
-    sudo systemctl start qemu-guest-agent
-    sudo systemctl enable qemu-guest-agent
+    $SUDO_PREFIX systemctl start qemu-guest-agent
+    $SUDO_PREFIX systemctl enable qemu-guest-agent
     
     log_info "qemu-guest-agent installed successfully"
 }
@@ -94,20 +103,20 @@ update_guest_agent() {
     
     case "${OS_ID}" in
         debian | ubuntu)
-            sudo apt-get update -qq
-            sudo apt-get upgrade -y qemu-guest-agent
+            $SUDO_PREFIX apt-get update -qq
+            $SUDO_PREFIX apt-get upgrade -y qemu-guest-agent
             ;;
         rhel | centos | rocky | fedora | alma)
-            sudo dnf upgrade -y qemu-guest-agent
+            $SUDO_PREFIX dnf upgrade -y qemu-guest-agent
             ;;
         arch | manjaro)
-            sudo pacman -Syu --noconfirm qemu-guest-agent
+            $SUDO_PREFIX pacman -Syu --noconfirm qemu-guest-agent
             ;;
         suse | opensuse | opensuse-leap | opensuse-tumbleweed)
-            sudo zypper update -y qemu-guest-agent
+            $SUDO_PREFIX zypper update -y qemu-guest-agent
             ;;
         alpine)
-            sudo apk upgrade qemu-guest-agent
+            $SUDO_PREFIX apk upgrade qemu-guest-agent
             ;;
         *)
             log_error "Unsupported distribution: ${OS_ID}"
@@ -116,7 +125,7 @@ update_guest_agent() {
     
     # Restart service
     log_info "Restarting qemu-guest-agent service..."
-    sudo systemctl restart qemu-guest-agent
+    $SUDO_PREFIX systemctl restart qemu-guest-agent
     
     log_info "qemu-guest-agent updated successfully"
 }
@@ -137,25 +146,25 @@ uninstall_guest_agent() {
     
     # Stop and disable service
     log_info "Stopping and disabling qemu-guest-agent service..."
-    sudo systemctl stop qemu-guest-agent || true
-    sudo systemctl disable qemu-guest-agent || true
+    $SUDO_PREFIX systemctl stop qemu-guest-agent || true
+    $SUDO_PREFIX systemctl disable qemu-guest-agent || true
     
     case "${OS_ID}" in
         debian | ubuntu)
-            sudo apt-get remove -y qemu-guest-agent
-            sudo apt-get autoremove -y
+            $SUDO_PREFIX apt-get remove -y qemu-guest-agent
+            $SUDO_PREFIX apt-get autoremove -y
             ;;
         rhel | centos | rocky | fedora | alma)
-            sudo dnf remove -y qemu-guest-agent
+            $SUDO_PREFIX dnf remove -y qemu-guest-agent
             ;;
         arch | manjaro)
-            sudo pacman -R --noconfirm qemu-guest-agent
+            $SUDO_PREFIX pacman -R --noconfirm qemu-guest-agent
             ;;
         suse | opensuse | opensuse-leap | opensuse-tumbleweed)
-            sudo zypper remove -y qemu-guest-agent
+            $SUDO_PREFIX zypper remove -y qemu-guest-agent
             ;;
         alpine)
-            sudo apk del qemu-guest-agent
+            $SUDO_PREFIX apk del qemu-guest-agent
             ;;
         *)
             log_error "Unsupported distribution: ${OS_ID}"
@@ -184,7 +193,7 @@ make_lxc_to_template() {
     
     log_info "Converting LXC container $CTID to template..."
     
-    if sudo pct set "$CTID" -template 1; then
+    if $SUDO_PREFIX pct set "$CTID" -template 1; then
         log_info "Container $CTID is now a template"
     else
         log_error "Failed to convert container $CTID to template"
@@ -203,7 +212,7 @@ make_template_to_lxc() {
     
     log_info "Converting template $CTID back to normal container..."
     
-    if sudo pct set "$CTID" -template 0; then
+    if $SUDO_PREFIX pct set "$CTID" -template 0; then
         log_info "Container $CTID is now a normal container"
     else
         log_error "Failed to convert container $CTID back to normal"
@@ -222,7 +231,7 @@ unlock_vm() {
     
     log_info "Unlocking container/VM $CTID..."
     
-    if sudo pct unlock "$CTID"; then
+    if $SUDO_PREFIX pct unlock "$CTID"; then
         log_info "Container/VM $CTID is now unlocked"
     else
         log_error "Failed to unlock container/VM $CTID"
@@ -237,19 +246,19 @@ stop_all_containers() {
     
     # Stop all QEMU VMs
     log_info "Stopping all QEMU VMs..."
-    for vmid in $(sudo qm list | awk 'NR>1 {print $1}'); do
+    for vmid in $($SUDO_PREFIX qm list | awk 'NR>1 {print $1}'); do
         if [[ -n "$vmid" ]]; then
             log_info "Stopping VM $vmid..."
-            sudo qm stop "$vmid" || log_warn "Failed to stop VM $vmid"
+            $SUDO_PREFIX qm stop "$vmid" || log_warn "Failed to stop VM $vmid"
         fi
     done
     
     # Stop all LXC containers
     log_info "Stopping all LXC containers..."
-    for ctid in $(sudo pct list | awk 'NR>1 {print $1}'); do
+    for ctid in $($SUDO_PREFIX pct list | awk 'NR>1 {print $1}'); do
         if [[ -n "$ctid" ]]; then
             log_info "Stopping container $ctid..."
-            sudo pct stop "$ctid" || log_warn "Failed to stop container $ctid"
+            $SUDO_PREFIX pct stop "$ctid" || log_warn "Failed to stop container $ctid"
         fi
     done
     
@@ -263,10 +272,10 @@ list_all_lxc() {
     log_info "Listing all LXC containers..."
     printf "%-8s %-20s %-20s %-10s\n" "VMID" "Hostname" "IP" "Status"
     echo "============================================================"
-    for id in $(sudo pct list | awk 'NR>1 {print $1}'); do
-        name=$(sudo pct config "$id" | grep hostname | awk '{print $2}')
-        ip=$(sudo pct config "$id" | grep -oP 'ip=\K[^,]+' | head -1)
-        status=$(sudo pct status "$id" | awk '{print $2}')
+    for id in $($SUDO_PREFIX pct list | awk 'NR>1 {print $1}'); do
+        name=$($SUDO_PREFIX pct config "$id" | grep hostname | awk '{print $2}')
+        ip=$($SUDO_PREFIX pct config "$id" | grep -oP 'ip=\K[^,]+' | head -1)
+        status=$($SUDO_PREFIX pct status "$id" | awk '{print $2}')
         printf "%-8s %-20s %-20s %-10s\n" "$id" "$name" "$ip" "$status"
     done
     echo "============================================================"
@@ -279,9 +288,9 @@ list_running_lxc() {
     log_info "Listing running LXC containers..."
     printf "%-8s %-20s %-20s\n" "VMID" "Hostname" "IP"
     echo "-------------------------------------------"
-    for id in $(sudo pct list | grep running | awk '{print $1}'); do
-        name=$(sudo pct config "$id" | grep hostname | awk '{print $2}')
-        ip=$(sudo pct exec "$id" -- ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    for id in $($SUDO_PREFIX pct list | grep running | awk '{print $1}'); do
+        name=$($SUDO_PREFIX pct config "$id" | grep hostname | awk '{print $2}')
+        ip=$($SUDO_PREFIX pct exec "$id" -- ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
         printf "%-8s %-20s %-20s\n" "$id" "$name" "$ip"
     done
     echo "-------------------------------------------"

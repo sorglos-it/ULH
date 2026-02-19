@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -39,8 +48,8 @@ detect_os() {
 install_git() {
     log_info "Installing git..."
     detect_os
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL git || log_error "Failed to install git"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL git || log_error "Failed to install git"
     log_info "git installed successfully!"
     git --version
 }
@@ -48,8 +57,8 @@ install_git() {
 update_git() {
     log_info "Updating git..."
     detect_os
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL git || log_error "Failed to update git"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL git || log_error "Failed to update git"
     log_info "git updated successfully!"
     git --version
 }
@@ -57,7 +66,7 @@ update_git() {
 uninstall_git() {
     log_info "Uninstalling git..."
     detect_os
-    sudo $PKG_UNINSTALL git || log_error "Failed to uninstall git"
+    $SUDO_PREFIX $PKG_UNINSTALL git || log_error "Failed to uninstall git"
     log_info "git uninstalled successfully!"
 }
 

@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -74,9 +83,9 @@ install_openvpn() {
     log_info "Installing openvpn..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL openvpn || log_error "Failed"
-    sudo systemctl enable openvpn
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL openvpn || log_error "Failed"
+    $SUDO_PREFIX systemctl enable openvpn
     
     log_info "openvpn installed!"
 }
@@ -86,8 +95,8 @@ update_openvpn() {
     log_info "Updating openvpn..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL openvpn || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL openvpn || log_error "Failed"
     
     log_info "openvpn updated!"
 }
@@ -97,8 +106,8 @@ uninstall_openvpn() {
     log_info "Uninstalling openvpn..."
     detect_os
     
-    sudo systemctl disable openvpn || true
-    sudo $PKG_UNINSTALL openvpn || log_error "Failed"
+    $SUDO_PREFIX systemctl disable openvpn || true
+    $SUDO_PREFIX $PKG_UNINSTALL openvpn || log_error "Failed"
     
     log_info "openvpn uninstalled!"
 }
@@ -107,7 +116,7 @@ uninstall_openvpn() {
 configure_openvpn() {
     log_info "openvpn configuration"
     log_info "Place .ovpn file in /etc/openvpn/"
-    log_info "Start with: sudo systemctl start openvpn@<profile-name>"
+    log_info "Start with: $SUDO_PREFIX systemctl start openvpn@<profile-name>"
 }
 
 # Route to appropriate action

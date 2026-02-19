@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -67,19 +76,19 @@ network:
       dhcp4: true
       dhcp6: true
 EOF
-            sudo cp /tmp/netplan.yaml /etc/netplan/00-installer-config.yaml
-            sudo netplan apply
+            $SUDO_PREFIX cp /tmp/netplan.yaml /etc/netplan/00-installer-config.yaml
+            $SUDO_PREFIX netplan apply
         # Red Hat/CentOS
         elif [[ -f /etc/sysconfig/network-scripts/ifcfg-$INTERFACE ]]; then
             log_info "Using ifcfg-* (Red Hat/CentOS)..."
-            sudo tee /etc/sysconfig/network-scripts/ifcfg-$INTERFACE > /dev/null <<EOF
+            $SUDO_PREFIX tee /etc/sysconfig/network-scripts/ifcfg-$INTERFACE > /dev/null <<EOF
 TYPE=Ethernet
 BOOTPROTO=dhcp
 NAME=$INTERFACE
 DEVICE=$INTERFACE
 ONBOOT=yes
 EOF
-            sudo systemctl restart network
+            $SUDO_PREFIX systemctl restart network
         fi
     else
         [[ -z "$IP_ADDRESS" ]] && log_error "IP_ADDRESS not set for static configuration"
@@ -110,14 +119,14 @@ $ipv6_config
       nameservers:
         addresses: [${DNS_SERVER:-8.8.8.8}]
 EOF
-            sudo cp /tmp/netplan.yaml /etc/netplan/00-installer-config.yaml
-            sudo netplan apply
+            $SUDO_PREFIX cp /tmp/netplan.yaml /etc/netplan/00-installer-config.yaml
+            $SUDO_PREFIX netplan apply
         # Red Hat/CentOS
         elif [[ -f /etc/sysconfig/network-scripts/ifcfg-$INTERFACE ]]; then
             log_info "Using ifcfg-* (Red Hat/CentOS)..."
             local ip="${IP_ADDRESS%/*}"
             local prefix="${IP_ADDRESS#*/}"
-            sudo tee /etc/sysconfig/network-scripts/ifcfg-$INTERFACE > /dev/null <<EOF
+            $SUDO_PREFIX tee /etc/sysconfig/network-scripts/ifcfg-$INTERFACE > /dev/null <<EOF
 TYPE=Ethernet
 BOOTPROTO=static
 NAME=$INTERFACE
@@ -130,12 +139,12 @@ DNS1=${DNS_SERVER:-8.8.8.8}
 IPV6INIT=yes
 EOF
             if [[ -n "$IPV6_ADDRESS" ]]; then
-                echo "IPV6ADDR=$IPV6_ADDRESS" | sudo tee -a /etc/sysconfig/network-scripts/ifcfg-$INTERFACE >/dev/null
+                echo "IPV6ADDR=$IPV6_ADDRESS" | tee -a /etc/sysconfig/network-scripts/ifcfg-$INTERFACE >/dev/null
                 if [[ -n "$IPV6_GATEWAY" ]]; then
-                    echo "IPV6_DEFAULTGW=$IPV6_GATEWAY" | sudo tee -a /etc/sysconfig/network-scripts/ifcfg-$INTERFACE >/dev/null
+                    echo "IPV6_DEFAULTGW=$IPV6_GATEWAY" | tee -a /etc/sysconfig/network-scripts/ifcfg-$INTERFACE >/dev/null
                 fi
             fi
-            sudo systemctl restart network
+            $SUDO_PREFIX systemctl restart network
         else
             log_error "Network configuration method not found. Supported: netplan, ifcfg-*"
         fi
@@ -153,17 +162,17 @@ configure_dns() {
     
     # Systemd-resolved (modern)
     if command -v systemctl &>/dev/null && systemctl is-active --quiet systemd-resolved; then
-        sudo mkdir -p /etc/systemd/resolved.conf.d/
-        sudo tee /etc/systemd/resolved.conf.d/custom-dns.conf > /dev/null <<EOF
+        $SUDO_PREFIX mkdir -p /etc/systemd/resolved.conf.d/
+        $SUDO_PREFIX tee /etc/systemd/resolved.conf.d/custom-dns.conf > /dev/null <<EOF
 [Resolve]
 DNS=$DNS_SERVER
 FallbackDNS=8.8.8.8 8.8.4.4
 EOF
-        sudo systemctl restart systemd-resolved
+        $SUDO_PREFIX systemctl restart systemd-resolved
     # /etc/resolv.conf (fallback)
     else
-        echo "nameserver $DNS_SERVER" | sudo tee /etc/resolv.conf >/dev/null
-        echo "nameserver 8.8.8.8" | sudo tee -a /etc/resolv.conf >/dev/null
+        echo "nameserver $DNS_SERVER" | tee /etc/resolv.conf >/dev/null
+        echo "nameserver 8.8.8.8" | tee -a /etc/resolv.conf >/dev/null
     fi
     
     log_info "DNS configured successfully!"
@@ -175,10 +184,10 @@ change_hostname() {
     [[ -z "$HOSTNAME" ]] && log_error "HOSTNAME not set"
     
     log_info "Setting hostname to: $HOSTNAME..."
-    sudo hostnamectl set-hostname "$HOSTNAME" || sudo hostname "$HOSTNAME"
+    $SUDO_PREFIX hostnamectl set-hostname "$HOSTNAME" || $SUDO_PREFIX hostname "$HOSTNAME"
     
     # Update /etc/hosts
-    sudo sed -i "s/127.0.1.1.*/127.0.1.1 $HOSTNAME/" /etc/hosts || echo "127.0.1.1 $HOSTNAME" | sudo tee -a /etc/hosts >/dev/null
+    $SUDO_PREFIX sed -i "s/127.0.1.1.*/127.0.1.1 $HOSTNAME/" /etc/hosts || echo "127.0.1.1 $HOSTNAME" | tee -a /etc/hosts >/dev/null
     
     log_info "Hostname changed to: $HOSTNAME"
 }
@@ -192,7 +201,7 @@ add_user() {
     
     log_info "Creating user: $USERNAME (shell: $shell)..."
     
-    if sudo useradd -m -s "$shell" "$USERNAME" 2>/dev/null; then
+    if $SUDO_PREFIX useradd -m -s "$shell" "$USERNAME" 2>/dev/null; then
         log_info "User $USERNAME created successfully!"
     else
         log_warn "User $USERNAME might already exist"
@@ -206,7 +215,7 @@ delete_user() {
     
     log_info "Removing user: $USERNAME..."
     
-    if sudo userdel -r "$USERNAME" 2>/dev/null; then
+    if $SUDO_PREFIX userdel -r "$USERNAME" 2>/dev/null; then
         log_info "User $USERNAME deleted successfully!"
     else
         log_warn "Failed to delete user $USERNAME"
@@ -221,7 +230,7 @@ change_password() {
     
     log_info "Setting password for user: $USERNAME..."
     
-    echo "$USERNAME:$PASSWORD" | sudo chpasswd || log_error "Failed to change password"
+    echo "$USERNAME:$PASSWORD" | $SUDO_PREFIX chpasswd || log_error "Failed to change password"
     
     log_info "Password changed for user: $USERNAME"
 }
@@ -233,7 +242,7 @@ create_group() {
     
     log_info "Creating group: $GROUPNAME..."
     
-    if sudo groupadd "$GROUPNAME" 2>/dev/null; then
+    if $SUDO_PREFIX groupadd "$GROUPNAME" 2>/dev/null; then
         log_info "Group $GROUPNAME created successfully!"
     else
         log_warn "Group $GROUPNAME might already exist"
@@ -248,7 +257,7 @@ add_user_to_group() {
     
     log_info "Adding user $USERNAME to group $GROUPNAME..."
     
-    if sudo usermod -aG "$GROUPNAME" "$USERNAME"; then
+    if $SUDO_PREFIX usermod -aG "$GROUPNAME" "$USERNAME"; then
         log_info "User $USERNAME added to group $GROUPNAME!"
     else
         log_error "Failed to add user to group"
@@ -263,14 +272,14 @@ update_ca_cert() {
     
     log_info "Fetching CA certificate from $SERVER..."
     
-    if ! echo | openssl s_client -connect "$SERVER:443" -showcerts 2>/dev/null | openssl x509 -outform PEM | sudo tee $CA_PATH/ca-$SERVER.crt > /dev/null; then
+    if ! echo | openssl s_client -connect "$SERVER:443" -showcerts 2>/dev/null | openssl x509 -outform PEM | tee $CA_PATH/ca-$SERVER.crt > /dev/null; then
         log_error "Failed to fetch and install certificate from $SERVER"
     fi
     
     log_info "Certificate installed to system CA store"
     
     log_info "Updating CA certificate database..."
-    if ! sudo $CA_UPDATE; then
+    if ! $SUDO_PREFIX $CA_UPDATE; then
         log_error "Failed to update CA certificates"
     fi
     
@@ -280,15 +289,15 @@ update_ca_cert() {
 install_compression() {
     log_info "Installing zip and unzip..."
     detect_os
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL zip unzip || log_error "Failed to install packages"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL zip unzip || log_error "Failed to install packages"
     log_info "zip and unzip installed successfully!"
 }
 
 uninstall_compression() {
     log_info "Uninstalling zip and unzip..."
     detect_os
-    sudo $PKG_UNINSTALL zip unzip || log_error "Failed to uninstall packages"
+    $SUDO_PREFIX $PKG_UNINSTALL zip unzip || log_error "Failed to uninstall packages"
     log_info "zip and unzip uninstalled successfully!"
 }
 

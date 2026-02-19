@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -76,10 +85,10 @@ install_docker() {
     log_info "Installing Docker..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL docker.io docker || log_error "Failed"
-    sudo systemctl enable docker
-    sudo systemctl start docker
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL docker.io docker || log_error "Failed"
+    $SUDO_PREFIX systemctl enable docker
+    $SUDO_PREFIX systemctl start docker
     
     log_info "Docker installed!"
 }
@@ -89,9 +98,9 @@ update_docker() {
     log_info "Updating Docker..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL docker.io docker || log_error "Failed"
-    sudo systemctl restart docker
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL docker.io docker || log_error "Failed"
+    $SUDO_PREFIX systemctl restart docker
     
     log_info "Docker updated!"
 }
@@ -101,12 +110,12 @@ uninstall_docker() {
     log_info "Uninstalling Docker..."
     detect_os
     
-    sudo systemctl stop docker || true
-    sudo systemctl disable docker || true
-    sudo $PKG_UNINSTALL docker.io docker || log_error "Failed"
+    $SUDO_PREFIX systemctl stop docker || true
+    $SUDO_PREFIX systemctl disable docker || true
+    $SUDO_PREFIX $PKG_UNINSTALL docker.io docker || log_error "Failed"
     
     # Optionally delete Docker images and containers data
-    [[ "$DELETE_IMAGES" == "yes" ]] && sudo rm -rf /var/lib/docker || true
+    [[ "$DELETE_IMAGES" == "yes" ]] && $SUDO_PREFIX rm -rf /var/lib/docker || true
     
     log_info "Docker uninstalled!"
 }

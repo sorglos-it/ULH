@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -129,16 +138,16 @@ install_docker_compose() {
     # Try binary download first
     if curl -fsSL "$download_url" -o /tmp/docker-compose; then
         log_info "Binary download successful"
-        sudo mv /tmp/docker-compose /usr/local/bin/docker-compose || log_error "Failed to move docker-compose to /usr/local/bin"
-        sudo chmod +x /usr/local/bin/docker-compose || log_error "Failed to make docker-compose executable"
+        $SUDO_PREFIX mv /tmp/docker-compose /usr/local/bin/docker-compose || log_error "Failed to move docker-compose to /usr/local/bin"
+        $SUDO_PREFIX chmod +x /usr/local/bin/docker-compose || log_error "Failed to make docker-compose executable"
         
         log_info "Docker Compose installed successfully!"
         /usr/local/bin/docker-compose --version
     else
         # Fallback to distro package manager
         log_info "Binary download failed, trying distro package manager..."
-        sudo $PKG_UPDATE || true
-        sudo $PKG_INSTALL "$DISTRO_PKG_NAME" || log_error "Failed to install Docker Compose via package manager"
+        $SUDO_PREFIX $PKG_UPDATE || true
+        $SUDO_PREFIX $PKG_INSTALL "$DISTRO_PKG_NAME" || log_error "Failed to install Docker Compose via package manager"
         
         log_info "Docker Compose installed successfully!"
         docker-compose --version
@@ -158,8 +167,8 @@ update_docker_compose() {
         log_info "Downloading Docker Compose v${version}..."
         
         if curl -fsSL "$download_url" -o /tmp/docker-compose; then
-            sudo mv /tmp/docker-compose /usr/local/bin/docker-compose || log_error "Failed to update docker-compose binary"
-            sudo chmod +x /usr/local/bin/docker-compose || log_error "Failed to make docker-compose executable"
+            $SUDO_PREFIX mv /tmp/docker-compose /usr/local/bin/docker-compose || log_error "Failed to update docker-compose binary"
+            $SUDO_PREFIX chmod +x /usr/local/bin/docker-compose || log_error "Failed to make docker-compose executable"
             
             log_info "Docker Compose updated successfully!"
             /usr/local/bin/docker-compose --version
@@ -169,8 +178,8 @@ update_docker_compose() {
     else
         # Update package manager installation
         log_info "Docker Compose installed via package manager, updating..."
-        sudo $PKG_UPDATE || true
-        sudo $PKG_INSTALL "$DISTRO_PKG_NAME" || log_error "Failed to update Docker Compose"
+        $SUDO_PREFIX $PKG_UPDATE || true
+        $SUDO_PREFIX $PKG_INSTALL "$DISTRO_PKG_NAME" || log_error "Failed to update Docker Compose"
         
         log_info "Docker Compose updated successfully!"
         docker-compose --version
@@ -189,13 +198,13 @@ uninstall_docker_compose() {
     fi
     
     if [[ -f /usr/local/bin/docker-compose ]]; then
-        sudo rm -f /usr/local/bin/docker-compose || log_error "Failed to remove docker-compose binary"
+        $SUDO_PREFIX rm -f /usr/local/bin/docker-compose || log_error "Failed to remove docker-compose binary"
         log_info "Docker Compose binary removed"
     fi
     
     # Also try to remove package manager installation
     detect_os
-    sudo $PKG_UNINSTALL "$DISTRO_PKG_NAME" 2>/dev/null || true
+    $SUDO_PREFIX $PKG_UNINSTALL "$DISTRO_PKG_NAME" 2>/dev/null || true
     
     log_info "Docker Compose uninstalled successfully!"
     

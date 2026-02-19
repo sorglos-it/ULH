@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,8 +74,8 @@ install_perl() {
     log_info "Installing Perl..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL perl perl-modules || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL perl perl-modules || log_error "Failed"
     
     log_info "Perl installed!"
 }
@@ -76,8 +85,8 @@ update_perl() {
     log_info "Updating Perl..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL perl perl-modules || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL perl perl-modules || log_error "Failed"
     
     log_info "Perl updated!"
 }
@@ -87,7 +96,7 @@ uninstall_perl() {
     log_info "Uninstalling Perl..."
     detect_os
     
-    sudo $PKG_UNINSTALL perl perl-modules || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL perl perl-modules || log_error "Failed"
     
     log_info "Perl uninstalled!"
 }

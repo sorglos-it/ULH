@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -44,9 +53,9 @@ update_ubuntu() {
     log_info "Updating Ubuntu..."
     detect_os
     
-    sudo apt-get update || true
-    sudo apt-get upgrade -y || log_error "Failed"
-    sudo apt-get autoremove -y || true
+    $SUDO_PREFIX apt-get update || true
+    $SUDO_PREFIX apt-get upgrade -y || log_error "Failed"
+    $SUDO_PREFIX apt-get autoremove -y || true
     
     log_info "Ubuntu updated!"
 }
@@ -58,7 +67,7 @@ attach_pro() {
     # Verify Pro key is provided
     [[ -z "$KEY" ]] && log_error "Pro key not set"
     
-    sudo pro attach "$KEY" || log_error "Failed"
+    $SUDO_PREFIX pro attach "$KEY" || log_error "Failed"
     
     log_info "Ubuntu Pro attached!"
 }
@@ -68,7 +77,7 @@ detach_pro() {
     log_info "Detaching Ubuntu Pro..."
     detect_os
     
-    sudo pro detach --assume-yes || log_error "Failed"
+    $SUDO_PREFIX pro detach --assume-yes || log_error "Failed"
     
     log_info "Ubuntu Pro detached!"
 }

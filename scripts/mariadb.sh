@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -83,11 +92,11 @@ install_mariadb() {
     log_info "Installing MariaDB..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $PKG || log_error "Failed to install MariaDB"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed to install MariaDB"
     
-    sudo systemctl enable mariadb
-    sudo systemctl start mariadb
+    $SUDO_PREFIX systemctl enable mariadb
+    $SUDO_PREFIX systemctl start mariadb
     
     log_info "MariaDB installed and started!"
 }
@@ -96,9 +105,9 @@ update_mariadb() {
     log_info "Updating MariaDB..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL $PKG || log_error "Failed to update MariaDB"
-    sudo systemctl restart mariadb
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed to update MariaDB"
+    $SUDO_PREFIX systemctl restart mariadb
     
     log_info "MariaDB updated!"
 }
@@ -107,12 +116,12 @@ uninstall_mariadb() {
     log_warn "Uninstalling MariaDB..."
     detect_os
     
-    sudo systemctl stop mariadb || true
-    sudo systemctl disable mariadb || true
-    sudo $PKG_UNINSTALL $PKG || log_error "Failed to uninstall MariaDB"
+    $SUDO_PREFIX systemctl stop mariadb || true
+    $SUDO_PREFIX systemctl disable mariadb || true
+    $SUDO_PREFIX $PKG_UNINSTALL $PKG || log_error "Failed to uninstall MariaDB"
     
-    [[ "$DELETE_DATA" == "yes" ]] && sudo rm -rf /var/lib/mysql || true
-    [[ "$DELETE_CONFIG" == "yes" ]] && sudo rm -rf /etc/mysql* || true
+    [[ "$DELETE_DATA" == "yes" ]] && $SUDO_PREFIX rm -rf /var/lib/mysql || true
+    [[ "$DELETE_CONFIG" == "yes" ]] && $SUDO_PREFIX rm -rf /etc/mysql* || true
     
     log_info "MariaDB uninstalled!"
 }
@@ -123,11 +132,11 @@ config_mariadb() {
     
     [[ ! -f "$CONF_FILE" ]] && log_error "Config file not found: $CONF_FILE"
     
-    [[ -n "$MAX_CONNECTIONS" ]] && sudo sed -i "s/^max_connections.*/max_connections = $MAX_CONNECTIONS/" "$CONF_FILE"
-    [[ -n "$INNODB_BUFFER" ]] && sudo sed -i "s/^innodb_buffer_pool_size.*/innodb_buffer_pool_size = $INNODB_BUFFER/" "$CONF_FILE"
-    [[ -n "$BIND_ADDRESS" ]] && sudo sed -i "s/^bind-address.*/bind-address = $BIND_ADDRESS/" "$CONF_FILE"
+    [[ -n "$MAX_CONNECTIONS" ]] && $SUDO_PREFIX sed -i "s/^max_connections.*/max_connections = $MAX_CONNECTIONS/" "$CONF_FILE"
+    [[ -n "$INNODB_BUFFER" ]] && $SUDO_PREFIX sed -i "s/^innodb_buffer_pool_size.*/innodb_buffer_pool_size = $INNODB_BUFFER/" "$CONF_FILE"
+    [[ -n "$BIND_ADDRESS" ]] && $SUDO_PREFIX sed -i "s/^bind-address.*/bind-address = $BIND_ADDRESS/" "$CONF_FILE"
     
-    sudo systemctl restart mariadb
+    $SUDO_PREFIX systemctl restart mariadb
     log_info "MariaDB configured!"
 }
 

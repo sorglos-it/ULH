@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,8 +74,8 @@ install_net_tools() {
     log_info "Installing net-tools..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL net-tools || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL net-tools || log_error "Failed"
     
     log_info "net-tools installed!"
 }
@@ -76,8 +85,8 @@ update_net_tools() {
     log_info "Updating net-tools..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL net-tools || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL net-tools || log_error "Failed"
     
     log_info "net-tools updated!"
 }
@@ -87,7 +96,7 @@ uninstall_net_tools() {
     log_info "Uninstalling net-tools..."
     detect_os
     
-    sudo $PKG_UNINSTALL net-tools || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL net-tools || log_error "Failed"
     
     log_info "net-tools uninstalled!"
 }

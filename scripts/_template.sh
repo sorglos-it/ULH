@@ -6,6 +6,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -77,8 +86,8 @@ install_package() {
     log_info "Installing package..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL package_name || log_error "Failed to install"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL package_name || log_error "Failed to install"
     
     log_info "Package installed!"
 }
@@ -87,8 +96,8 @@ update_package() {
     log_info "Updating package..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL package_name || log_error "Failed to update"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL package_name || log_error "Failed to update"
     
     log_info "Package updated!"
 }
@@ -97,7 +106,7 @@ uninstall_package() {
     log_warn "Uninstalling package..."
     detect_os
     
-    sudo $PKG_UNINSTALL package_name || log_error "Failed to uninstall"
+    $SUDO_PREFIX $PKG_UNINSTALL package_name || log_error "Failed to uninstall"
     
     log_info "Package uninstalled!"
 }

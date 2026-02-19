@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -83,11 +92,11 @@ install_apache() {
     log_info "Installing Apache..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL apache2 httpd || log_error "Failed to install Apache"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL apache2 httpd || log_error "Failed to install Apache"
     
-    sudo systemctl enable $SVC_NAME
-    sudo systemctl start $SVC_NAME
+    $SUDO_PREFIX systemctl enable $SVC_NAME
+    $SUDO_PREFIX systemctl start $SVC_NAME
     
     log_info "Apache installed and started!"
 }
@@ -96,9 +105,9 @@ update_apache() {
     log_info "Updating Apache..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL apache2 httpd || log_error "Failed to update Apache"
-    sudo systemctl restart $SVC_NAME
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL apache2 httpd || log_error "Failed to update Apache"
+    $SUDO_PREFIX systemctl restart $SVC_NAME
     
     log_info "Apache updated!"
 }
@@ -107,11 +116,11 @@ uninstall_apache() {
     log_warn "Uninstalling Apache..."
     detect_os
     
-    sudo systemctl stop $SVC_NAME || true
-    sudo systemctl disable $SVC_NAME || true
-    sudo $PKG_UNINSTALL apache2 httpd || log_error "Failed to uninstall Apache"
+    $SUDO_PREFIX systemctl stop $SVC_NAME || true
+    $SUDO_PREFIX systemctl disable $SVC_NAME || true
+    $SUDO_PREFIX $PKG_UNINSTALL apache2 httpd || log_error "Failed to uninstall Apache"
     
-    [[ "$DELETE_CONFIG" == "yes" ]] && sudo rm -rf $CONF_DIR || true
+    [[ "$DELETE_CONFIG" == "yes" ]] && $SUDO_PREFIX rm -rf $CONF_DIR || true
     
     log_info "Apache uninstalled!"
 }
@@ -127,7 +136,7 @@ config_vhosts() {
     log_info "Root: $VHOST_ROOT"
     log_info "Configure $CONF_DIR manually"
     
-    sudo systemctl restart $SVC_NAME
+    $SUDO_PREFIX systemctl restart $SVC_NAME
     log_info "Configuration updated!"
 }
 

@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,8 +74,8 @@ install_golang() {
     log_info "Installing Go..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL golang-go || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL golang-go || log_error "Failed"
     
     log_info "Go installed!"
 }
@@ -76,8 +85,8 @@ update_golang() {
     log_info "Updating Go..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL golang-go || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL golang-go || log_error "Failed"
     
     log_info "Go updated!"
 }
@@ -87,7 +96,7 @@ uninstall_golang() {
     log_info "Uninstalling Go..."
     detect_os
     
-    sudo $PKG_UNINSTALL golang-go || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL golang-go || log_error "Failed"
     
     log_info "Go uninstalled!"
 }

@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -89,14 +98,14 @@ install_mysql() {
     detect_os
     
     # Update package manager
-    sudo $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_UPDATE || true
     
     # Install MySQL
-    sudo $PKG_INSTALL $PKG || log_error "Failed to install MySQL"
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed to install MySQL"
     
     # Enable and start service
-    sudo systemctl enable $SERVICE
-    sudo systemctl start $SERVICE
+    $SUDO_PREFIX systemctl enable $SERVICE
+    $SUDO_PREFIX systemctl start $SERVICE
     
     log_info "MySQL installed and started!"
     mysql --version || true
@@ -107,13 +116,13 @@ update_mysql() {
     detect_os
     
     # Update package manager
-    sudo $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_UPDATE || true
     
     # Update MySQL
-    sudo $PKG_INSTALL $PKG || log_error "Failed to update MySQL"
+    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed to update MySQL"
     
     # Restart service
-    sudo systemctl restart $SERVICE
+    $SUDO_PREFIX systemctl restart $SERVICE
     
     log_info "MySQL updated!"
 }
@@ -123,15 +132,15 @@ uninstall_mysql() {
     detect_os
     
     # Stop and disable service
-    sudo systemctl stop $SERVICE || true
-    sudo systemctl disable $SERVICE || true
+    $SUDO_PREFIX systemctl stop $SERVICE || true
+    $SUDO_PREFIX systemctl disable $SERVICE || true
     
     # Uninstall MySQL
-    sudo $PKG_UNINSTALL $PKG || log_error "Failed to uninstall MySQL"
+    $SUDO_PREFIX $PKG_UNINSTALL $PKG || log_error "Failed to uninstall MySQL"
     
     # Remove data if requested
-    [[ "$DELETE_DATA" == "yes" ]] && sudo rm -rf /var/lib/mysql* || true
-    [[ "$DELETE_CONFIG" == "yes" ]] && sudo rm -rf /etc/mysql* || true
+    [[ "$DELETE_DATA" == "yes" ]] && $SUDO_PREFIX rm -rf /var/lib/mysql* || true
+    [[ "$DELETE_CONFIG" == "yes" ]] && $SUDO_PREFIX rm -rf /etc/mysql* || true
     
     log_info "MySQL uninstalled!"
 }
@@ -147,8 +156,8 @@ config_mysql() {
     log_info "Socket location: /var/run/mysqld/mysqld.sock"
     
     # Ensure service is enabled and running
-    sudo systemctl enable $SERVICE
-    sudo systemctl start $SERVICE
+    $SUDO_PREFIX systemctl enable $SERVICE
+    $SUDO_PREFIX systemctl start $SERVICE
     
     log_info "MySQL configured and running!"
 }

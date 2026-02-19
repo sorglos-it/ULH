@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -44,7 +53,7 @@ update_pikvm() {
     log_info "Updating PiKVM v3..."
     detect_os
     
-    sudo pacman -Syu --noconfirm || log_error "Failed"
+    $SUDO_PREFIX pacman -Syu --noconfirm || log_error "Failed"
     
     log_info "PiKVM v3 updated!"
 }
@@ -54,7 +63,7 @@ mount_iso() {
     log_info "Mounting ISO directory..."
     detect_os
     
-    sudo mount -o remount,rw /mnt/msd || log_error "Failed"
+    $SUDO_PREFIX mount -o remount,rw /mnt/msd || log_error "Failed"
     
     log_info "ISO directory mounted (rw)!"
 }
@@ -64,7 +73,7 @@ dismount_iso() {
     log_info "Dismounting ISO directory..."
     detect_os
     
-    sudo mount -o remount,ro /mnt/msd || log_error "Failed"
+    $SUDO_PREFIX mount -o remount,ro /mnt/msd || log_error "Failed"
     
     log_info "ISO directory dismounted (ro)!"
 }
@@ -74,7 +83,7 @@ enable_oled() {
     log_info "Enabling OLED..."
     detect_os
     
-    sudo systemctl enable --now pikvm-oled || log_error "Failed"
+    $SUDO_PREFIX systemctl enable --now pikvm-oled || log_error "Failed"
     
     log_info "OLED enabled!"
 }
@@ -84,7 +93,7 @@ enable_vnc() {
     log_info "Enabling VNC..."
     detect_os
     
-    sudo systemctl enable --now vncserver-x11-serviced || log_error "Failed"
+    $SUDO_PREFIX systemctl enable --now vncserver-x11-serviced || log_error "Failed"
     
     log_info "VNC enabled!"
 }

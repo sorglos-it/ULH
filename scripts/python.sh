@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,8 +74,8 @@ install_python() {
     log_info "Installing Python..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL python3 python3-pip || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL python3 python3-pip || log_error "Failed"
     
     log_info "Python installed!"
 }
@@ -76,8 +85,8 @@ update_python() {
     log_info "Updating Python..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL python3 python3-pip || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL python3 python3-pip || log_error "Failed"
     
     log_info "Python updated!"
 }
@@ -87,7 +96,7 @@ uninstall_python() {
     log_info "Uninstalling Python..."
     detect_os
     
-    sudo $PKG_UNINSTALL python3 python3-pip || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL python3 python3-pip || log_error "Failed"
     
     log_info "Python uninstalled!"
 }

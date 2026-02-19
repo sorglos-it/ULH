@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -129,13 +138,13 @@ install_samba() {
     log_section "Installing Samba..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL samba samba-client || log_error "Failed to install Samba"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL samba samba-client || log_error "Failed to install Samba"
     
     # Backup original smb.conf
     if [[ -f "$SMB_CONF" ]]; then
         log_info "Backing up original smb.conf to $SMB_CONF_BACKUP"
-        sudo cp "$SMB_CONF" "$SMB_CONF_BACKUP"
+        $SUDO_PREFIX cp "$SMB_CONF" "$SMB_CONF_BACKUP"
     fi
     
     # Create initial basic configuration
@@ -144,8 +153,8 @@ install_samba() {
     
     # Enable and start services
     log_info "Enabling and starting Samba services..."
-    sudo systemctl enable smbd nmbd 2>/dev/null || true
-    sudo systemctl start smbd nmbd || log_error "Failed to start Samba services"
+    $SUDO_PREFIX systemctl enable smbd nmbd 2>/dev/null || true
+    $SUDO_PREFIX systemctl start smbd nmbd || log_error "Failed to start Samba services"
     
     log_info "Samba installed and configured successfully!"
     log_info "Configuration file: $SMB_CONF"
@@ -157,7 +166,7 @@ install_samba() {
 
 create_initial_config() {
     # Create a basic smb.conf if it doesn't exist
-    cat << 'EOF' | sudo tee "$SMB_CONF" > /dev/null
+    cat << 'EOF' | tee "$SMB_CONF" > /dev/null
 [global]
     workgroup = WORKGROUP
     server string = Samba Server
@@ -186,18 +195,18 @@ update_samba() {
     log_section "Updating Samba..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL samba samba-client || log_error "Failed to update Samba"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL samba samba-client || log_error "Failed to update Samba"
     
     # Validate configuration
     if command -v testparm &> /dev/null; then
         log_info "Validating smb.conf..."
-        sudo testparm -s "$SMB_CONF" > /dev/null 2>&1 || log_error "Configuration validation failed"
+        $SUDO_PREFIX testparm -s "$SMB_CONF" > /dev/null 2>&1 || log_error "Configuration validation failed"
     fi
     
     # Restart services
     log_info "Restarting Samba services..."
-    sudo systemctl restart smbd nmbd || log_error "Failed to restart services"
+    $SUDO_PREFIX systemctl restart smbd nmbd || log_error "Failed to restart services"
     
     log_info "Samba updated successfully!"
     smbd --version | head -1
@@ -216,17 +225,17 @@ uninstall_samba() {
     
     # Stop services
     log_info "Stopping Samba services..."
-    sudo systemctl stop smbd nmbd 2>/dev/null || true
-    sudo systemctl disable smbd nmbd 2>/dev/null || true
+    $SUDO_PREFIX systemctl stop smbd nmbd 2>/dev/null || true
+    $SUDO_PREFIX systemctl disable smbd nmbd 2>/dev/null || true
     
     # Remove packages
     detect_os
     log_info "Removing Samba packages..."
-    sudo $PKG_UNINSTALL samba samba-client || log_error "Failed to uninstall Samba"
+    $SUDO_PREFIX $PKG_UNINSTALL samba samba-client || log_error "Failed to uninstall Samba"
     
     if [[ "$keep_config" == "no" ]] && [[ -f "$SMB_CONF" ]]; then
         log_info "Removing configuration files..."
-        sudo rm -f "$SMB_CONF"
+        $SUDO_PREFIX rm -f "$SMB_CONF"
     fi
     
     log_info "Samba uninstalled successfully!"
@@ -238,7 +247,7 @@ configure_samba() {
     # Backup current config
     if [[ -f "$SMB_CONF" ]]; then
         log_info "Backing up current smb.conf"
-        sudo cp "$SMB_CONF" "${SMB_CONF}.bak"
+        $SUDO_PREFIX cp "$SMB_CONF" "${SMB_CONF}.bak"
     fi
     
     # Prompt for configuration parameters
@@ -254,7 +263,7 @@ configure_samba() {
     local log_level=$(prompt_input "Logging level (0-10)" "1")
     
     # Create updated configuration
-    cat << EOF | sudo tee "$SMB_CONF" > /dev/null
+    cat << EOF | tee "$SMB_CONF" > /dev/null
 [global]
     workgroup = $workgroup
     server string = $server_desc
@@ -281,7 +290,7 @@ EOF
     # Validate configuration
     if command -v testparm &> /dev/null; then
         log_info "Validating configuration..."
-        if sudo testparm -s "$SMB_CONF" > /dev/null 2>&1; then
+        if $SUDO_PREFIX testparm -s "$SMB_CONF" > /dev/null 2>&1; then
             log_info "Configuration is valid"
         else
             log_error "Configuration validation failed - configuration not applied"
@@ -290,7 +299,7 @@ EOF
     
     # Restart services
     log_info "Restarting Samba services..."
-    sudo systemctl restart smbd nmbd || log_error "Failed to restart services"
+    $SUDO_PREFIX systemctl restart smbd nmbd || log_error "Failed to restart services"
     
     log_info "Samba configuration updated successfully!"
 }
@@ -319,7 +328,7 @@ add_share() {
     # Create directory if needed
     if [[ ! -d "$share_path" ]]; then
         log_info "Creating directory: $share_path"
-        sudo mkdir -p "$share_path" || log_error "Failed to create directory"
+        $SUDO_PREFIX mkdir -p "$share_path" || log_error "Failed to create directory"
     fi
     
     # Set ownership and permissions
@@ -327,8 +336,8 @@ add_share() {
     local group=$(prompt_input "Directory group" "root")
     
     log_info "Setting ownership and permissions..."
-    sudo chown "$owner:$group" "$share_path" || log_error "Failed to set owner"
-    sudo chmod "$create_mask" "$share_path" || log_error "Failed to set permissions"
+    $SUDO_PREFIX chown "$owner:$group" "$share_path" || log_error "Failed to set owner"
+    $SUDO_PREFIX chmod "$create_mask" "$share_path" || log_error "Failed to set permissions"
     
     # Convert yes/no to Yes/No for smb.conf
     [[ "$writeable" == "yes" ]] && writeable="Yes" || writeable="No"
@@ -336,7 +345,7 @@ add_share() {
     [[ "$browseable" == "yes" ]] && browseable="Yes" || browseable="No"
     
     # Create share configuration entry with all 9 parameters
-    cat << EOF | sudo tee -a "$SMB_CONF" > /dev/null
+    cat << EOF | tee -a "$SMB_CONF" > /dev/null
 
 [$share_name]
     comment = $share_comment
@@ -352,14 +361,14 @@ EOF
     # Validate configuration
     if command -v testparm &> /dev/null; then
         log_info "Validating configuration..."
-        if ! sudo testparm -s "$SMB_CONF" > /dev/null 2>&1; then
+        if ! $SUDO_PREFIX testparm -s "$SMB_CONF" > /dev/null 2>&1; then
             log_error "Configuration validation failed - reverting"
         fi
     fi
     
     # Restart services
     log_info "Restarting Samba services..."
-    sudo systemctl restart smbd nmbd || log_error "Failed to restart services"
+    $SUDO_PREFIX systemctl restart smbd nmbd || log_error "Failed to restart services"
     
     log_info "Share '$share_name' added successfully!"
     log_info "Path: $share_path"
@@ -413,12 +422,12 @@ smbuser_add() {
     # Check if system user exists, create if not
     if ! id "$username" &>/dev/null; then
         log_info "Creating system user: $username"
-        sudo useradd -m -s /nologin "$username" || log_error "Failed to create user"
+        $SUDO_PREFIX useradd -m -s /nologin "$username" || log_error "Failed to create user"
     fi
     
     # Add to Samba with password
     log_info "Adding user to Samba..."
-    echo -e "$password\n$password" | sudo smbpasswd -a -s "$username" || log_error "Failed to add Samba user"
+    echo -e "$password\n$password" | $SUDO_PREFIX smbpasswd -a -s "$username" || log_error "Failed to add Samba user"
     
     log_info "User '$username' added to Samba successfully!"
 }
@@ -436,7 +445,7 @@ smbuser_delete() {
     
     # Remove from Samba
     log_info "Removing user from Samba..."
-    sudo smbpasswd -x "$username" || log_error "Failed to delete Samba user"
+    $SUDO_PREFIX smbpasswd -x "$username" || log_error "Failed to delete Samba user"
     
     log_info "User '$username' removed from Samba successfully!"
 }
@@ -465,7 +474,7 @@ smbuser_change_password() {
     
     # Update password
     log_info "Updating Samba password for '$username'..."
-    echo -e "$password\n$password" | sudo smbpasswd -a -s "$username" || log_error "Failed to update password"
+    echo -e "$password\n$password" | $SUDO_PREFIX smbpasswd -a -s "$username" || log_error "Failed to update password"
     
     log_info "Password updated successfully!"
 }
@@ -475,7 +484,7 @@ smbuser_list() {
     
     if command -v pdbedit &> /dev/null; then
         log_info "Current Samba users:"
-        sudo pdbedit -L -v 2>/dev/null || log_warn "No Samba users found or pdbedit error"
+        $SUDO_PREFIX pdbedit -L -v 2>/dev/null || log_warn "No Samba users found or pdbedit error"
     else
         log_warn "pdbedit not available - cannot list users"
     fi

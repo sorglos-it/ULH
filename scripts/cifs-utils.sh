@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
 PARAMS_REST="${FULL_PARAMS#*,}"
@@ -75,8 +84,8 @@ install_cifs() {
     log_info "Installing cifs-utils..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL cifs-utils || log_error "Failed to install cifs-utils"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL cifs-utils || log_error "Failed to install cifs-utils"
     
     log_info "cifs-utils installed successfully!"
     mount.cifs --version 2>/dev/null || log_info "mount.cifs is ready for use"
@@ -86,8 +95,8 @@ update_cifs() {
     log_info "Updating cifs-utils..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL cifs-utils || log_error "Failed to update cifs-utils"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL cifs-utils || log_error "Failed to update cifs-utils"
     
     log_info "cifs-utils updated successfully!"
     mount.cifs --version 2>/dev/null || log_info "mount.cifs is ready for use"
@@ -104,13 +113,13 @@ uninstall_cifs() {
         if [[ "$response" =~ ^[Yy] ]]; then
             log_info "Unmounting CIFS shares..."
             mount | grep "type cifs" | awk '{print $3}' | while read -r mount_point; do
-                sudo umount "$mount_point" || log_error "Failed to unmount $mount_point"
+                $SUDO_PREFIX umount "$mount_point" || log_error "Failed to unmount $mount_point"
                 log_info "Unmounted: $mount_point"
             done
         fi
     fi
     
-    sudo $PKG_UNINSTALL cifs-utils || log_error "Failed to uninstall cifs-utils"
+    $SUDO_PREFIX $PKG_UNINSTALL cifs-utils || log_error "Failed to uninstall cifs-utils"
     
     log_info "cifs-utils uninstalled successfully!"
 }
@@ -162,11 +171,11 @@ mount_smb() {
     
     # Create mount point directory
     log_info "Creating mount point directory..."
-    sudo mkdir -p "$MOUNT_POINT" || log_error "Failed to create mount point"
+    $SUDO_PREFIX mkdir -p "$MOUNT_POINT" || log_error "Failed to create mount point"
     
     # Create credentials directory
     log_info "Creating credentials directory..."
-    sudo mkdir -p /etc/samba/ || log_error "Failed to create credentials directory"
+    $SUDO_PREFIX mkdir -p /etc/samba/ || log_error "Failed to create credentials directory"
     
     # Create credentials file
     log_info "Creating credentials file..."
@@ -174,18 +183,18 @@ mount_smb() {
     {
         echo "username=$USERNAME"
         echo "password=$PASSWORD"
-    } | sudo tee "$CREDS_FILE" > /dev/null || log_error "Failed to create credentials file"
+    } | tee "$CREDS_FILE" > /dev/null || log_error "Failed to create credentials file"
     
     # Secure credentials file
-    sudo chmod 400 "$CREDS_FILE" || log_error "Failed to secure credentials file"
+    $SUDO_PREFIX chmod 400 "$CREDS_FILE" || log_error "Failed to secure credentials file"
     
     # Backup fstab before modifying
     log_info "Backing up /etc/fstab..."
-    sudo cp /etc/fstab "/etc/fstab.backup.$(date +%s)" || log_error "Failed to backup fstab"
+    $SUDO_PREFIX cp /etc/fstab "/etc/fstab.backup.$(date +%s)" || log_error "Failed to backup fstab"
     
     # Mount the share
     log_info "Mounting SMB share..."
-    if sudo mount -t cifs -o rw,vers=3.0,credentials="$CREDS_FILE",uid=$(id -u),gid=$(id -g) "//$SERVER/$SHARE" "$MOUNT_POINT"; then
+    if $SUDO_PREFIX mount -t cifs -o rw,vers=3.0,credentials="$CREDS_FILE",uid=$(id -u),gid=$(id -g) "//$SERVER/$SHARE" "$MOUNT_POINT"; then
         log_info "SMB share mounted successfully!"
     else
         log_error "Failed to mount SMB share. Check credentials and server availability."
@@ -207,7 +216,7 @@ mount_smb() {
         # Add to fstab for persistent mounting
         log_info "Adding entry to /etc/fstab for persistent mounting..."
         FSTAB_ENTRY="//$SERVER/$SHARE $MOUNT_POINT cifs credentials=$CREDS_FILE,uid=$(id -u),gid=$(id -g),vers=3.0 0 0"
-        echo "$FSTAB_ENTRY" | sudo tee -a /etc/fstab > /dev/null || log_error "Failed to add entry to fstab"
+        echo "$FSTAB_ENTRY" | tee -a /etc/fstab > /dev/null || log_error "Failed to add entry to fstab"
     fi
     
     # Display mount summary

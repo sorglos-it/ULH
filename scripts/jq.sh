@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,8 +74,8 @@ install_jq() {
     log_info "Installing jq..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL jq || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL jq || log_error "Failed"
     
     log_info "jq installed!"
     jq --version
@@ -77,8 +86,8 @@ update_jq() {
     log_info "Updating jq..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL jq || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL jq || log_error "Failed"
     
     log_info "jq updated!"
     jq --version
@@ -89,7 +98,7 @@ uninstall_jq() {
     log_info "Uninstalling jq..."
     detect_os
     
-    sudo $PKG_UNINSTALL jq || log_error "Failed"
+    $SUDO_PREFIX $PKG_UNINSTALL jq || log_error "Failed"
     
     log_info "jq uninstalled!"
 }

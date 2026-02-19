@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action and parameters
 FULL_PARAMS="$1"
 ACTION="${FULL_PARAMS%%,*}"
@@ -74,8 +83,8 @@ install_ufw() {
     log_info "Installing ufw..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ufw || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL ufw || log_error "Failed"
     
     log_info "ufw installed!"
 }
@@ -85,8 +94,8 @@ update_ufw() {
     log_info "Updating ufw..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ufw || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL ufw || log_error "Failed"
     
     log_info "ufw updated!"
 }
@@ -96,8 +105,8 @@ uninstall_ufw() {
     log_info "Uninstalling ufw..."
     detect_os
     
-    sudo ufw disable || true
-    sudo $PKG_UNINSTALL ufw || log_error "Failed"
+    $SUDO_PREFIX ufw disable || true
+    $SUDO_PREFIX $PKG_UNINSTALL ufw || log_error "Failed"
     
     log_info "ufw uninstalled!"
 }
@@ -109,7 +118,7 @@ configure_ufw() {
     # If PORT is set via parameters, use simple mode (backward compatibility)
     if [[ -n "$PORT" ]]; then
         log_info "Adding rule for port $PORT..."
-        sudo ufw allow "$PORT" || log_error "Failed to add rule"
+        $SUDO_PREFIX ufw allow "$PORT" || log_error "Failed to add rule"
         log_info "Port $PORT allowed!"
         return
     fi
@@ -136,23 +145,23 @@ configure_ufw() {
                 read -p "From IP (optional, press Enter for any): " from_ip
                 
                 if [[ -z "$from_ip" ]]; then
-                    sudo ufw "$action" "$port/$protocol" || log_error "Failed to add rule"
+                    $SUDO_PREFIX ufw "$action" "$port/$protocol" || log_error "Failed to add rule"
                     log_info "Rule added: $action $port/$protocol"
                 else
-                    sudo ufw "$action" from "$from_ip" to any port "$port" proto "$protocol" || log_error "Failed to add rule"
+                    $SUDO_PREFIX ufw "$action" from "$from_ip" to any port "$port" proto "$protocol" || log_error "Failed to add rule"
                     log_info "Rule added: $action from $from_ip port $port/$protocol"
                 fi
                 ;;
             2)
                 # Delete Rule
                 log_info "Current rules:"
-                sudo ufw status numbered || true
+                $SUDO_PREFIX ufw status numbered || true
                 echo ""
                 read -p "Enter rule number to delete: " rule_num
                 
                 if [[ -n "$rule_num" && "$rule_num" =~ ^[0-9]+$ ]]; then
                     # Use 'yes' to auto-confirm deletion
-                    sudo bash -c "echo 'y' | ufw delete $rule_num" || log_error "Failed to delete rule"
+                    $SUDO_PREFIX bash -c "echo 'y' | ufw delete $rule_num" || log_error "Failed to delete rule"
                     log_info "Rule deleted!"
                 else
                     log_error "Invalid rule number"
@@ -161,7 +170,7 @@ configure_ufw() {
             3)
                 # Show Rules
                 log_info "Current UFW status and rules:"
-                sudo ufw status verbose || true
+                $SUDO_PREFIX ufw status verbose || true
                 ;;
             4)
                 # Back to main menu
@@ -178,7 +187,7 @@ configure_ufw() {
 # Show UFW firewall status
 status_ufw() {
     log_info "UFW Firewall Status:"
-    sudo ufw status verbose || log_error "Failed to get status"
+    $SUDO_PREFIX ufw status verbose || log_error "Failed to get status"
 }
 
 # Reset UFW firewall to defaults
@@ -187,7 +196,7 @@ reset_ufw() {
     
     read -p "Are you sure? This will reset all UFW rules (yes/no): " confirm
     if [[ "$confirm" == "yes" ]]; then
-        sudo bash -c "echo 'y' | ufw reset" || log_error "Failed to reset UFW"
+        $SUDO_PREFIX bash -c "echo 'y' | ufw reset" || log_error "Failed to reset UFW"
         log_info "UFW reset to default settings!"
     else
         log_info "Reset cancelled."
@@ -198,7 +207,7 @@ reset_ufw() {
 enable_ufw() {
     log_info "Enabling ufw..."
     
-    sudo ufw enable || log_error "Failed"
+    $SUDO_PREFIX ufw enable || log_error "Failed"
     
     log_info "ufw enabled!"
 }
@@ -207,7 +216,7 @@ enable_ufw() {
 disable_ufw() {
     log_info "Disabling ufw..."
     
-    sudo ufw disable || log_error "Failed"
+    $SUDO_PREFIX ufw disable || log_error "Failed"
     
     log_info "ufw disabled!"
 }

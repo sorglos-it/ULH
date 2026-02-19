@@ -5,6 +5,15 @@
 
 set -e
 
+
+# Check if we need sudo
+if [[ $EUID -ne 0 ]]; then
+    SUDO_PREFIX="sudo"
+else
+    SUDO_PREFIX=""
+fi
+
+
 # Parse action from first parameter
 ACTION="${1%%,*}"
 
@@ -65,10 +74,10 @@ install_fail2ban() {
     log_info "Installing fail2ban..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL fail2ban || log_error "Failed"
-    sudo systemctl enable fail2ban
-    sudo systemctl start fail2ban
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL fail2ban || log_error "Failed"
+    $SUDO_PREFIX systemctl enable fail2ban
+    $SUDO_PREFIX systemctl start fail2ban
     
     log_info "fail2ban installed and started!"
 }
@@ -78,8 +87,8 @@ update_fail2ban() {
     log_info "Updating fail2ban..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL fail2ban || log_error "Failed"
+    $SUDO_PREFIX $PKG_UPDATE || true
+    $SUDO_PREFIX $PKG_INSTALL fail2ban || log_error "Failed"
     
     log_info "fail2ban updated!"
 }
@@ -89,9 +98,9 @@ uninstall_fail2ban() {
     log_info "Uninstalling fail2ban..."
     detect_os
     
-    sudo systemctl stop fail2ban
-    sudo systemctl disable fail2ban
-    sudo $PKG_UNINSTALL fail2ban || log_error "Failed"
+    $SUDO_PREFIX systemctl stop fail2ban
+    $SUDO_PREFIX systemctl disable fail2ban
+    $SUDO_PREFIX $PKG_UNINSTALL fail2ban || log_error "Failed"
     
     log_info "fail2ban uninstalled!"
 }
@@ -100,7 +109,7 @@ uninstall_fail2ban() {
 configure_fail2ban() {
     log_info "fail2ban configuration"
     log_info "Copy /etc/fail2ban/jail.conf to /etc/fail2ban/jail.local and edit"
-    log_info "Then: sudo systemctl restart fail2ban"
+    log_info "Then: $SUDO_PREFIX systemctl restart fail2ban"
 }
 
 # Route to appropriate action
