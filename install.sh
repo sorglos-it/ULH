@@ -89,7 +89,7 @@ if [[ -d "ulh" ]]; then
     git pull origin main 2>/dev/null || git pull origin master 2>/dev/null || true
 else
     echo "  Cloning from GitHub..."
-    if ! git clone https://github.com/sorglos-it/ULH.git; then
+    if ! git clone https://github.com/sorglos-it/ulh.git; then
         echo "❌ Failed to clone ULH"
         exit 1
     fi
