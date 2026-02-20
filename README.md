@@ -4,9 +4,12 @@
 
 ## 🚀 Installation
 
-### One-liner (Auto-install)
+### One-liner (Auto-install wget)
 ```bash
 wget -qO - https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash && cd ~/ulh && bash ulh.sh
+```
+### One-liner (Auto-install curl)
+```bash
 curl -sSL https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash && cd ~/ulh && bash ulh.sh
 ```
 
