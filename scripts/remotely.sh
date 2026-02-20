@@ -128,7 +128,7 @@ detect_os() {
             PKG_UNINSTALL="yum remove -y"
             PKG_TYPE="rpm"
             ;;
-        arch|manjaro|endeavouros|alpine)
+        arch|archarm|manjaro|endeavouros|alpine)
             log_error "Distribution '$OS_DISTRO' is not supported by Remotely. Please install manually or use Docker."
             ;;
         *)

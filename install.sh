@@ -30,7 +30,7 @@ detect_os() {
             PKG_UPDATE="dnf check-update || true"
             PKG_INSTALL="dnf install -y"
             ;;
-        arch|manjaro|endeavouros)
+        arch|archarm|manjaro|endeavouros)
             OS_FAMILY="arch"
             PKG_UPDATE="pacman -Sy"
             PKG_INSTALL="pacman -S --noconfirm"

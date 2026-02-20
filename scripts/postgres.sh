@@ -63,7 +63,7 @@ detect_os() {
             CONF_FILE="/var/lib/pgsql/data/postgresql.conf"
             SERVICE="postgresql"
             ;;
-        arch|manjaro|endeavouros)
+        arch|archarm|manjaro|endeavouros)
             PKG_UPDATE="pacman -Sy"
             PKG_INSTALL="pacman -S --noconfirm"
             PKG_UNINSTALL="pacman -R --noconfirm"

@@ -50,7 +50,7 @@ detect_os() {
             PKG_UNINSTALL="dnf remove -y"
             PKG="bind-utils"
             ;;
-        arch|manjaro|endeavouros)
+        arch|archarm|manjaro|endeavouros)
             PKG_UPDATE="pacman -Sy"
             PKG_INSTALL="pacman -S --noconfirm"
             PKG_UNINSTALL="pacman -R --noconfirm"

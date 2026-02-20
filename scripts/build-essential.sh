@@ -50,7 +50,7 @@ detect_os() {
             PKG_UNINSTALL="dnf groupremove -y"
             PKG="'Development Tools'"
             ;;
-        arch|manjaro|endeavouros)
+        arch|archarm|manjaro|endeavouros)
             PKG_UPDATE="pacman -Sy"
             PKG_INSTALL="pacman -S --noconfirm"
             PKG_UNINSTALL="pacman -R --noconfirm"

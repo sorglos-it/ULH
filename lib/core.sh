@@ -91,7 +91,7 @@ detect_os() {
         case "$OS_DISTRO" in
             ubuntu|debian|raspbian|linuxmint|pop) OS_FAMILY="debian" ;;
             fedora|rhel|centos|rocky|alma)        OS_FAMILY="redhat" ;;
-            arch|manjaro|endeavouros)              OS_FAMILY="arch" ;;
+            arch|archarm|manjaro|endeavouros)              OS_FAMILY="arch" ;;
             opensuse*|sles)                        OS_FAMILY="suse" ;;
             alpine)                                OS_FAMILY="alpine" ;;
             *)                                     OS_FAMILY="unknown" ;;

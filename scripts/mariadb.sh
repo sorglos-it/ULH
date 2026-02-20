@@ -61,7 +61,7 @@ detect_os() {
             PKG="mariadb-server"
             CONF_FILE="/etc/my.cnf.d/mariadb-server.cnf"
             ;;
-        arch|manjaro|endeavouros)
+        arch|archarm|manjaro|endeavouros)
             PKG_UPDATE="pacman -Sy"
             PKG_INSTALL="pacman -S --noconfirm"
             PKG_UNINSTALL="pacman -R --noconfirm"
