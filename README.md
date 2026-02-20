@@ -1,4 +1,4 @@
-# LIAUH - Linux Install and Update Helper
+# ULH - Unknown Linux Helper
 
 **v0.4+** | 45 system management scripts for all Linux distributions
 
@@ -6,15 +6,15 @@
 
 ### One-liner (Auto-install)
 ```bash
-wget -qO - https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash && cd ~/liauh && bash liauh.sh
-curl -sSL https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash && cd ~/liauh && bash liauh.sh
+wget -qO - https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash && cd ~/ulh && bash ulh.sh
+curl -sSL https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash && cd ~/ulh && bash ulh.sh
 ```
 
 ### Manual Install
 ```bash
-git clone https://github.com/sorglos-it/liauh.git
-cd liauh
-bash liauh.sh
+git clone https://github.com/sorglos-it/ULH.git
+cd ulh
+bash ulh.sh
 ```
 
 ## ✨ Features
@@ -30,14 +30,14 @@ bash liauh.sh
 ## 📖 Usage
 
 ```bash
-cd ~/liauh
-bash liauh.sh
+cd ~/ulh
+bash ulh.sh
 ```
 
 Menu flow:
 ```
 1. Repository Selector
-   ├─ LIAUH Scripts
+   ├─ ULH Scripts
    │  └─ Categories
    │     └─ Scripts
    │        └─ Actions
@@ -95,8 +95,8 @@ See **[DOCS.md](DOCS.md#custom-repositories)** for setup.
 ## 🏗️ Architecture
 
 ```
-liauh/
-├── liauh.sh              # Entry point (self-updating)
+ulh/
+├── ulh.sh              # Entry point (self-updating)
 ├── lib/                  # 7 focused libraries
 ├── scripts/              # 45 system management scripts + custom repos
 ├── custom/               # Your custom repos
@@ -131,14 +131,14 @@ liauh/
 ## 🚀 Quick Start
 
 1. **Install**: `bash install.sh` or clone repo
-2. **Run**: `bash liauh.sh`
+2. **Run**: `bash ulh.sh`
 3. **Select**: Choose System Management or Custom Repo
 4. **Navigate**: Category → Script → Action
 5. **Configure**: Follow prompts (or accept defaults)
 
 ## 🔐 Security
 
-- Scripts run **individually with sudo** (LIAUH stays unprivileged)
+- Scripts run **individually with sudo** (ULH stays unprivileged)
 - SSH keys stored in **custom/keys/** (protected by .gitignore)
 - No hardcoded credentials (use environment variables)
 - All scripts pass **syntax validation** (bash -n)
@@ -166,4 +166,4 @@ MIT License - Free for personal and commercial use
 
 **Questions?** Check **[DOCS.md](DOCS.md)** or open an issue on GitHub.
 
-**GitHub**: https://github.com/sorglos-it/liauh
+**GitHub**: https://github.com/sorglos-it/ULH

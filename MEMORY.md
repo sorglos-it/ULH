@@ -1,4 +1,4 @@
-# LIAUH - Project Memory
+# ULH - Project Memory
 
 **v0.4** | 45 production scripts with unified system management framework
 
@@ -11,8 +11,8 @@
 ## Architecture
 
 ```
-liauh/
-├── liauh.sh              # Main entry point (auto-updating, 945 lines)
+ulh/
+├── ulh.sh              # Main entry point (auto-updating, 945 lines)
 ├── lib/                  # 7 focused libraries
 │   ├── core.sh          # OS detection, logging, utilities
 │   ├── colors.sh        # ANSI color definitions
@@ -137,14 +137,14 @@ SSH keys stored in `custom/keys/` (protected by .gitignore)
 
 ## Security Notes
 
-- Scripts run individually with sudo (LIAUH stays unprivileged)
+- Scripts run individually with sudo (ULH stays unprivileged)
 - SSH keys stored in custom/keys/ (git-ignored)
 - No hardcoded credentials (environment variables)
 - All scripts syntax-checked before execution
 
 ## References
 
-- **GitHub**: https://github.com/sorglos-it/liauh
+- **GitHub**: https://github.com/sorglos-it/ULH
 - **Docs**: [DOCS.md](DOCS.md)
 - **Scripts**: [SCRIPTS.md](SCRIPTS.md)
 - **License**: MIT

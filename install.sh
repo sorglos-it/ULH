@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# LIAUH Installation Script
+# ULH Installation Script
 # Works on all Linux distributions (Debian, Red Hat, Arch, SUSE, Alpine)
 
 set -euo pipefail
@@ -79,24 +79,24 @@ if ! $SUDO $PKG_INSTALL git; then
     exit 1
 fi
 
-echo "📥 Setting up LIAUH..."
+echo "📥 Setting up ULH..."
 cd ~
 
-# Check if liauh directory already exists
-if [[ -d "liauh" ]]; then
-    echo "  (liauh directory exists, pulling latest updates...)"
-    cd liauh
+# Check if ulh directory already exists
+if [[ -d "ulh" ]]; then
+    echo "  (ulh directory exists, pulling latest updates...)"
+    cd ulh
     git pull origin main 2>/dev/null || git pull origin master 2>/dev/null || true
 else
     echo "  Cloning from GitHub..."
-    if ! git clone https://github.com/sorglos-it/liauh.git; then
-        echo "❌ Failed to clone LIAUH"
+    if ! git clone https://github.com/sorglos-it/ULH.git; then
+        echo "❌ Failed to clone ULH"
         exit 1
     fi
-    cd liauh
+    cd ulh
 fi
 
-echo "✅ LIAUH installed successfully!"
+echo "✅ ULH installed successfully!"
 echo ""
-echo "To start LIAUH, run:"
-echo "  cd ~/liauh && bash liauh.sh"
+echo "To start ULH, run:"
+echo "  cd ~/ulh && bash ulh.sh"

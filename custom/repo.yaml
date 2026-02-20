@@ -1,4 +1,4 @@
-# Custom Repository Configuration for LIAUH
+# Custom Repository Configuration for ULH
 # 
 # See DOCS.md > "Custom Repositories" for complete documentation,
 # setup guides, authentication options, and troubleshooting.
@@ -32,7 +32,7 @@ repositories:
   # See DOCS.md for SSH setup instructions
   custom-scripts:
     name: "My Custom Scripts"
-    url: "git@github.com:your-org/liauh-custom.git"
+    url: "git@github.com:your-org/ulh-custom.git"
     path: "custom-scripts"
     auth_method: "ssh"
     ssh_key: "id_rsa"
@@ -53,7 +53,7 @@ repositories:
   # Example 3: Public repository (no authentication)
   community-addons:
     name: "Community Addons"
-    url: "https://github.com/public-org/liauh-addons.git"
+    url: "https://github.com/public-org/ulh-addons.git"
     path: "community-addons"
     auth_method: "none"
     enabled: false

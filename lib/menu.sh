@@ -1,5 +1,5 @@
 #!/bin/bash
-# LIAUH - Menu Display & Navigation
+# ULH - Menu Display & Navigation
 
 # Global context tracking
 CONTEXT_FROM="none"  # "none" or "repo"
@@ -9,10 +9,10 @@ _get_yq() {
     if [[ -z "$_YQ_CACHE" ]]; then
         local arch=$(uname -m)
         case "$arch" in
-            x86_64) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-amd64" ;;
-            aarch64) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-arm64" ;;
-            armv7l) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-arm" ;;
-            i686) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-386" ;;
+            x86_64) _YQ_CACHE="${ULH_DIR}/lib/yq/yq-amd64" ;;
+            aarch64) _YQ_CACHE="${ULH_DIR}/lib/yq/yq-arm64" ;;
+            armv7l) _YQ_CACHE="${ULH_DIR}/lib/yq/yq-arm" ;;
+            i686) _YQ_CACHE="${ULH_DIR}/lib/yq/yq-386" ;;
             *) _YQ_CACHE="yq" ;;  # Fallback to PATH
         esac
         [[ -x "$_YQ_CACHE" ]] || chmod +x "$_YQ_CACHE" 2>/dev/null
@@ -108,7 +108,7 @@ _get_scripts() {
 }
 
 _has_custom_scripts() {
-    [[ -f "${LIAUH_DIR}/custom.yaml" ]] || return 1
+    [[ -f "${ULH_DIR}/custom.yaml" ]] || return 1
     yaml_load "custom"
     local found=0
     while IFS= read -r s; do
@@ -124,19 +124,19 @@ _has_custom_scripts() {
 
 menu_show_repositories() {
     menu_clear
-    menu_header "LIAUH - Linux Install and Update Helper" "${LIAUH_VERSION}"
+    menu_header "ULH - Unknown Linux Helper" "${ULH_VERSION}"
     
     local i=1
-    # Always show LIAUH system scripts
-    printf "|  %d) LIAUH - Linux Install and Update Helper\n" $i
+    # Always show ULH system scripts
+    printf "|  %d) ULH - Unknown Linux Helper\n" $i
     ((i++))
     
     # Show enabled custom repositories
     local repo_names
-    repo_names=$(repo_list_enabled "${LIAUH_DIR}")
+    repo_names=$(repo_list_enabled "${ULH_DIR}")
     while IFS= read -r repo_name; do
         [[ -z "$repo_name" ]] && continue
-        local repo_display_name=$(repo_get_name "${LIAUH_DIR}/custom/repo.yaml" "$repo_name")
+        local repo_display_name=$(repo_get_name "${ULH_DIR}/custom/repo.yaml" "$repo_name")
         printf "|  %d) %s\n" $i "$repo_display_name"
         ((i++))
     done <<< "$repo_names"
@@ -144,10 +144,10 @@ menu_show_repositories() {
     menu_footer 0
 }
 
-# Show LIAUH system scripts (categories)
+# Show ULH system scripts (categories)
 menu_show_main() {
     menu_clear
-    menu_header "LIAUH - Linux Install and Update Helper" "${LIAUH_VERSION}"
+    menu_header "ULH - Unknown Linux Helper" "${ULH_VERSION}"
     local -a cats; _get_categories cats
     local i=1; for c in "${cats[@]}"; do 
         local desc=$(yaml_info "$c" description)
@@ -205,7 +205,7 @@ menu_show_actions() {
 menu_show_custom_repo() {
     local repo_name="$1"
     local repo_path="$2"
-    local repo_display_name=$(repo_get_name "${LIAUH_DIR}/custom/repo.yaml" "$repo_name")
+    local repo_display_name=$(repo_get_name "${ULH_DIR}/custom/repo.yaml" "$repo_name")
     
     menu_clear
     menu_header "Custom: $repo_display_name"
@@ -240,7 +240,7 @@ menu_show_custom_repo_actions() {
     local repo_name="$1"
     local repo_path="$2"
     local script_name="$3"
-    local repo_display_name=$(repo_get_name "${LIAUH_DIR}/custom/repo.yaml" "$repo_name")
+    local repo_display_name=$(repo_get_name "${ULH_DIR}/custom/repo.yaml" "$repo_name")
     
     menu_clear
     menu_header "Custom: $repo_display_name - $script_name"
@@ -269,14 +269,14 @@ menu_show_custom_repo_actions() {
 menu_main() {
     # Check if there are custom repositories
     local custom_repos
-    custom_repos=$(repo_list_enabled "${LIAUH_DIR}")
+    custom_repos=$(repo_list_enabled "${ULH_DIR}")
     
     if [[ -n "$custom_repos" ]]; then
         # Show repository selector
         menu_repositories
     else
-        # Show LIAUH scripts directly (no repos)
-        menu_liauh_scripts
+        # Show ULH scripts directly (no repos)
+        menu_ulh_scripts
     fi
 }
 
@@ -284,16 +284,16 @@ menu_repositories() {
     while true; do
         menu_show_repositories
         
-        # Count menu items: LIAUH + custom repos
+        # Count menu items: ULH + custom repos
         local i=1
-        local -a choices=("liauh")  # First choice is LIAUH
+        local -a choices=("ulh")  # First choice is ULH
         ((i++))
         
         while IFS= read -r repo_name; do
             [[ -z "$repo_name" ]] && continue
             choices+=("$repo_name")
             ((i++))
-        done <<< "$(repo_list_enabled "${LIAUH_DIR}")"
+        done <<< "$(repo_list_enabled "${ULH_DIR}")"
         
         local max=$((i-1))
         
@@ -303,11 +303,11 @@ menu_repositories() {
             [0-9]*)
                 if menu_valid_num "$input" $max; then
                     local choice="${choices[$((input-1))]}"
-                    if [[ "$choice" == "liauh" ]]; then
+                    if [[ "$choice" == "ulh" ]]; then
                         CONTEXT_FROM="repo"
-                        menu_liauh_scripts
+                        menu_ulh_scripts
                     else
-                        local repo_path=$(repo_get_path "${LIAUH_DIR}/custom/repo.yaml" "$choice")
+                        local repo_path=$(repo_get_path "${ULH_DIR}/custom/repo.yaml" "$choice")
                         menu_custom_repo_scripts "$choice" "$repo_path"
                     fi
                 else menu_error "Invalid (1-$max)" ; fi ;;
@@ -316,7 +316,7 @@ menu_repositories() {
     done
 }
 
-menu_liauh_scripts() {
+menu_ulh_scripts() {
     while true; do
         menu_show_main
         local -a cats; _get_categories cats; local max=${#cats[@]}

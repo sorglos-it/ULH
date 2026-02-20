@@ -1,5 +1,5 @@
 #!/bin/bash
-# LIAUH - Core Library: Colors, OS detection, debug logging, utilities
+# ULH - Core Library: Colors, OS detection, debug logging, utilities
 
 DEBUG=${DEBUG:-false}
 

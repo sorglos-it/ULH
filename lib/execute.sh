@@ -1,15 +1,15 @@
 #!/bin/bash
-# LIAUH - Script Execution Engine (prompts, validation, execution)
+# ULH - Script Execution Engine (prompts, validation, execution)
 
 # Get correct yq binary for current architecture
 _get_yq() {
     if [[ -z "$_YQ_CACHE" ]]; then
         local arch=$(uname -m)
         case "$arch" in
-            x86_64) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-amd64" ;;
-            aarch64) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-arm64" ;;
-            armv7l) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-arm" ;;
-            i686) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-386" ;;
+            x86_64) _YQ_CACHE="${ULH_DIR}/lib/yq/yq-amd64" ;;
+            aarch64) _YQ_CACHE="${ULH_DIR}/lib/yq/yq-arm64" ;;
+            armv7l) _YQ_CACHE="${ULH_DIR}/lib/yq/yq-arm" ;;
+            i686) _YQ_CACHE="${ULH_DIR}/lib/yq/yq-386" ;;
             *) _YQ_CACHE="yq" ;;  # Fallback to PATH
         esac
         [[ -x "$_YQ_CACHE" ]] || chmod +x "$_YQ_CACHE" 2>/dev/null

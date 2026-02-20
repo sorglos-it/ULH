@@ -1,17 +1,17 @@
 #!/bin/bash
-# LIAUH - Linux Install and Update Helper (main entry point)
+# ULH - Unknown Linux Helper (main entry point)
 
 # Set UTF-8 locale for proper string length calculation
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
-LIAUH_VERSION="0.4"
-LIAUH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export LIAUH_VERSION LIAUH_DIR
+ULH_VERSION="0.4"
+ULH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export ULH_VERSION ULH_DIR
 
 # Load all required libraries (order matters: dependencies first)
 for lib in core yaml menu execute repos; do
-    source "${LIAUH_DIR}/lib/${lib}.sh"
+    source "${ULH_DIR}/lib/${lib}.sh"
 done
 
 # ============================================================================
@@ -20,11 +20,11 @@ done
 
 _auto_update() {
     # Check if we're in a git repository
-    if [[ ! -d "$LIAUH_DIR/.git" ]]; then
+    if [[ ! -d "$ULH_DIR/.git" ]]; then
         return 0
     fi
     
-    cd "$LIAUH_DIR"
+    cd "$ULH_DIR"
     
     # Fetch latest from remote (silent, non-blocking)
     if ! git fetch origin &>/dev/null; then
@@ -35,10 +35,10 @@ _auto_update() {
     local behind=$(git rev-list --count HEAD..origin/main 2>/dev/null || git rev-list --count HEAD..origin/master 2>/dev/null || echo "0")
     
     if [[ "$behind" -gt 0 ]]; then
-        msg_info "Updating LIAUH ($behind commit(s) behind)..."
+        msg_info "Updating ULH ($behind commit(s) behind)..."
         
         if git pull origin main &>/dev/null || git pull origin master &>/dev/null; then
-            msg_ok "LIAUH updated successfully - restarting..."
+            msg_ok "ULH updated successfully - restarting..."
             echo ""
             # Restart self with updated code
             exec "$0" "$@"
@@ -68,12 +68,12 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --check-update)
-            if [[ -d "$LIAUH_DIR/.git" ]]; then
-                cd "$LIAUH_DIR"
+            if [[ -d "$ULH_DIR/.git" ]]; then
+                cd "$ULH_DIR"
                 git fetch origin &>/dev/null
                 local behind=$(git rev-list --count HEAD..origin/main 2>/dev/null || git rev-list --count HEAD..origin/master 2>/dev/null || echo "0")
                 if [[ "$behind" -gt 0 ]]; then
-                    msg_info "Updates available! Run: bash liauh.sh --update"
+                    msg_info "Updates available! Run: bash ulh.sh --update"
                     exit 0
                 else
                     msg_ok "You are up to date."
@@ -85,8 +85,8 @@ while [[ $# -gt 0 ]]; do
             fi
             ;;
         --update)
-            if [[ -d "$LIAUH_DIR/.git" ]]; then
-                cd "$LIAUH_DIR"
+            if [[ -d "$ULH_DIR/.git" ]]; then
+                cd "$ULH_DIR"
                 msg_info "Pulling latest version..."
                 if git pull origin main 2>/dev/null || git pull origin master 2>/dev/null; then
                     msg_ok "Update successful!"
@@ -103,7 +103,7 @@ while [[ $# -gt 0 ]]; do
         *)
             echo "Unknown option: $1"
             echo ""
-            echo "Usage: bash liauh.sh [OPTIONS]"
+            echo "Usage: bash ulh.sh [OPTIONS]"
             echo ""
             echo "Options:"
             echo "  --debug              Enable debug output"
@@ -131,7 +131,7 @@ detect_os || exit 1
 yaml_load "config" || exit 1
 
 # Initialize custom repositories (clone/pull and merge configs)
-repo_init "$LIAUH_DIR"
+repo_init "$ULH_DIR"
 
 # Start main menu loop
 menu_main
