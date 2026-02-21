@@ -162,7 +162,9 @@ setup_microsoft_repo() {
         log_info "Downloading Microsoft repository package..."
         $SUDO_PREFIX curl -sSL "$MS_REPO_URL" -o /tmp/packages-microsoft-prod.rpm
         
-        $SUDO_PREFIX rpm -ivh /tmp/packages-microsoft-prod.rpm || log_error "Failed to install Microsoft repository"
+        # Auto-answer 'Y' to config file dialogs
+        log_info "Installing Microsoft repository..."
+        echo "Y" | $SUDO_PREFIX rpm -ivh /tmp/packages-microsoft-prod.rpm 2>&1 | grep -v "warning" || true
         rm -f /tmp/packages-microsoft-prod.rpm
     fi
     
@@ -272,20 +274,20 @@ install_remotely() {
     log_info "Configuring with Server: $REMOTELY_SERVER, OrgID: $ORGANIZATION_ID"
     
     # Update package manager and install repository
-    $SUDO_PREFIX $PKG_UPDATE || true
+    DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX $PKG_UPDATE || true
     setup_microsoft_repo
-    $SUDO_PREFIX $PKG_UPDATE || true
+    DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX $PKG_UPDATE || true
     
     # Install required dependencies
     log_info "Installing dependencies..."
     
     # Install unzip first (critical for extraction)
-    $SUDO_PREFIX $PKG_INSTALL unzip || log_error "Failed to install unzip (required)"
+    DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX $PKG_INSTALL unzip || log_error "Failed to install unzip (required)"
     
     if [[ "$PKG_TYPE" == "deb" ]]; then
-        $SUDO_PREFIX $PKG_INSTALL apt-transport-https || true
-        $SUDO_PREFIX $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
-        $SUDO_PREFIX $PKG_INSTALL libx11-dev libxrandr-dev libxtst-dev libxcb-shape0 xclip jq curl || log_error "Failed to install dependencies"
+        DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX $PKG_INSTALL apt-transport-https || true
+        DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
+        DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX $PKG_INSTALL libx11-dev libxrandr-dev libxtst-dev libxcb-shape0 xclip jq curl || log_error "Failed to install dependencies"
     else
         $SUDO_PREFIX $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
         $SUDO_PREFIX $PKG_INSTALL libX11-devel libXrandr-devel libXtst-devel libxcb-devel xclip jq curl || log_error "Failed to install dependencies"
@@ -449,9 +451,9 @@ update_remotely() {
     fi
     
     # Update package manager
-    $SUDO_PREFIX $PKG_UPDATE || true
+    DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX $PKG_UPDATE || true
     setup_microsoft_repo
-    $SUDO_PREFIX $PKG_UPDATE || true
+    DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX $PKG_UPDATE || true
     
     # Download latest agent
     log_info "Downloading latest Remotely agent..."
