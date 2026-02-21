@@ -209,13 +209,16 @@ install_remotely() {
     # Install required dependencies
     log_info "Installing dependencies..."
     
+    # Install unzip first (critical for extraction)
+    $SUDO_PREFIX $PKG_INSTALL unzip || log_error "Failed to install unzip (required)"
+    
     if [[ "$PKG_TYPE" == "deb" ]]; then
-        $SUDO_PREFIX $PKG_INSTALL apt-transport-https
+        $SUDO_PREFIX $PKG_INSTALL apt-transport-https || true
         $SUDO_PREFIX $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
-        $SUDO_PREFIX $PKG_INSTALL libx11-dev libxrandr-dev libxtst-dev libxcb-shape0 xclip unzip jq curl || log_error "Failed to install dependencies"
+        $SUDO_PREFIX $PKG_INSTALL libx11-dev libxrandr-dev libxtst-dev libxcb-shape0 xclip jq curl || log_error "Failed to install dependencies"
     else
         $SUDO_PREFIX $PKG_INSTALL dotnet-runtime-8.0 || log_error "Failed to install .NET runtime"
-        $SUDO_PREFIX $PKG_INSTALL libX11-devel libXrandr-devel libXtst-devel libxcb-devel xclip unzip jq curl || log_error "Failed to install dependencies"
+        $SUDO_PREFIX $PKG_INSTALL libX11-devel libXrandr-devel libXtst-devel libxcb-devel xclip jq curl || log_error "Failed to install dependencies"
     fi
     
     # Generate device ID or use existing one
