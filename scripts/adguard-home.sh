@@ -133,9 +133,9 @@ update_adguard() {
 uninstall_adguard() {
     log_warn "Uninstalling AdGuard Home..."
     
-    # Confirmation prompt
-    read -p "Are you sure you want to uninstall AdGuard Home? (yes/no) [no]: " confirm
-    if [[ "$confirm" != "yes" ]]; then
+    # Confirmation prompt (from CONFIRM parameter or default "no")
+    CONFIRM="${CONFIRM:-no}"
+    if [[ "$CONFIRM" != "yes" ]]; then
         log_info "Uninstall cancelled"
         return 0
     fi
@@ -145,9 +145,9 @@ uninstall_adguard() {
         $SUDO_PREFIX systemctl stop AdGuardHome || log_warn "Could not stop service"
     fi
     
-    # Ask about config
-    read -p "Keep AdGuard Home configuration? (yes/no) [yes]: " keep_config
-    if [[ "$keep_config" != "no" ]]; then
+    # Keep config (from KEEP_CONFIG parameter or default "yes")
+    KEEP_CONFIG="${KEEP_CONFIG:-yes}"
+    if [[ "$KEEP_CONFIG" != "no" ]]; then
         log_info "Configuration will be preserved"
     fi
     

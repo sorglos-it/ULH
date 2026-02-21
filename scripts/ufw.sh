@@ -194,8 +194,9 @@ status_ufw() {
 reset_ufw() {
     log_info "Resetting UFW to default settings..."
     
-    read -p "Are you sure? This will reset all UFW rules (yes/no): " confirm
-    if [[ "$confirm" == "yes" ]]; then
+    # Confirm from CONFIRM parameter
+    CONFIRM="${CONFIRM:-no}"
+    if [[ "$CONFIRM" == "yes" ]]; then
         $SUDO_PREFIX bash -c "echo 'y' | ufw reset" || log_error "Failed to reset UFW"
         log_info "UFW reset to default settings!"
     else

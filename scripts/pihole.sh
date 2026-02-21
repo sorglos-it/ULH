@@ -175,17 +175,17 @@ uninstall_pihole() {
         return
     fi
     
-    # Confirmation prompt
-    read -p "Are you sure you want to uninstall Pi-hole? (yes/no): " confirm
-    if [[ "$confirm" != "yes" ]]; then
+    # Confirmation (from CONFIRM parameter)
+    CONFIRM="${CONFIRM:-no}"
+    if [[ "$CONFIRM" != "yes" ]]; then
         log_info "Uninstallation cancelled"
         return
     fi
     
-    # Ask about keeping configuration
-    read -p "Keep Pi-hole configuration and data? (yes/no): " keep_config
+    # Keep config (from KEEP_CONFIG parameter, default "yes")
+    KEEP_CONFIG="${KEEP_CONFIG:-yes}"
     
-    if [[ "$keep_config" == "yes" ]]; then
+    if [[ "$KEEP_CONFIG" == "yes" ]]; then
         log_info "Keeping Pi-hole configuration and data files..."
         pihole uninstall --keep-config || log_error "Failed to uninstall Pi-hole"
     else

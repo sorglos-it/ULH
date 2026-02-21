@@ -190,18 +190,16 @@ install_remotely() {
     
     detect_os
     
-    # Prompt for configuration
-    log_info_blue "Enter Remotely configuration:"
-    
-    read -p "  Remotely Server URL (e.g., http://remotely.example.com:5000): " REMOTELY_SERVER
+    # Use parameters from REMOTELY_SERVER and ORGANIZATION_ID
     if [[ -z "$REMOTELY_SERVER" ]]; then
         log_error "Remotely Server URL cannot be empty"
     fi
     
-    read -p "  OrganizationID (UUID format): " ORGANIZATION_ID
     if [[ -z "$ORGANIZATION_ID" ]]; then
         log_error "OrganizationID cannot be empty"
     fi
+    
+    log_info "Configuring with Server: $REMOTELY_SERVER, OrgID: $ORGANIZATION_ID"
     
     # Update package manager and install repository
     $SUDO_PREFIX $PKG_UPDATE || true
@@ -409,15 +407,15 @@ uninstall_remotely() {
         log_error "This script must be run with sudo"
     fi
     
-    # Confirmation prompt
-    read -p "Are you sure you want to uninstall Remotely? (yes/no): " CONFIRM
+    # Confirmation (from CONFIRM parameter)
+    CONFIRM="${CONFIRM:-no}"
     if [[ "$CONFIRM" != "yes" ]]; then
         log_info "Uninstall cancelled"
         return
     fi
     
-    # Ask about keeping config files
-    read -p "Keep configuration files? (yes/no): " KEEP_CONFIG
+    # Keep config (from KEEP_CONFIG parameter, default "yes")
+    KEEP_CONFIG="${KEEP_CONFIG:-yes}"
     
     # Stop and disable service
     log_info "Stopping Remotely service..."
@@ -443,7 +441,8 @@ uninstall_remotely() {
     fi
     
     # Ask about removing Microsoft repository
-    read -p "Remove Microsoft package repository? (yes/no): " REMOVE_REPO
+    # Remove repo (from REMOVE_REPO parameter, default "no")
+    REMOVE_REPO="${REMOVE_REPO:-no}"
     if [[ "$REMOVE_REPO" == "yes" ]]; then
         log_info "Removing Microsoft repository..."
         
@@ -487,11 +486,8 @@ config_remotely() {
     echo "  OrganizationID: $CURRENT_ORG"
     echo ""
     
-    # Prompt for new values
-    read -p "New Remotely Server URL (press Enter to keep current): " NEW_REMOTELY_SERVER
+    # Use parameters for new values, with fallback to current
     NEW_REMOTELY_SERVER="${NEW_REMOTELY_SERVER:-$CURRENT_REMOTELY_SERVER}"
-    
-    read -p "New OrganizationID (press Enter to keep current): " NEW_ORG
     NEW_ORG="${NEW_ORG:-$CURRENT_ORG}"
     
     # Backup configuration

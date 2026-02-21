@@ -133,7 +133,7 @@ update_guest_agent() {
 # Uninstall qemu-guest-agent
 uninstall_guest_agent() {
     log_warn "This will remove qemu-guest-agent from this guest VM."
-    read -p "Are you sure? (yes/no): " confirm
+    CONFIRM="${CONFIRM:-no}"
     
     if [[ "$confirm" != "yes" ]]; then
         log_info "Uninstall cancelled"
@@ -185,7 +185,7 @@ check_proxmox_host() {
 make_lxc_to_template() {
     check_proxmox_host
     
-    read -p "Enter container ID (CTID): " CTID
+    CTID="${CTID:-}"
     
     if [[ -z "$CTID" ]]; then
         log_error "Container ID cannot be empty"
@@ -204,7 +204,7 @@ make_lxc_to_template() {
 make_template_to_lxc() {
     check_proxmox_host
     
-    read -p "Enter container ID (CTID): " CTID
+    CTID="${CTID:-}"
     
     if [[ -z "$CTID" ]]; then
         log_error "Container ID cannot be empty"
@@ -223,7 +223,7 @@ make_template_to_lxc() {
 unlock_vm() {
     check_proxmox_host
     
-    read -p "Enter container/VM ID (CTID): " CTID
+    CTID="${CTID:-}"
     
     if [[ -z "$CTID" ]]; then
         log_error "Container/VM ID cannot be empty"
@@ -300,7 +300,7 @@ list_running_lxc() {
 start_vm() {
     check_proxmox_host
     
-    read -p "Enter VM ID (VMID): " VMID
+    VMID="${VMID:-}"
     
     if [[ -z "$VMID" ]]; then
         log_error "VM ID cannot be empty"
@@ -319,7 +319,7 @@ start_vm() {
 stop_vm() {
     check_proxmox_host
     
-    read -p "Enter VM ID (VMID): " VMID
+    VMID="${VMID:-}"
     
     if [[ -z "$VMID" ]]; then
         log_error "VM ID cannot be empty"
@@ -338,7 +338,7 @@ stop_vm() {
 start_lxc() {
     check_proxmox_host
     
-    read -p "Enter container ID (CTID): " CTID
+    CTID="${CTID:-}"
     
     if [[ -z "$CTID" ]]; then
         log_error "Container ID cannot be empty"
@@ -357,7 +357,7 @@ start_lxc() {
 stop_lxc() {
     check_proxmox_host
     
-    read -p "Enter container ID (CTID): " CTID
+    CTID="${CTID:-}"
     
     if [[ -z "$CTID" ]]; then
         log_error "Container ID cannot be empty"

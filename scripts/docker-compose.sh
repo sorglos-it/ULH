@@ -189,10 +189,9 @@ update_docker_compose() {
 uninstall_docker_compose() {
     log_info "Uninstalling Docker Compose..."
     
-    # Confirm before uninstalling
-    read -p "Are you sure you want to uninstall Docker Compose? (yes/no): " -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+    # Confirm before uninstalling (from CONFIRM parameter or default "no")
+    CONFIRM="${CONFIRM:-no}"
+    if [[ "$CONFIRM" != "yes" ]]; then
         log_info "Uninstall cancelled"
         exit 0
     fi

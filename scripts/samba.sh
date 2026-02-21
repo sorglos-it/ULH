@@ -250,17 +250,19 @@ configure_samba() {
         $SUDO_PREFIX cp "$SMB_CONF" "${SMB_CONF}.bak"
     fi
     
-    # Prompt for configuration parameters
+    # Use parameters from config.yaml or defaults
     log_section "Global Configuration"
     
-    local workgroup=$(prompt_input "Workgroup name" "WORKGROUP")
-    local server_desc=$(prompt_input "Server description" "Samba Server")
-    local security=$(prompt_input "Security mode (user/share/domain)" "user")
-    local map_guest=$(prompt_input "Map to guest (Never/Bad User/Bad Password)" "Never")
-    local guest_acct=$(prompt_input "Guest account" "nobody")
-    local wins=$(prompt_yes_no "Enable WINS support?" "no")
-    local hosts=$(prompt_yes_no "Enable hosts lookup?" "yes")
-    local log_level=$(prompt_input "Logging level (0-10)" "1")
+    local workgroup="${WORKGROUP:-WORKGROUP}"
+    local server_desc="${SERVER_DESC:-Samba Server}"
+    local security="${SECURITY:-user}"
+    local map_guest="${MAP_GUEST:-Never}"
+    local guest_acct="${GUEST_ACCT:-nobody}"
+    local wins="${WINS:-no}"
+    local hosts="${HOSTS:-yes}"
+    local log_level="${LOG_LEVEL:-1}"
+    
+    log_info "Using configuration: workgroup=$workgroup, security=$security, logging=$log_level"
     
     # Create updated configuration
     cat << EOF | tee "$SMB_CONF" > /dev/null

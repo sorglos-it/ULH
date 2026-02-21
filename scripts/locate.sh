@@ -126,12 +126,12 @@ uninstall_locate() {
     log_info "Uninstalling locate..."
     detect_os
     
-    read -p "Remove locate database files? (y/n) " -n 1 -r
-    echo
+    # Confirm (from CONFIRM parameter)
+    CONFIRM="${CONFIRM:-no}"
     
     $SUDO_PREFIX $PKG_UNINSTALL $LOCATE_PKG || log_error "Failed to uninstall $LOCATE_PKG"
     
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
         log_info "Removing database files..."
         $SUDO_PREFIX rm -f "$DB_PATH" 2>/dev/null || true
     fi
