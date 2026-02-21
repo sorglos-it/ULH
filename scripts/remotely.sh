@@ -248,15 +248,21 @@ install_remotely() {
         log_error "Download failed: $TEMP_ZIP not found"
     fi
     
-    log_info "Extracting Remotely agent..."
-    if ! $SUDO_PREFIX unzip -o "$TEMP_ZIP" -d "$INSTALL_DIR" 2>&1 | tail -5; then
-        log_warn "unzip command encountered issues, checking if files were extracted..."
+    log_info "Extracting Remotely agent (this may take a moment)..."
+    
+    # Extract with progress indicator
+    if $SUDO_PREFIX unzip -q -o "$TEMP_ZIP" -d "$INSTALL_DIR" 2>&1; then
+        log_info "✓ Extraction complete"
+    else
+        log_error "Failed to extract Remotely agent"
     fi
     
     # Verify extraction by checking for main executable
     if [[ ! -f "$INSTALL_DIR/Remotely_Agent" ]]; then
         log_error "Failed to extract Remotely agent - Remotely_Agent not found"
     fi
+    
+    log_info "Extracted files: $(find "$INSTALL_DIR" -type f | wc -l) files"
     
     rm -f "$TEMP_ZIP"
     
@@ -372,13 +378,14 @@ update_remotely() {
     $SUDO_PREFIX cp -r "$INSTALL_DIR" "${INSTALL_DIR}.backup"
     
     # Extract and update
-    log_info "Extracting updated agent..."
-    $SUDO_PREFIX unzip -o "$TEMP_ZIP" -d "$INSTALL_DIR" || {
+    log_info "Extracting updated agent (this may take a moment)..."
+    $SUDO_PREFIX unzip -q -o "$TEMP_ZIP" -d "$INSTALL_DIR" || {
         log_warn "Extraction failed, restoring backup..."
         $SUDO_PREFIX rm -rf "$INSTALL_DIR"
         $SUDO_PREFIX mv "${INSTALL_DIR}.backup" "$INSTALL_DIR"
         log_error "Update failed"
     }
+    log_info "✓ Extraction complete"
     
     rm -f "$TEMP_ZIP"
     
