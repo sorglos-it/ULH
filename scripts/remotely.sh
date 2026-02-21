@@ -142,9 +142,7 @@ setup_microsoft_repo() {
     log_info "Setting up Microsoft package repository..."
     
     if [[ "$PKG_TYPE" == "deb" ]]; then
-        # Debian/Ubuntu
-        curl -sSL "https://packages.microsoft.com/keys/microsoft.asc" | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-        
+        # Debian/Ubuntu - use Microsoft's official installation script
         MS_REPO_URL="https://packages.microsoft.com/config/$MS_REPO_DISTRO/$OS_VERSION/packages-microsoft-prod.deb"
         
         log_info "Downloading Microsoft repository package..."
@@ -152,7 +150,14 @@ setup_microsoft_repo() {
         
         # Auto-answer 'Y' to config file dialogs
         log_info "Installing Microsoft repository..."
-        echo "Y" | $SUDO_PREFIX dpkg -i /tmp/packages-microsoft-prod.deb 2>&1 | grep -v "Processing triggers" || true
+        echo "Y" | DEBIAN_FRONTEND=noninteractive $SUDO_PREFIX dpkg -i /tmp/packages-microsoft-prod.deb 2>&1 | grep -v "Processing triggers" || true
+        
+        # Import Microsoft GPG key with retry logic
+        log_info "Installing Microsoft GPG key..."
+        $SUDO_PREFIX apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB3E94ADBE1229CF 2>/dev/null || \
+        curl -sSL "https://packages.microsoft.com/keys/microsoft.asc" | $SUDO_PREFIX apt-key add - 2>/dev/null || \
+        log_warn "Microsoft GPG key import had issues, continuing anyway"
+        
         rm -f /tmp/packages-microsoft-prod.deb
         
     else
