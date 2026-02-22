@@ -159,8 +159,9 @@ print_usage() {
     echo ""
     echo "Usage:"
     
-    # config.yaml is always ../config.yaml relative to lib/
+    # Try config.yaml first, fallback to custom.yaml (for custom repo scripts)
     local config_file="${BASH_SOURCE%/*}/../config.yaml"
+    [[ ! -f "$config_file" ]] && config_file="${BASH_SOURCE%/*}/../custom.yaml"
     
     if [[ -f "$config_file" ]]; then
         # Find yq binary
