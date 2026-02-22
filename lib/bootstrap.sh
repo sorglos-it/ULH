@@ -148,7 +148,7 @@ is_os_family() {
 # UTILITY: Print usage from config.yaml
 # ============================================================
 
-# Print available actions for current script from config.yaml
+# Print available actions from config.yaml
 # NOTE: Does NOT call exit - caller must handle that
 print_usage() {
     local script_name="${1:-${0##*/}}"
@@ -158,7 +158,7 @@ print_usage() {
     echo ""
     echo "Available actions:"
     
-    # Find config.yaml - search from current location upward
+    # Find config.yaml
     local config_file=""
     local search_dir="$(pwd)"
     
@@ -171,20 +171,13 @@ print_usage() {
     done
     
     if [[ -f "$config_file" ]]; then
-        # Parse actions from YAML and output them
-        local actions
-        actions=$(sed -n "/^  $script_name:/,/^  [^ ]/p" "$config_file" | \
-                 grep 'parameter:' | \
-                 sed 's/.*parameter: "//' | \
-                 sed 's/".*//')
-        
-        if [[ -n "$actions" ]]; then
-            while IFS= read -r action; do
-                echo "  $script_name $action"
-            done <<< "$actions"
-        fi
+        # Extract and show actions with descriptions
+        sed -n "/^  $script_name:/,/^  [^ ]/p" "$config_file" | \
+        grep "name:" | \
+        sed 's/.*name: "//' | \
+        sed 's/".*//'
     else
-        echo "  (config.yaml not found: $config_file)"
+        echo "    (config.yaml not found)"
     fi
     
     exit 1
