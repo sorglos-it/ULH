@@ -148,7 +148,8 @@ is_os_family() {
 # UTILITY: Print usage from config.yaml
 # ============================================================
 
-# Print available actions from config.yaml
+# Print available actions with parameters from config.yaml
+# Format: script_name "action,VAR1=default1,VAR2=default2"
 # NOTE: Does NOT call exit - caller must handle that
 print_usage() {
     local script_name="${1:-${0##*/}}"
@@ -156,7 +157,7 @@ print_usage() {
     
     printf "${RED}✗${NC} %s\n" "Unknown action: $ACTION"
     echo ""
-    echo "Available actions:"
+    echo "Usage:"
     
     # Find config.yaml
     local config_file=""
@@ -171,11 +172,31 @@ print_usage() {
     done
     
     if [[ -f "$config_file" ]]; then
-        # Extract and show actions with descriptions
-        sed -n "/^  $script_name:/,/^  [^ ]/p" "$config_file" | \
-        grep "name:" | \
-        sed 's/.*name: "//' | \
-        sed 's/".*//'
+        # Find yq binary
+        local yq_bin
+        if [[ -x "${BASH_SOURCE%/*}/yq/yq-amd64" ]]; then
+            yq_bin="${BASH_SOURCE%/*}/yq/yq-amd64"
+        elif command -v yq &>/dev/null; then
+            yq_bin="yq"
+        else
+            # Fallback to simple action listing
+            sed -n "/^  $script_name:/,/^  [^ ]/p" "$config_file" | \
+            grep "name:" | \
+            sed 's/.*name: "/  '"$script_name"' "/' | \
+            sed 's/"$/\"/'
+            exit 1
+        fi
+        
+        # Use yq to extract actions with parameters and format for display
+        # Build a temporary awk script to format the output
+        $yq_bin eval '.scripts.'"${script_name}"'.actions[] | .name + "|" + ((.prompts // []) | map(.variable + "=" + (.default // "")) | join(","))' "$config_file" | \
+        while IFS='|' read -r action params; do
+            if [[ -n "$params" ]]; then
+                echo "  $script_name \"$action,$params\""
+            else
+                echo "  $script_name \"$action\""
+            fi
+        done
     else
         echo "    (config.yaml not found)"
     fi
