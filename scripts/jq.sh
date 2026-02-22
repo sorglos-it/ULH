@@ -63,6 +63,5 @@ case "$ACTION" in
         configure_jq
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage jq && exit 1
 esac

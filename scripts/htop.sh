@@ -70,6 +70,5 @@ case "$ACTION" in
         configure_htop
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage htop && exit 1
 esac

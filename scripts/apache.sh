@@ -74,6 +74,5 @@ case "$ACTION" in
         config_vhosts
         ;;
     *)
-        print_usage apache
-        ;;
+        print_usage apache && exit 1
 esac

@@ -118,12 +118,5 @@ case "$ACTION" in
         configure_adguard
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  adguard-home.sh install"
-        echo "  adguard-home.sh update"
-        echo "  adguard-home.sh uninstall"
-        echo "  adguard-home.sh config"
-        exit 1
-        ;;
+        print_usage adguard-home && exit 1
 esac

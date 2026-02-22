@@ -271,16 +271,7 @@ case "$ACTION" in
     
     
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  portainer.sh install"
-        echo "  portainer.sh update"
-        echo "  portainer.sh uninstall,DELETE_DATA=yes/no"
-        echo "  portainer.sh client-install"
-        echo "  portainer.sh client-update"
-        echo "  portainer.sh client-uninstall,DELETE_DATA=yes/no"
-        exit 1
-        ;;
+        print_usage portainer && exit 1
         
 
 

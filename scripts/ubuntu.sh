@@ -54,6 +54,5 @@ case "$ACTION" in
         detach_pro
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage ubuntu && exit 1
 esac

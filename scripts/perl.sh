@@ -61,6 +61,5 @@ case "$ACTION" in
         configure_perl
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage perl && exit 1
 esac

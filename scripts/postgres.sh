@@ -91,7 +91,5 @@ case "$ACTION" in
         config_postgres
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        exit 1
-        ;;
+        print_usage postgres && exit 1
 esac

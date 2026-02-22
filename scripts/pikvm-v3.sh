@@ -76,6 +76,5 @@ case "$ACTION" in
         enable_vnc
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage pikvm-v3 && exit 1
 esac

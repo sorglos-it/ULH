@@ -50,5 +50,6 @@ case "$ACTION" in
     update) update_git ;;
     uninstall) uninstall_git ;;
     config) configure_git ;;
-    *) log_error "Unknown action: $ACTION" ;;
+    *)
+        print_usage git log_error "Unknown action: $ACTION" ;;
 esac

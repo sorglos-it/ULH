@@ -66,6 +66,5 @@ case "$ACTION" in
         configure_fail2ban
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage fail2ban && exit 1
 esac

@@ -60,12 +60,5 @@ case "$ACTION" in
         configure_wget
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  wget.sh install"
-        echo "  wget.sh update"
-        echo "  wget.sh uninstall"
-        echo "  wget.sh config"
-        exit 1
-        ;;
+        print_usage wget && exit 1
 esac

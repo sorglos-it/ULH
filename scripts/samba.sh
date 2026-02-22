@@ -313,7 +313,8 @@ smbuser_menu() {
             3) smbuser_change_password ;;
             4) smbuser_list ;;
             5) return ;;
-            *) log_warn "Invalid option" ;;
+            *)
+        print_usage samba log_warn "Invalid option" ;;
         esac
     done
 }
@@ -437,14 +438,5 @@ case "$ACTION" in
         smbuser
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  samba.sh install          - Install Samba"
-        echo "  samba.sh update           - Update Samba"
-        echo "  samba.sh uninstall        - Uninstall Samba"
-        echo "  samba.sh config           - Configure Samba (global)"
-        echo "  samba.sh add-share        - Add new Samba share"
-        echo "  samba.sh smbuser          - Manage Samba users"
-        exit 1
-        ;;
+        print_usage samba && exit 1
 esac

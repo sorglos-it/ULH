@@ -188,13 +188,5 @@ case "$ACTION" in
         list_mounts
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  cifs-utils.sh install         # Install cifs-utils"
-        echo "  cifs-utils.sh update          # Update cifs-utils"
-        echo "  cifs-utils.sh uninstall       # Uninstall cifs-utils"
-        echo "  cifs-utils.sh mountSMB        # Mount SMB/CIFS network share (interactive)"
-        echo "  cifs-utils.sh list            # List mounted CIFS shares"
-        exit 1
-        ;;
+        print_usage cifs-utils && exit 1
 esac

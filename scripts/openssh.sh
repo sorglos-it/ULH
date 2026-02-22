@@ -400,6 +400,5 @@ case "$ACTION" in
         fix_xauthority
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage openssh && exit 1
 esac

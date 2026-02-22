@@ -109,55 +109,7 @@ configure_ufw() {
                 break
                 ;;
             *)
-                log_error "Invalid choice. Please enter 1-4."
-                ;;
-        esac
-    done
-}
-
-# Show UFW firewall status
-status_ufw() {
-    log_info "UFW Firewall Status:"
-    ufw status verbose || log_error "Failed to get status"
-}
-
-# Reset UFW firewall to defaults
-reset_ufw() {
-    log_info "Resetting UFW to default settings..."
-    
-    # Confirm from CONFIRM parameter
-    CONFIRM="${CONFIRM:-no}"
-    if [[ "$CONFIRM" == "yes" ]]; then
-        bash -c "echo 'y' | ufw reset" || log_error "Failed to reset UFW"
-        log_info "UFW reset to default settings!"
-    else
-        log_info "Reset cancelled."
-    fi
-}
-
-# Enable UFW firewall
-enable_ufw() {
-    log_info "Enabling ufw..."
-    
-    ufw enable || log_error "Failed"
-    
-    log_info "ufw enabled!"
-}
-
-# Disable UFW firewall
-disable_ufw() {
-    log_info "Disabling ufw..."
-    
-    ufw disable || log_error "Failed"
-    
-    log_info "ufw disabled!"
-}
-
-# Route to appropriate action
-case "$ACTION" in
-    install)
-        install_ufw
-        ;;
+        print_usage ufw && exit 1
     update)
         update_ufw
         ;;
@@ -180,6 +132,5 @@ case "$ACTION" in
         reset_ufw
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage ufw && exit 1
 esac

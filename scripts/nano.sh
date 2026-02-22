@@ -63,6 +63,5 @@ case "$ACTION" in
         configure_nano
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage nano && exit 1
 esac

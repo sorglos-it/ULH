@@ -62,6 +62,5 @@ case "$ACTION" in
         configure_wireguard
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage wireguard && exit 1
 esac

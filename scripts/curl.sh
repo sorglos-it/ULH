@@ -60,12 +60,5 @@ case "$ACTION" in
         configure_curl
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  curl.sh install"
-        echo "  curl.sh update"
-        echo "  curl.sh uninstall"
-        echo "  curl.sh config"
-        exit 1
-        ;;
+        print_usage curl && exit 1
 esac

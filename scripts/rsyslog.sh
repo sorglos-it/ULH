@@ -65,6 +65,5 @@ case "$ACTION" in
         configure_rsyslog
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage rsyslog && exit 1
 esac

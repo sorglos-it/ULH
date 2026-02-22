@@ -61,6 +61,5 @@ case "$ACTION" in
         configure_golang
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage golang && exit 1
 esac

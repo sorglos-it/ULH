@@ -111,12 +111,5 @@ case "$ACTION" in
         configure_locate
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  locate.sh install"
-        echo "  locate.sh update"
-        echo "  locate.sh uninstall"
-        echo "  locate.sh config"
-        exit 1
-        ;;
+        print_usage locate && exit 1
 esac

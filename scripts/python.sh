@@ -61,6 +61,5 @@ case "$ACTION" in
         configure_python
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage python && exit 1
 esac

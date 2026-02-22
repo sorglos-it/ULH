@@ -64,6 +64,5 @@ case "$ACTION" in
         configure_openvpn
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage openvpn && exit 1
 esac

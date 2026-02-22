@@ -91,7 +91,5 @@ case "$ACTION" in
         config_mysql
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        exit 1
-        ;;
+        print_usage mysql && exit 1
 esac

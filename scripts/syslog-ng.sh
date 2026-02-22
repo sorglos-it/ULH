@@ -65,6 +65,5 @@ case "$ACTION" in
         configure_syslog_ng
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage syslog-ng && exit 1
 esac

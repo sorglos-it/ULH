@@ -61,6 +61,5 @@ case "$ACTION" in
         configure_nodejs
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage nodejs && exit 1
 esac

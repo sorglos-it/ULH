@@ -61,6 +61,5 @@ case "$ACTION" in
         configure_php
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage php && exit 1
 esac

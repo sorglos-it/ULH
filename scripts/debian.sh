@@ -40,6 +40,5 @@ case "$ACTION" in
         dist_upgrade_debian
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage debian && exit 1
 esac

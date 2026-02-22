@@ -61,6 +61,5 @@ case "$ACTION" in
         configure_net_tools
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage net-tools && exit 1
 esac

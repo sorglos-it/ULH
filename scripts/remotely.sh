@@ -523,12 +523,5 @@ case "$ACTION" in
         config_remotely
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  remotely.sh install     - Install Remotely"
-        echo "  remotely.sh update      - Update Remotely"
-        echo "  remotely.sh uninstall   - Uninstall Remotely"
-        echo "  remotely.sh config      - Reconfigure connection settings"
-        exit 1
-        ;;
+        print_usage remotely && exit 1
 esac

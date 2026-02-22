@@ -62,6 +62,5 @@ case "$ACTION" in
         configure_logrotate
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage logrotate && exit 1
 esac

@@ -74,6 +74,5 @@ case "$ACTION" in
         configure_docker
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage docker && exit 1
 esac

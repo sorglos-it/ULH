@@ -74,7 +74,5 @@ case "$ACTION" in
         config_mariadb
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        exit 1
-        ;;
+        print_usage mariadb && exit 1
 esac

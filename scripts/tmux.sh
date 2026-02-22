@@ -70,6 +70,5 @@ case "$ACTION" in
         configure_tmux
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage tmux && exit 1
 esac

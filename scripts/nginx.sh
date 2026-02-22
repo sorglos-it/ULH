@@ -74,7 +74,5 @@ case "$ACTION" in
         config_server
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        exit 1
-        ;;
+        print_usage nginx && exit 1
 esac

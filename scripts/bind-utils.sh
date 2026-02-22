@@ -61,6 +61,5 @@ case "$ACTION" in
         configure_bind_utils
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage bind-utils && exit 1
 esac

@@ -51,5 +51,6 @@ case "$ACTION" in
     update) update_vim ;;
     uninstall) uninstall_vim ;;
     config) configure_vim ;;
-    *) log_error "Unknown action: $ACTION" ;;
+    *)
+        print_usage vim log_error "Unknown action: $ACTION" ;;
 esac

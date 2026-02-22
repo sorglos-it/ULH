@@ -62,6 +62,5 @@ case "$ACTION" in
         configure_ruby
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage ruby && exit 1
 esac

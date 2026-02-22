@@ -299,19 +299,5 @@ case "$ACTION" in
         ;;
     
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  linux.sh network,INTERFACE=eth0,DHCP_MODE=yes"
-        echo "  linux.sh dns,DNS_SERVER=8.8.8.8"
-        echo "  linux.sh hostname,HOSTNAME=myserver"
-        echo "  linux.sh user-add,USERNAME=testuser"
-        echo "  linux.sh user-delete,USERNAME=testuser"
-        echo "  linux.sh user-password,USERNAME=testuser,PASSWORD=newpass"
-        echo "  linux.sh group-create,GROUPNAME=developers"
-        echo "  linux.sh user-to-group,USERNAME=testuser,GROUPNAME=developers"
-        echo "  linux.sh ca-cert,SERVER=server.name"
-        echo "  linux.sh install-zip"
-        echo "  linux.sh uninstall-zip"
-        exit 1
-        ;;
+        print_usage linux && exit 1
 esac

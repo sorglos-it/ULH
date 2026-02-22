@@ -61,6 +61,5 @@ case "$ACTION" in
         configure_build_essential
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        ;;
+        print_usage build-essential && exit 1
 esac

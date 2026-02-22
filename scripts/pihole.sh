@@ -192,12 +192,5 @@ case "$ACTION" in
         configure_pihole
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        echo "Usage:"
-        echo "  pihole.sh install   - Install Pi-hole DNS ad-blocker"
-        echo "  pihole.sh update    - Update Pi-hole to latest version"
-        echo "  pihole.sh uninstall - Uninstall Pi-hole"
-        echo "  pihole.sh config    - Show Pi-hole configuration info"
-        exit 1
-        ;;
+        print_usage pihole && exit 1
 esac
