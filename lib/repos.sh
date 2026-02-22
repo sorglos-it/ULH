@@ -6,7 +6,7 @@
 source "${BASH_SOURCE%/*}/colors.sh"
 
 # Get correct yq binary for current architecture
-_get_yq() {
+get_yq() {
     if [[ -z "$_YQ_CACHE" ]]; then
         local arch=$(uname -m)
         case "$arch" in
@@ -22,8 +22,8 @@ _get_yq() {
 }
 
 # Helper: execute yq with proper binary
-_yq_eval() {
-    local yq=$(_get_yq)
+yq_eval() {
+    local yq=$(get_yq)
     "$yq" eval "$@"
 }
 
@@ -44,7 +44,7 @@ repo_sync_all() {
     local repo_config="$1"
     local auto_update_on_start
     
-    auto_update_on_start=$(_yq_eval ".update_settings.auto_update_on_start // true" "$repo_config" 2>/dev/null)
+    auto_update_on_start=$(yq_eval ".update_settings.auto_update_on_start // true" "$repo_config" 2>/dev/null)
     
     if [[ "$auto_update_on_start" != "true" ]]; then
         msg_info "Custom repo auto-update disabled"
@@ -52,7 +52,7 @@ repo_sync_all() {
     fi
     
     local repo_names
-    repo_names=$(_yq_eval ".repositories | keys | .[]" "$repo_config" 2>/dev/null)
+    repo_names=$(yq_eval ".repositories | keys | .[]" "$repo_config" 2>/dev/null)
     
     for repo_name in $repo_names; do
         repo_sync_one "$repo_config" "$repo_name"
@@ -73,11 +73,11 @@ repo_sync_one() {
     local enabled url path auth_method auto_update
     
     # Get config
-    enabled=$(_yq_eval ".repositories.$repo_name.enabled // false" "$repo_config" 2>/dev/null)
-    auto_update=$(_yq_eval ".repositories.$repo_name.auto_update // false" "$repo_config" 2>/dev/null)
-    url=$(_yq_eval ".repositories.$repo_name.url" "$repo_config" 2>/dev/null)
-    path=$(_yq_eval ".repositories.$repo_name.path" "$repo_config" 2>/dev/null)
-    auth_method=$(_yq_eval ".repositories.$repo_name.auth_method // none" "$repo_config" 2>/dev/null)
+    enabled=$(yq_eval ".repositories.$repo_name.enabled // false" "$repo_config" 2>/dev/null)
+    auto_update=$(yq_eval ".repositories.$repo_name.auto_update // false" "$repo_config" 2>/dev/null)
+    url=$(yq_eval ".repositories.$repo_name.url" "$repo_config" 2>/dev/null)
+    path=$(yq_eval ".repositories.$repo_name.path" "$repo_config" 2>/dev/null)
+    auth_method=$(yq_eval ".repositories.$repo_name.auth_method // none" "$repo_config" 2>/dev/null)
     
     # Skip if no path defined
     if [[ -z "$path" ]]; then
@@ -127,8 +127,8 @@ repo_clone() {
     local auth_url retry_count retry_delay max_retries
     
     auth_url=$(repo_auth_url "$url" "$auth_method" "$repo_config" "$repo_name")
-    max_retries=$(_yq_eval ".update_settings.retry_on_failure // 3" "$repo_config" 2>/dev/null)
-    retry_delay=$(_yq_eval ".update_settings.retry_delay_seconds // 5" "$repo_config" 2>/dev/null)
+    max_retries=$(yq_eval ".update_settings.retry_on_failure // 3" "$repo_config" 2>/dev/null)
+    retry_delay=$(yq_eval ".update_settings.retry_delay_seconds // 5" "$repo_config" 2>/dev/null)
     
     msg_info "Cloning '$repo_name' to $path..."
     
@@ -138,7 +138,7 @@ repo_clone() {
     # Setup SSH auth if needed
     if [[ "$auth_method" == "ssh" ]]; then
         local ssh_key
-        ssh_key=$(_yq_eval ".repositories.$repo_name.ssh_key" "$repo_config" 2>/dev/null)
+        ssh_key=$(yq_eval ".repositories.$repo_name.ssh_key" "$repo_config" 2>/dev/null)
         ssh_key=$(repo_resolve_ssh_key "$ssh_key")
         if [[ -n "$ssh_key" && -f "$ssh_key" ]]; then
             export GIT_SSH_COMMAND="ssh -i $ssh_key"
@@ -175,8 +175,8 @@ repo_pull() {
     
     local retry_count retry_delay max_retries
     
-    max_retries=$(_yq_eval ".update_settings.retry_on_failure // 3" "$repo_config" 2>/dev/null)
-    retry_delay=$(_yq_eval ".update_settings.retry_delay_seconds // 5" "$repo_config" 2>/dev/null)
+    max_retries=$(yq_eval ".update_settings.retry_on_failure // 3" "$repo_config" 2>/dev/null)
+    retry_delay=$(yq_eval ".update_settings.retry_delay_seconds // 5" "$repo_config" 2>/dev/null)
     
     msg_info "Updating '$repo_name'..."
     
@@ -187,7 +187,7 @@ repo_pull() {
         # Setup auth for SSH if needed
         if [[ "$auth_method" == "ssh" ]]; then
             local ssh_key
-            ssh_key=$(_yq_eval ".repositories.$repo_name.ssh_key" "$repo_config" 2>/dev/null)
+            ssh_key=$(yq_eval ".repositories.$repo_name.ssh_key" "$repo_config" 2>/dev/null)
             ssh_key=$(repo_resolve_ssh_key "$ssh_key")
             if [[ -n "$ssh_key" && -f "$ssh_key" ]]; then
                 export GIT_SSH_COMMAND="ssh -i $ssh_key"
@@ -227,7 +227,7 @@ repo_auth_url() {
             ;;
         https_token)
             local token
-            token=$(_yq_eval ".repositories.$repo_name.token" "$repo_config" 2>/dev/null)
+            token=$(yq_eval ".repositories.$repo_name.token" "$repo_config" 2>/dev/null)
             token=$(repo_expand_var "$token")
             
             if [[ -z "$token" || "$token" == "null" ]]; then
@@ -241,8 +241,8 @@ repo_auth_url() {
             ;;
         https_basic)
             local username password
-            username=$(_yq_eval ".repositories.$repo_name.username" "$repo_config" 2>/dev/null)
-            password=$(_yq_eval ".repositories.$repo_name.password" "$repo_config" 2>/dev/null)
+            username=$(yq_eval ".repositories.$repo_name.username" "$repo_config" 2>/dev/null)
+            password=$(yq_eval ".repositories.$repo_name.password" "$repo_config" 2>/dev/null)
             username=$(repo_expand_var "$username")
             password=$(repo_expand_var "$password")
             
@@ -321,12 +321,12 @@ repo_list_enabled() {
     fi
     
     local repo_names
-    repo_names=$(_yq_eval ".repositories | keys | .[]" "$repo_config" 2>/dev/null)
+    repo_names=$(yq_eval ".repositories | keys | .[]" "$repo_config" 2>/dev/null)
     
     while IFS= read -r repo_name; do
         [[ -z "$repo_name" ]] && continue
         local enabled
-        enabled=$(_yq_eval ".repositories.$repo_name.enabled // false" "$repo_config" 2>/dev/null)
+        enabled=$(yq_eval ".repositories.$repo_name.enabled // false" "$repo_config" 2>/dev/null)
         if [[ "$enabled" == "true" ]]; then
             echo "$repo_name"
         fi
@@ -342,7 +342,7 @@ repo_get_name() {
     [[ ! -f "$repo_config" ]] && repo_config="${repo_config%/}/custom/repo.yaml"
     [[ ! -f "$repo_config" ]] && repo_config="${repo_config}/custom/repo.yaml"
     
-    _yq_eval ".repositories.$repo_id.name" "$repo_config" 2>/dev/null
+    yq_eval ".repositories.$repo_id.name" "$repo_config" 2>/dev/null
 }
 
 # Get repository path
@@ -355,7 +355,7 @@ repo_get_path() {
     [[ ! -f "$repo_config" ]] && repo_config="${repo_config}/custom/repo.yaml"
     
     local path
-    path=$(_yq_eval ".repositories.$repo_id.path" "$repo_config" 2>/dev/null)
+    path=$(yq_eval ".repositories.$repo_id.path" "$repo_config" 2>/dev/null)
     
     if [[ "$path" == /* ]]; then
         echo "$path"
@@ -374,6 +374,6 @@ repo_has_scripts() {
     
     # Try to get script count
     local count
-    count=$(_yq_eval ".scripts | length" "$repo_path/custom.yaml" 2>/dev/null)
+    count=$(yq_eval ".scripts | length" "$repo_path/custom.yaml" 2>/dev/null)
     [[ -n "$count" && "$count" != "null" && "$count" -gt 0 ]]
 }

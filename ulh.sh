@@ -18,7 +18,7 @@ done
 # Auto-Update Feature
 # ============================================================================
 
-_auto_update() {
+auto_update() {
     # Check if we're in a git repository
     if [[ ! -d "$ulh_DIR/.git" ]]; then
         return 0
@@ -121,7 +121,7 @@ done
 
 # Auto-update on startup (unless disabled)
 if [[ "$ENABLE_AUTO_UPDATE" == "true" ]]; then
-    _auto_update
+    auto_update
 fi
 
 # Detect OS

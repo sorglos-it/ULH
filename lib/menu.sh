@@ -8,7 +8,7 @@ source "${BASH_SOURCE%/*}/colors.sh"
 CONTEXT_FROM="none"  # "none" or "repo"
 
 # Get correct yq binary for current architecture
-_get_yq() {
+get_yq() {
     if [[ -z "$_YQ_CACHE" ]]; then
         local arch=$(uname -m)
         case "$arch" in
@@ -24,8 +24,8 @@ _get_yq() {
 }
 
 # Helper: execute yq with proper binary
-_yq_eval() {
-    local yq=$(_get_yq)
+yq_eval() {
+    local yq=$(get_yq)
     "$yq" eval "$@"
 }
 
@@ -96,19 +96,19 @@ menu_prompt_yesno() {
 # Helper Functions
 # ============================================================================
 
-_get_categories() {
+get_categories() {
     local -n ref=$1; ref=()
     while IFS= read -r c; do [[ -n "$c" ]] && ref+=("$c"); done <<< "$(yaml_categories | sort)"
 }
 
-_get_scripts() {
+get_scripts() {
     local -n ref=$1; ref=(); local src="$2"
     while IFS= read -r s; do
         [[ -n "$s" ]] && yaml_os_compatible "$s" "$OS_DISTRO" "$OS_FAMILY" && [[ -f "$(yaml_script_path "$s")" ]] && ref+=("$s")
     done <<< "$src"
 }
 
-_has_custom_scripts() {
+has_custom_scripts() {
     [[ -f "${ulh_DIR}/custom.yaml" ]] || return 1
     yaml_load "custom"
     local found=0
@@ -149,7 +149,7 @@ menu_show_repositories() {
 menu_show_main() {
     menu_clear
     menu_header "ulh - unknown linux helper" "${ulh_VERSION}"
-    local -a cats; _get_categories cats
+    local -a cats; get_categories cats
     local i=1; for c in "${cats[@]}"; do 
         local desc=$(yaml_info "$c" description)
         if [[ -n "$desc" && "$desc" != "null" ]]; then
@@ -171,7 +171,7 @@ menu_show_main() {
 menu_show_category() {
     menu_clear
     menu_header "Category: $1"
-    local -a scripts; _get_scripts scripts "$(yaml_scripts_by_cat "$1")"
+    local -a scripts; get_scripts scripts "$(yaml_scripts_by_cat "$1")"
     if (( ${#scripts[@]} == 0 )); then 
         echo "|  No scripts available."
     else 
@@ -222,13 +222,13 @@ menu_show_custom_repo() {
     local -a scripts=()
     while IFS= read -r script_name; do
         [[ -n "$script_name" ]] && scripts+=("$script_name")
-    done <<< "$(_yq_eval ".scripts | keys | .[]" "$repo_path/custom.yaml" 2>/dev/null)"
+    done <<< "$(yq_eval ".scripts | keys | .[]" "$repo_path/custom.yaml" 2>/dev/null)"
     
     if (( ${#scripts[@]} == 0 )); then
         echo "|  No scripts available in this repository."
     else
         local i=1; for s in "${scripts[@]}"; do 
-            local desc=$(_yq_eval ".scripts.$s.description" "$repo_path/custom.yaml" 2>/dev/null)
+            local desc=$(yq_eval ".scripts.$s.description" "$repo_path/custom.yaml" 2>/dev/null)
             printf "|  %2d) %-20s - %s\n" $i "$s" "$desc"
             ((i++))
         done
@@ -248,15 +248,15 @@ menu_show_custom_repo_actions() {
     
     # Get actions from repo's custom.yaml
     local count
-    count=$(_yq_eval ".scripts.$script_name.actions | length" "$repo_path/custom.yaml" 2>/dev/null)
+    count=$(yq_eval ".scripts.$script_name.actions | length" "$repo_path/custom.yaml" 2>/dev/null)
     [[ -z "$count" || "$count" == "null" ]] && count=0
     
     if (( count == 0 )); then 
         echo "  No actions."
     else 
         for ((i=0; i<count; i++)); do
-            local n=$(_yq_eval ".scripts.$script_name.actions[$i].name" "$repo_path/custom.yaml" 2>/dev/null)
-            local d=$(_yq_eval ".scripts.$script_name.actions[$i].description" "$repo_path/custom.yaml" 2>/dev/null)
+            local n=$(yq_eval ".scripts.$script_name.actions[$i].name" "$repo_path/custom.yaml" 2>/dev/null)
+            local d=$(yq_eval ".scripts.$script_name.actions[$i].description" "$repo_path/custom.yaml" 2>/dev/null)
             [[ -n "$d" && "$d" != "null" ]] && printf "|  %2d) %-20s - %s\n" $((i+1)) "$n" "$d" || printf "|  %2d) %s\n" $((i+1)) "$n"
         done
     fi
@@ -320,7 +320,7 @@ menu_repositories() {
 menu_ulh_scripts() {
     while true; do
         menu_show_main
-        local -a cats; _get_categories cats; local max=${#cats[@]}
+        local -a cats; get_categories cats; local max=${#cats[@]}
         echo ""; local input; read -rp "  Choose: " input || return
         case "$input" in
             q|Q) exit 0 ;;
@@ -334,7 +334,7 @@ menu_ulh_scripts() {
 menu_category() {
     while true; do
         menu_show_category "$1"
-        local -a scripts; _get_scripts scripts "$(yaml_scripts_by_cat "$1")"; local max=${#scripts[@]}
+        local -a scripts; get_scripts scripts "$(yaml_scripts_by_cat "$1")"; local max=${#scripts[@]}
         echo ""; local input; read -rp "  Choose: " input || return
         case "$input" in
             q|Q) exit 0 ;; b|B) return ;;
@@ -372,7 +372,7 @@ menu_custom_repo_scripts() {
         local -a scripts=()
         while IFS= read -r script_name; do
             [[ -n "$script_name" ]] && scripts+=("$script_name")
-        done <<< "$(_yq_eval ".scripts | keys | .[]" "$repo_path/custom.yaml" 2>/dev/null)"
+        done <<< "$(yq_eval ".scripts | keys | .[]" "$repo_path/custom.yaml" 2>/dev/null)"
         
         local max=${#scripts[@]}
         echo ""; local input; read -rp "  Choose: " input || return
@@ -398,7 +398,7 @@ menu_custom_repo_actions() {
         
         # Get actions from repo's custom.yaml
         local count
-        count=$(_yq_eval ".scripts.$script_name.actions | length" "$repo_path/custom.yaml" 2>/dev/null)
+        count=$(yq_eval ".scripts.$script_name.actions | length" "$repo_path/custom.yaml" 2>/dev/null)
         [[ -z "$count" || "$count" == "null" ]] && count=0
         
         echo ""; local input; read -rp "  Choose: " input || return

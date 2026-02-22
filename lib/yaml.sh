@@ -5,7 +5,7 @@
 source "${BASH_SOURCE%/*}/colors.sh"
 
 # Locate architecture-specific yq binary
-_init_yq() {
+init_yq() {
     local yqdir="${ulh_DIR}/lib/yq"
     case "$(uname -m)" in
         x86_64)        YQ="${yqdir}/yq-amd64" ;;
@@ -18,7 +18,7 @@ _init_yq() {
     [[ -f "$YQ" && ! -x "$YQ" ]] && chmod +x "$YQ" 2>/dev/null
     [[ -x "$YQ" ]] || die "yq not found/executable: $YQ"
 }
-_init_yq
+init_yq
 
 YAML_FILE=""
 

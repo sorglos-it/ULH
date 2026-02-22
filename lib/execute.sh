@@ -5,7 +5,7 @@
 source "${BASH_SOURCE%/*}/colors.sh"
 
 # Get correct yq binary for current architecture
-_get_yq() {
+get_yq() {
     if [[ -z "$_YQ_CACHE" ]]; then
         local arch=$(uname -m)
         case "$arch" in
@@ -21,18 +21,18 @@ _get_yq() {
 }
 
 # Helper: execute yq with proper binary
-_yq_eval() {
-    local yq=$(_get_yq)
+yq_eval() {
+    local yq=$(get_yq)
     "$yq" eval "$@"
 }
 
 # Load and cache answer.yaml file
-_load_answers() {
+load_answers() {
     if [[ -z "$_ANSWERS_CACHE" ]]; then
         local answers_file="${ulh_DIR}/custom/answer.yaml"
         if [[ -f "$answers_file" ]]; then
             # Validate YAML syntax
-            if _yq_eval 'keys' "$answers_file" &>/dev/null; then
+            if yq_eval 'keys' "$answers_file" &>/dev/null; then
                 _ANSWERS_CACHE="$answers_file"
             else
                 _ANSWERS_CACHE="invalid"
@@ -49,13 +49,13 @@ _load_answers() {
 # Args: script_name
 # Returns: 0 (autoscript field present) or 1 (autoscript field not present)
 # Note: Checks for field PRESENCE, not value. autoscript: (no value) = enabled
-_get_script_autoscript() {
+get_script_autoscript() {
     local script_name="$1"
     
-    if _load_answers; then
+    if load_answers; then
         # Use 'has' to check if field exists (works with null values)
         # If the field exists (presence check), return 0; otherwise return 1
-        local has_autoscript=$(_yq_eval ".scripts.${script_name} | has(\"autoscript\")" "$_ANSWERS_CACHE" 2>/dev/null)
+        local has_autoscript=$(yq_eval ".scripts.${script_name} | has(\"autoscript\")" "$_ANSWERS_CACHE" 2>/dev/null)
         [[ "$has_autoscript" == "true" ]] && return 0 || return 1
     fi
     return 1  # Default to interactive mode (autoscript field not present)
@@ -64,11 +64,11 @@ _get_script_autoscript() {
 # Check if all required answers are present for a script
 # Args: script_name, prompt_count
 # Returns: 0 if all answers present, 1 if any missing
-_has_all_answers() {
+has_all_answers() {
     local script_name="$1" prompt_count="$2"
     
     for ((i=0; i<prompt_count; i++)); do
-        local answer=$(_get_answer_default "$script_name" "$i")
+        local answer=$(get_answer_default "$script_name" "$i")
         [[ -z "$answer" ]] && return 1  # Missing answer found
     done
     return 0  # All answers present
@@ -77,11 +77,11 @@ _has_all_answers() {
 # Get a default answer from answer.yaml if it exists
 # Args: script_name, prompt_index (0-based)
 # Returns: answer on stdout, or empty if not found
-_get_answer_default() {
+get_answer_default() {
     local script_name="$1" prompt_index="$2"
     
-    if _load_answers; then
-        local answer=$(_yq_eval ".scripts.${script_name}.config[${prompt_index}].default // \"\"" "$_ANSWERS_CACHE" 2>/dev/null)
+    if load_answers; then
+        local answer=$(yq_eval ".scripts.${script_name}.config[${prompt_index}].default // \"\"" "$_ANSWERS_CACHE" 2>/dev/null)
         echo "$answer"
     fi
 }
@@ -90,7 +90,7 @@ _get_answer_default() {
 # Args: question, type, default, autoscript_mode (optional)
 # autoscript_mode: if true, use default directly without prompting
 # Returns answer on stdout
-_prompt_by_type() {
+prompt_by_type() {
     local question="$1" type="$2" default="$3" autoscript_mode="${4:-false}" answer
 
     # If autoscript mode and default present, use it directly
@@ -143,7 +143,7 @@ execute_action() {
 
     # Determine autoscript mode for this script
     local autoscript_mode="false"
-    if _get_script_autoscript "$script"; then
+    if get_script_autoscript "$script"; then
         autoscript_mode="true"
     fi
 
@@ -156,7 +156,7 @@ execute_action() {
     if (( prompt_count > 0 )); then
         # Check if we can use autoscript mode (all answers must be present)
         if [[ "$autoscript_mode" == "true" ]]; then
-            if ! _has_all_answers "$script" "$prompt_count"; then
+            if ! has_all_answers "$script" "$prompt_count"; then
                 # Graceful fallback: missing answers, show interactive prompts
                 msg_warn "Autoscript mode enabled but missing answers, falling back to interactive mode"
                 autoscript_mode="false"
@@ -179,11 +179,11 @@ execute_action() {
             local varname=$(yaml_prompt_var "$script" "$action_index" "$i")
 
             # Merge defaults: prefer answer.yaml, fall back to config.yaml
-            local answer_yaml_default=$(_get_answer_default "$script" "$i")
+            local answer_yaml_default=$(get_answer_default "$script" "$i")
             local final_default="${answer_yaml_default:-$config_default}"
             
             # Prompt user or use default directly (based on autoscript mode)
-            local answer=$(_prompt_by_type "$question" "$ptype" "$final_default" "$autoscript_mode")
+            local answer=$(prompt_by_type "$question" "$ptype" "$final_default" "$autoscript_mode")
 
             if [[ -n "$varname" && "$varname" != "null" ]]; then
                 varnames+=("$varname")
@@ -256,22 +256,22 @@ execute_custom_repo_action() {
     [[ ! -f "$custom_yaml" ]] && { menu_error "custom.yaml not found in $repo_path"; return 1; }
     
     # Get script path from repo
-    local script_file=$(_yq_eval ".scripts.$script_name.path" "$custom_yaml" 2>/dev/null)
+    local script_file=$(yq_eval ".scripts.$script_name.path" "$custom_yaml" 2>/dev/null)
     local script_path="$repo_path/$script_file"
     
     [[ ! -f "$script_path" ]] && { menu_error "Script not found: $script_path"; return 1; }
     [[ ! -x "$script_path" ]] && chmod +x "$script_path" 2>/dev/null
     
     # Get action details
-    local aname=$(_yq_eval ".scripts.$script_name.actions[$action_index].name" "$custom_yaml" 2>/dev/null)
-    local parameter=$(_yq_eval ".scripts.$script_name.actions[$action_index].parameter" "$custom_yaml" 2>/dev/null)
-    local needs_sudo=$(_yq_eval ".scripts.$script_name.needs_sudo // false" "$custom_yaml" 2>/dev/null)
-    local prompt_count=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts | length" "$custom_yaml" 2>/dev/null)
+    local aname=$(yq_eval ".scripts.$script_name.actions[$action_index].name" "$custom_yaml" 2>/dev/null)
+    local parameter=$(yq_eval ".scripts.$script_name.actions[$action_index].parameter" "$custom_yaml" 2>/dev/null)
+    local needs_sudo=$(yq_eval ".scripts.$script_name.needs_sudo // false" "$custom_yaml" 2>/dev/null)
+    local prompt_count=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts | length" "$custom_yaml" 2>/dev/null)
     [[ -z "$prompt_count" || "$prompt_count" == "null" ]] && prompt_count=0
     
     # Determine autoscript mode for this script
     local autoscript_mode="false"
-    if _get_script_autoscript "$script_name"; then
+    if get_script_autoscript "$script_name"; then
         autoscript_mode="true"
     fi
     
@@ -281,7 +281,7 @@ execute_custom_repo_action() {
     if (( prompt_count > 0 )); then
         # Check if we can use autoscript mode (all answers must be present)
         if [[ "$autoscript_mode" == "true" ]]; then
-            if ! _has_all_answers "$script_name" "$prompt_count"; then
+            if ! has_all_answers "$script_name" "$prompt_count"; then
                 # Graceful fallback: missing answers, show interactive prompts
                 msg_warn "Autoscript mode enabled but missing answers, falling back to interactive mode"
                 autoscript_mode="false"
@@ -298,17 +298,17 @@ execute_custom_repo_action() {
         fi
         
         for ((i=0; i<prompt_count; i++)); do
-            local question=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].question" "$custom_yaml" 2>/dev/null)
-            local ptype=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].type" "$custom_yaml" 2>/dev/null)
-            local config_default=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].default" "$custom_yaml" 2>/dev/null)
-            local varname=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].variable" "$custom_yaml" 2>/dev/null)
+            local question=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].question" "$custom_yaml" 2>/dev/null)
+            local ptype=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].type" "$custom_yaml" 2>/dev/null)
+            local config_default=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].default" "$custom_yaml" 2>/dev/null)
+            local varname=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].variable" "$custom_yaml" 2>/dev/null)
             
             # Merge defaults: prefer answer.yaml, fall back to config.yaml
-            local answer_yaml_default=$(_get_answer_default "$script_name" "$i")
+            local answer_yaml_default=$(get_answer_default "$script_name" "$i")
             local final_default="${answer_yaml_default:-$config_default}"
             
             # Prompt user or use default directly (based on autoscript mode)
-            local answer=$(_prompt_by_type "$question" "$ptype" "$final_default" "$autoscript_mode")
+            local answer=$(prompt_by_type "$question" "$ptype" "$final_default" "$autoscript_mode")
             
             if [[ -n "$varname" && "$varname" != "null" ]]; then
                 varnames+=("$varname")
