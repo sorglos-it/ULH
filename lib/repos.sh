@@ -61,10 +61,10 @@ repo_sync_all() {
 
 # Sync single repository
 # Logic:
-#   enabled=true  → show in menu, only clone if directory doesn't exist
-#   enabled=false → don't show in menu, never clone
-#   auto_update=true  → pull from git on startup (if it's a git repo)
-#   auto_update=false → don't auto-pull on startup
+#   enabled:  (presence-based) → show in menu, only clone if directory doesn't exist
+#   (absent)  → don't show in menu, never clone
+#   auto_update:  (presence-based) → pull from git on startup (if it's a git repo)
+#   (absent)      → don't auto-pull on startup
 # These two flags are independent!
 repo_sync_one() {
     local repo_config="$1"
@@ -72,9 +72,9 @@ repo_sync_one() {
     
     local enabled url path auth_method auto_update
     
-    # Get config
-    enabled=$(yq_eval ".repositories.$repo_name.enabled // false" "$repo_config" 2>/dev/null)
-    auto_update=$(yq_eval ".repositories.$repo_name.auto_update // false" "$repo_config" 2>/dev/null)
+    # Get config (absence = not enabled/not auto-updating)
+    enabled=$(yq_eval ".repositories.$repo_name.enabled" "$repo_config" 2>/dev/null)
+    auto_update=$(yq_eval ".repositories.$repo_name.auto_update" "$repo_config" 2>/dev/null)
     url=$(yq_eval ".repositories.$repo_name.url" "$repo_config" 2>/dev/null)
     path=$(yq_eval ".repositories.$repo_name.path" "$repo_config" 2>/dev/null)
     auth_method=$(yq_eval ".repositories.$repo_name.auth_method // none" "$repo_config" 2>/dev/null)
@@ -91,7 +91,8 @@ repo_sync_one() {
     
     # Step 1: If repo exists, handle auto_update
     if [[ -d "$path" ]]; then
-        if [[ -d "$path/.git" && "$auto_update" == "true" && -n "$url" ]]; then
+        # Check if auto_update field exists (presence-based)
+        if [[ -d "$path/.git" && -n "$auto_update" && "$auto_update" != "null" && -n "$url" ]]; then
             # It's a git repo and auto_update is enabled → pull updates
             repo_pull "$repo_name" "$url" "$path" "$auth_method" "$repo_config"
         fi
@@ -100,14 +101,14 @@ repo_sync_one() {
     fi
     
     # Step 2: Repo doesn't exist locally
-    # Only try to clone if enabled=true AND url is non-empty
-    if [[ "$enabled" != "true" ]]; then
-        # enabled=false: ignore this repo completely (no clone, not in menu)
+    # Only try to clone if enabled field exists (presence-based) AND url is non-empty
+    if [[ -z "$enabled" || "$enabled" == "null" ]]; then
+        # enabled field not present: ignore this repo completely (no clone, not in menu)
         return 0
     fi
     
     if [[ -z "$url" ]]; then
-        # enabled=true but no URL: use as local placeholder, skip clone
+        # enabled field present but no URL: use as local placeholder, skip clone
         msg_info "Repository '$repo_name' has no URL (local placeholder)"
         return 0
     fi
@@ -325,9 +326,11 @@ repo_list_enabled() {
     
     while IFS= read -r repo_name; do
         [[ -z "$repo_name" ]] && continue
+        # Check if enabled field exists (presence-based)
+        # If field is present (even with empty value), repo is enabled
         local enabled
-        enabled=$(yq_eval ".repositories.$repo_name.enabled // false" "$repo_config" 2>/dev/null)
-        if [[ "$enabled" == "true" ]]; then
+        enabled=$(yq_eval ".repositories.$repo_name.enabled" "$repo_config" 2>/dev/null)
+        if [[ -n "$enabled" && "$enabled" != "null" ]]; then
             echo "$repo_name"
         fi
     done <<< "$repo_names"
