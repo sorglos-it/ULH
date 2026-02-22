@@ -4,60 +4,9 @@
 # Manages qemu-guest-agent (for guests) and VM/LXC container operations
 
 set -e
-
-
-# Check if we need sudo
-if [[ $EUID -ne 0 ]]; then
-    SUDO_PREFIX="sudo"
-else
-    SUDO_PREFIX=""
-fi
-
-
-# Parse action and parameters
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-# Export any additional parameters
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        [[ -n "$key" ]] && export "$key=$val"
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
-
-# Color codes for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-NC='\033[0m'
-
-# Log informational messages with green checkmark
-log_info() {
-    printf "${GREEN}✓${NC} %s\n" "$1"
-}
-
-# Log warning messages with yellow warning sign
-log_warn() {
-    printf "${YELLOW}⚠${NC} %s\n" "$1"
-}
-
-# Log error messages with red X and exit
-log_error() {
-    printf "${RED}✗${NC} %s\n" "$1"
-    exit 1
-}
-
-# Detect distribution
-detect_distro() {
-    if [[ -f /etc/os-release ]]; then
-        . /etc/os-release
-        OS_ID="${ID}"
-        OS_VERSION="${VERSION_ID}"
-    else
-        log_error "Cannot detect distribution"
-    fi
-}
+source "$(dirname "$0")/../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 
 # Install qemu-guest-agent
 install_guest_agent() {
@@ -67,20 +16,20 @@ install_guest_agent() {
     
     case "${OS_ID}" in
         debian | ubuntu)
-            $SUDO_PREFIX apt-get update -qq
-            $SUDO_PREFIX apt-get install -y qemu-guest-agent
+            apt-get update -qq
+            apt-get install -y qemu-guest-agent
             ;;
         rhel | centos | rocky | fedora | alma)
-            $SUDO_PREFIX dnf install -y qemu-guest-agent
+            dnf install -y qemu-guest-agent
             ;;
         arch | manjaro)
-            $SUDO_PREFIX pacman -S --noconfirm qemu-guest-agent
+            pacman -S --noconfirm qemu-guest-agent
             ;;
         suse | opensuse | opensuse-leap | opensuse-tumbleweed)
-            $SUDO_PREFIX zypper install -y qemu-guest-agent
+            zypper install -y qemu-guest-agent
             ;;
         alpine)
-            $SUDO_PREFIX apk add --no-cache qemu-guest-agent
+            apk add --no-cache qemu-guest-agent
             ;;
         *)
             log_error "Unsupported distribution: ${OS_ID}"
@@ -89,8 +38,8 @@ install_guest_agent() {
     
     # Start and enable service
     log_info "Starting and enabling qemu-guest-agent service..."
-    $SUDO_PREFIX systemctl start qemu-guest-agent
-    $SUDO_PREFIX systemctl enable qemu-guest-agent
+    systemctl start qemu-guest-agent
+    systemctl enable qemu-guest-agent
     
     log_info "qemu-guest-agent installed successfully"
 }
@@ -103,20 +52,20 @@ update_guest_agent() {
     
     case "${OS_ID}" in
         debian | ubuntu)
-            $SUDO_PREFIX apt-get update -qq
-            $SUDO_PREFIX apt-get upgrade -y qemu-guest-agent
+            apt-get update -qq
+            apt-get upgrade -y qemu-guest-agent
             ;;
         rhel | centos | rocky | fedora | alma)
-            $SUDO_PREFIX dnf upgrade -y qemu-guest-agent
+            dnf upgrade -y qemu-guest-agent
             ;;
         arch | manjaro)
-            $SUDO_PREFIX pacman -Syu --noconfirm qemu-guest-agent
+            pacman -Syu --noconfirm qemu-guest-agent
             ;;
         suse | opensuse | opensuse-leap | opensuse-tumbleweed)
-            $SUDO_PREFIX zypper update -y qemu-guest-agent
+            zypper update -y qemu-guest-agent
             ;;
         alpine)
-            $SUDO_PREFIX apk upgrade qemu-guest-agent
+            apk upgrade qemu-guest-agent
             ;;
         *)
             log_error "Unsupported distribution: ${OS_ID}"
@@ -125,7 +74,7 @@ update_guest_agent() {
     
     # Restart service
     log_info "Restarting qemu-guest-agent service..."
-    $SUDO_PREFIX systemctl restart qemu-guest-agent
+    systemctl restart qemu-guest-agent
     
     log_info "qemu-guest-agent updated successfully"
 }
@@ -146,25 +95,25 @@ uninstall_guest_agent() {
     
     # Stop and disable service
     log_info "Stopping and disabling qemu-guest-agent service..."
-    $SUDO_PREFIX systemctl stop qemu-guest-agent || true
-    $SUDO_PREFIX systemctl disable qemu-guest-agent || true
+    systemctl stop qemu-guest-agent || true
+    systemctl disable qemu-guest-agent || true
     
     case "${OS_ID}" in
         debian | ubuntu)
-            $SUDO_PREFIX apt-get remove -y qemu-guest-agent
-            $SUDO_PREFIX apt-get autoremove -y
+            apt-get remove -y qemu-guest-agent
+            apt-get autoremove -y
             ;;
         rhel | centos | rocky | fedora | alma)
-            $SUDO_PREFIX dnf remove -y qemu-guest-agent
+            dnf remove -y qemu-guest-agent
             ;;
         arch | manjaro)
-            $SUDO_PREFIX pacman -R --noconfirm qemu-guest-agent
+            pacman -R --noconfirm qemu-guest-agent
             ;;
         suse | opensuse | opensuse-leap | opensuse-tumbleweed)
-            $SUDO_PREFIX zypper remove -y qemu-guest-agent
+            zypper remove -y qemu-guest-agent
             ;;
         alpine)
-            $SUDO_PREFIX apk del qemu-guest-agent
+            apk del qemu-guest-agent
             ;;
         *)
             log_error "Unsupported distribution: ${OS_ID}"
@@ -193,7 +142,7 @@ make_lxc_to_template() {
     
     log_info "Converting LXC container $CTID to template..."
     
-    if $SUDO_PREFIX pct set "$CTID" -template 1; then
+    if pct set "$CTID" -template 1; then
         log_info "Container $CTID is now a template"
     else
         log_error "Failed to convert container $CTID to template"
@@ -212,7 +161,7 @@ make_template_to_lxc() {
     
     log_info "Converting template $CTID back to normal container..."
     
-    if $SUDO_PREFIX pct set "$CTID" -template 0; then
+    if pct set "$CTID" -template 0; then
         log_info "Container $CTID is now a normal container"
     else
         log_error "Failed to convert container $CTID back to normal"
@@ -231,7 +180,7 @@ unlock_vm() {
     
     log_info "Unlocking container/VM $CTID..."
     
-    if $SUDO_PREFIX pct unlock "$CTID"; then
+    if pct unlock "$CTID"; then
         log_info "Container/VM $CTID is now unlocked"
     else
         log_error "Failed to unlock container/VM $CTID"
@@ -246,19 +195,19 @@ stop_all_containers() {
     
     # Stop all QEMU VMs
     log_info "Stopping all QEMU VMs..."
-    for vmid in $($SUDO_PREFIX qm list | awk 'NR>1 {print $1}'); do
+    for vmid in $(qm list | awk 'NR>1 {print $1}'); do
         if [[ -n "$vmid" ]]; then
             log_info "Stopping VM $vmid..."
-            $SUDO_PREFIX qm stop "$vmid" || log_warn "Failed to stop VM $vmid"
+            qm stop "$vmid" || log_warn "Failed to stop VM $vmid"
         fi
     done
     
     # Stop all LXC containers
     log_info "Stopping all LXC containers..."
-    for ctid in $($SUDO_PREFIX pct list | awk 'NR>1 {print $1}'); do
+    for ctid in $(pct list | awk 'NR>1 {print $1}'); do
         if [[ -n "$ctid" ]]; then
             log_info "Stopping container $ctid..."
-            $SUDO_PREFIX pct stop "$ctid" || log_warn "Failed to stop container $ctid"
+            pct stop "$ctid" || log_warn "Failed to stop container $ctid"
         fi
     done
     
@@ -272,10 +221,10 @@ list_all_lxc() {
     log_info "Listing all LXC containers..."
     printf "%-8s %-20s %-20s %-10s\n" "VMID" "Hostname" "IP" "Status"
     echo "============================================================"
-    for id in $($SUDO_PREFIX pct list | awk 'NR>1 {print $1}'); do
-        name=$($SUDO_PREFIX pct config "$id" | grep hostname | awk '{print $2}')
-        ip=$($SUDO_PREFIX pct config "$id" | grep -oP 'ip=\K[^,]+' | head -1)
-        status=$($SUDO_PREFIX pct status "$id" | awk '{print $2}')
+    for id in $(pct list | awk 'NR>1 {print $1}'); do
+        name=$(pct config "$id" | grep hostname | awk '{print $2}')
+        ip=$(pct config "$id" | grep -oP 'ip=\K[^,]+' | head -1)
+        status=$(pct status "$id" | awk '{print $2}')
         printf "%-8s %-20s %-20s %-10s\n" "$id" "$name" "$ip" "$status"
     done
     echo "============================================================"
@@ -288,9 +237,9 @@ list_running_lxc() {
     log_info "Listing running LXC containers..."
     printf "%-8s %-20s %-20s\n" "VMID" "Hostname" "IP"
     echo "-------------------------------------------"
-    for id in $($SUDO_PREFIX pct list | grep running | awk '{print $1}'); do
-        name=$($SUDO_PREFIX pct config "$id" | grep hostname | awk '{print $2}')
-        ip=$($SUDO_PREFIX pct exec "$id" -- ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    for id in $(pct list | grep running | awk '{print $1}'); do
+        name=$(pct config "$id" | grep hostname | awk '{print $2}')
+        ip=$(pct exec "$id" -- ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
         printf "%-8s %-20s %-20s\n" "$id" "$name" "$ip"
     done
     echo "-------------------------------------------"
@@ -308,7 +257,7 @@ start_vm() {
     
     log_info "Starting VM $VMID..."
     
-    if $SUDO_PREFIX qm start "$VMID"; then
+    if qm start "$VMID"; then
         log_info "VM $VMID started successfully"
     else
         log_error "Failed to start VM $VMID"
@@ -327,7 +276,7 @@ stop_vm() {
     
     log_info "Stopping VM $VMID..."
     
-    if $SUDO_PREFIX qm stop "$VMID"; then
+    if qm stop "$VMID"; then
         log_info "VM $VMID stopped successfully"
     else
         log_error "Failed to stop VM $VMID"
@@ -346,7 +295,7 @@ start_lxc() {
     
     log_info "Starting LXC container $CTID..."
     
-    if $SUDO_PREFIX pct start "$CTID"; then
+    if pct start "$CTID"; then
         log_info "LXC container $CTID started successfully"
     else
         log_error "Failed to start LXC container $CTID"
@@ -365,7 +314,7 @@ stop_lxc() {
     
     log_info "Stopping LXC container $CTID..."
     
-    if $SUDO_PREFIX pct stop "$CTID"; then
+    if pct stop "$CTID"; then
         log_info "LXC container $CTID stopped successfully"
     else
         log_error "Failed to stop LXC container $CTID"

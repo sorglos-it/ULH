@@ -4,87 +4,18 @@
 # Install, update, uninstall, and configure UFW on all Linux distributions
 
 set -e
+source "$(dirname "$0")/../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 
-
-# Check if we need sudo
-if [[ $EUID -ne 0 ]]; then
-    SUDO_PREFIX="sudo"
-else
-    SUDO_PREFIX=""
-fi
-
-
-# Parse action and parameters
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-# Export any additional parameters
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        [[ -n "$key" ]] && export "$key=$val"
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
-
-# Color codes for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'
-
-# Log informational messages with green checkmark
-log_info() {
-    printf "${GREEN}✓${NC} %s\n" "$1"
-}
-
-# Log error messages with red X and exit
-log_error() {
-    printf "${RED}✗${NC} %s\n" "$1"
-    exit 1
-}
-
-# Detect operating system and set appropriate package manager commands
-detect_os() {
-    source /etc/os-release || log_error "Cannot detect OS"
-    
-    case "${ID,,}" in
-        ubuntu|debian|raspbian|linuxmint|pop)
-            PKG_UPDATE="apt-get update"
-            PKG_INSTALL="apt-get install -y"
-            PKG_UNINSTALL="apt-get remove -y"
-            ;;
-        fedora|rhel|centos|rocky|alma)
-            PKG_UPDATE="dnf check-update || true"
-            PKG_INSTALL="dnf install -y"
-            PKG_UNINSTALL="dnf remove -y"
-            ;;
-        arch|archarm|manjaro|endeavouros)
-            PKG_UPDATE="pacman -Sy"
-            PKG_INSTALL="pacman -S --noconfirm"
-            PKG_UNINSTALL="pacman -R --noconfirm"
-            ;;
-        opensuse*|sles)
-            PKG_UPDATE="zypper refresh"
-            PKG_INSTALL="zypper install -y"
-            PKG_UNINSTALL="zypper remove -y"
-            ;;
-        alpine)
-            PKG_UPDATE="apk update"
-            PKG_INSTALL="apk add"
-            PKG_UNINSTALL="apk del"
-            ;;
-        *)
-            log_error "Unsupported distribution"
-            ;;
-    esac
-}
 
 # Install UFW
 install_ufw() {
     log_info "Installing ufw..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL ufw || log_error "Failed"
+    $PKG_UPDATE || true
+    $PKG_INSTALL ufw || log_error "Failed"
     
     log_info "ufw installed!"
 }
@@ -94,8 +25,8 @@ update_ufw() {
     log_info "Updating ufw..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL ufw || log_error "Failed"
+    $PKG_UPDATE || true
+    $PKG_INSTALL ufw || log_error "Failed"
     
     log_info "ufw updated!"
 }
@@ -105,8 +36,8 @@ uninstall_ufw() {
     log_info "Uninstalling ufw..."
     detect_os
     
-    $SUDO_PREFIX ufw disable || true
-    $SUDO_PREFIX $PKG_UNINSTALL ufw || log_error "Failed"
+    ufw disable || true
+    $PKG_UNINSTALL ufw || log_error "Failed"
     
     log_info "ufw uninstalled!"
 }
@@ -118,7 +49,7 @@ configure_ufw() {
     # If PORT is set via parameters, use simple mode (backward compatibility)
     if [[ -n "$PORT" ]]; then
         log_info "Adding rule for port $PORT..."
-        $SUDO_PREFIX ufw allow "$PORT" || log_error "Failed to add rule"
+        ufw allow "$PORT" || log_error "Failed to add rule"
         log_info "Port $PORT allowed!"
         return
     fi
@@ -145,23 +76,23 @@ configure_ufw() {
                 read -p "From IP (optional, press Enter for any): " from_ip
                 
                 if [[ -z "$from_ip" ]]; then
-                    $SUDO_PREFIX ufw "$action" "$port/$protocol" || log_error "Failed to add rule"
+                    ufw "$action" "$port/$protocol" || log_error "Failed to add rule"
                     log_info "Rule added: $action $port/$protocol"
                 else
-                    $SUDO_PREFIX ufw "$action" from "$from_ip" to any port "$port" proto "$protocol" || log_error "Failed to add rule"
+                    ufw "$action" from "$from_ip" to any port "$port" proto "$protocol" || log_error "Failed to add rule"
                     log_info "Rule added: $action from $from_ip port $port/$protocol"
                 fi
                 ;;
             2)
                 # Delete Rule
                 log_info "Current rules:"
-                $SUDO_PREFIX ufw status numbered || true
+                ufw status numbered || true
                 echo ""
                 read -p "Enter rule number to delete: " rule_num
                 
                 if [[ -n "$rule_num" && "$rule_num" =~ ^[0-9]+$ ]]; then
                     # Use 'yes' to auto-confirm deletion
-                    $SUDO_PREFIX bash -c "echo 'y' | ufw delete $rule_num" || log_error "Failed to delete rule"
+                    bash -c "echo 'y' | ufw delete $rule_num" || log_error "Failed to delete rule"
                     log_info "Rule deleted!"
                 else
                     log_error "Invalid rule number"
@@ -170,7 +101,7 @@ configure_ufw() {
             3)
                 # Show Rules
                 log_info "Current UFW status and rules:"
-                $SUDO_PREFIX ufw status verbose || true
+                ufw status verbose || true
                 ;;
             4)
                 # Back to main menu
@@ -187,7 +118,7 @@ configure_ufw() {
 # Show UFW firewall status
 status_ufw() {
     log_info "UFW Firewall Status:"
-    $SUDO_PREFIX ufw status verbose || log_error "Failed to get status"
+    ufw status verbose || log_error "Failed to get status"
 }
 
 # Reset UFW firewall to defaults
@@ -197,7 +128,7 @@ reset_ufw() {
     # Confirm from CONFIRM parameter
     CONFIRM="${CONFIRM:-no}"
     if [[ "$CONFIRM" == "yes" ]]; then
-        $SUDO_PREFIX bash -c "echo 'y' | ufw reset" || log_error "Failed to reset UFW"
+        bash -c "echo 'y' | ufw reset" || log_error "Failed to reset UFW"
         log_info "UFW reset to default settings!"
     else
         log_info "Reset cancelled."
@@ -208,7 +139,7 @@ reset_ufw() {
 enable_ufw() {
     log_info "Enabling ufw..."
     
-    $SUDO_PREFIX ufw enable || log_error "Failed"
+    ufw enable || log_error "Failed"
     
     log_info "ufw enabled!"
 }
@@ -217,7 +148,7 @@ enable_ufw() {
 disable_ufw() {
     log_info "Disabling ufw..."
     
-    $SUDO_PREFIX ufw disable || log_error "Failed"
+    ufw disable || log_error "Failed"
     
     log_info "ufw disabled!"
 }

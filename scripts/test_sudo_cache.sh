@@ -2,8 +2,10 @@
 # Simple sudo cache test
 # This script calls sudo twice to show password caching
 
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
+set -e
+source "$(dirname "$0")/../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 
 case "$ACTION" in
     test)

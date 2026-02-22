@@ -4,57 +4,9 @@
 # Manage network, DNS, hostname, users, and groups on Linux systems
 
 set -e
-
-
-# Check if we need sudo
-if [[ $EUID -ne 0 ]]; then
-    SUDO_PREFIX="sudo"
-else
-    SUDO_PREFIX=""
-fi
-
-
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        [[ -n "$key" ]] && export "$key=$val"
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log_info() {
-    printf "${GREEN}✓${NC} %s\n" "$1"
-}
-
-log_warn() {
-    printf "${YELLOW}⚠${NC} %s\n" "$1"
-}
-
-detect_os() {
-    source /etc/os-release || log_error "Cannot detect OS"
-    OS_DISTRO="${ID,,}"
-    case "$OS_DISTRO" in
-        ubuntu|debian|raspbian|linuxmint|pop) PKG_UPDATE="apt-get update"; PKG_INSTALL="apt-get install -y"; PKG_UNINSTALL="apt-get remove -y" ;;
-        fedora|rhel|centos|rocky|alma) PKG_UPDATE="dnf check-update || true"; PKG_INSTALL="dnf install -y"; PKG_UNINSTALL="dnf remove -y" ;;
-        arch|archarm|manjaro|endeavouros) PKG_UPDATE="pacman -Sy"; PKG_INSTALL="pacman -S --noconfirm"; PKG_UNINSTALL="pacman -R --noconfirm" ;;
-        opensuse*|sles) PKG_UPDATE="zypper refresh"; PKG_INSTALL="zypper install -y"; PKG_UNINSTALL="zypper remove -y" ;;
-        alpine) PKG_UPDATE="apk update"; PKG_INSTALL="apk add"; PKG_UNINSTALL="apk del" ;;
-        *) log_error "Unsupported distribution: $OS_DISTRO" ;;
-    esac
-}
-
-log_error() {
-    printf "${RED}✗${NC} %s\n" "$1"
-    exit 1
-}
+source "$(dirname "$0")/../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 
 configure_network() {
     log_info "Configuring network..."
@@ -76,19 +28,19 @@ network:
       dhcp4: true
       dhcp6: true
 EOF
-            $SUDO_PREFIX cp /tmp/netplan.yaml /etc/netplan/00-installer-config.yaml
-            $SUDO_PREFIX netplan apply
+            cp /tmp/netplan.yaml /etc/netplan/00-installer-config.yaml
+            netplan apply
         # Red Hat/CentOS
         elif [[ -f /etc/sysconfig/network-scripts/ifcfg-$INTERFACE ]]; then
             log_info "Using ifcfg-* (Red Hat/CentOS)..."
-            $SUDO_PREFIX tee /etc/sysconfig/network-scripts/ifcfg-$INTERFACE > /dev/null <<EOF
+            tee /etc/sysconfig/network-scripts/ifcfg-$INTERFACE > /dev/null <<EOF
 TYPE=Ethernet
 BOOTPROTO=dhcp
 NAME=$INTERFACE
 DEVICE=$INTERFACE
 ONBOOT=yes
 EOF
-            $SUDO_PREFIX systemctl restart network
+            systemctl restart network
         fi
     else
         [[ -z "$IP_ADDRESS" ]] && log_error "IP_ADDRESS not set for static configuration"
@@ -119,14 +71,14 @@ $ipv6_config
       nameservers:
         addresses: [${DNS_SERVER:-8.8.8.8}]
 EOF
-            $SUDO_PREFIX cp /tmp/netplan.yaml /etc/netplan/00-installer-config.yaml
-            $SUDO_PREFIX netplan apply
+            cp /tmp/netplan.yaml /etc/netplan/00-installer-config.yaml
+            netplan apply
         # Red Hat/CentOS
         elif [[ -f /etc/sysconfig/network-scripts/ifcfg-$INTERFACE ]]; then
             log_info "Using ifcfg-* (Red Hat/CentOS)..."
             local ip="${IP_ADDRESS%/*}"
             local prefix="${IP_ADDRESS#*/}"
-            $SUDO_PREFIX tee /etc/sysconfig/network-scripts/ifcfg-$INTERFACE > /dev/null <<EOF
+            tee /etc/sysconfig/network-scripts/ifcfg-$INTERFACE > /dev/null <<EOF
 TYPE=Ethernet
 BOOTPROTO=static
 NAME=$INTERFACE
@@ -144,7 +96,7 @@ EOF
                     echo "IPV6_DEFAULTGW=$IPV6_GATEWAY" | tee -a /etc/sysconfig/network-scripts/ifcfg-$INTERFACE >/dev/null
                 fi
             fi
-            $SUDO_PREFIX systemctl restart network
+            systemctl restart network
         else
             log_error "Network configuration method not found. Supported: netplan, ifcfg-*"
         fi
@@ -162,13 +114,13 @@ configure_dns() {
     
     # Systemd-resolved (modern)
     if command -v systemctl &>/dev/null && systemctl is-active --quiet systemd-resolved; then
-        $SUDO_PREFIX mkdir -p /etc/systemd/resolved.conf.d/
-        $SUDO_PREFIX tee /etc/systemd/resolved.conf.d/custom-dns.conf > /dev/null <<EOF
+        mkdir -p /etc/systemd/resolved.conf.d/
+        tee /etc/systemd/resolved.conf.d/custom-dns.conf > /dev/null <<EOF
 [Resolve]
 DNS=$DNS_SERVER
 FallbackDNS=8.8.8.8 8.8.4.4
 EOF
-        $SUDO_PREFIX systemctl restart systemd-resolved
+        systemctl restart systemd-resolved
     # /etc/resolv.conf (fallback)
     else
         echo "nameserver $DNS_SERVER" | tee /etc/resolv.conf >/dev/null
@@ -184,10 +136,10 @@ change_hostname() {
     [[ -z "$HOSTNAME" ]] && log_error "HOSTNAME not set"
     
     log_info "Setting hostname to: $HOSTNAME..."
-    $SUDO_PREFIX hostnamectl set-hostname "$HOSTNAME" || $SUDO_PREFIX hostname "$HOSTNAME"
+    hostnamectl set-hostname "$HOSTNAME" || hostname "$HOSTNAME"
     
     # Update /etc/hosts
-    $SUDO_PREFIX sed -i "s/127.0.1.1.*/127.0.1.1 $HOSTNAME/" /etc/hosts || echo "127.0.1.1 $HOSTNAME" | tee -a /etc/hosts >/dev/null
+    sed -i "s/127.0.1.1.*/127.0.1.1 $HOSTNAME/" /etc/hosts || echo "127.0.1.1 $HOSTNAME" | tee -a /etc/hosts >/dev/null
     
     log_info "Hostname changed to: $HOSTNAME"
 }
@@ -201,7 +153,7 @@ add_user() {
     
     log_info "Creating user: $USERNAME (shell: $shell)..."
     
-    if $SUDO_PREFIX useradd -m -s "$shell" "$USERNAME" 2>/dev/null; then
+    if useradd -m -s "$shell" "$USERNAME" 2>/dev/null; then
         log_info "User $USERNAME created successfully!"
     else
         log_warn "User $USERNAME might already exist"
@@ -215,7 +167,7 @@ delete_user() {
     
     log_info "Removing user: $USERNAME..."
     
-    if $SUDO_PREFIX userdel -r "$USERNAME" 2>/dev/null; then
+    if userdel -r "$USERNAME" 2>/dev/null; then
         log_info "User $USERNAME deleted successfully!"
     else
         log_warn "Failed to delete user $USERNAME"
@@ -230,7 +182,7 @@ change_password() {
     
     log_info "Setting password for user: $USERNAME..."
     
-    echo "$USERNAME:$PASSWORD" | $SUDO_PREFIX chpasswd || log_error "Failed to change password"
+    echo "$USERNAME:$PASSWORD" | chpasswd || log_error "Failed to change password"
     
     log_info "Password changed for user: $USERNAME"
 }
@@ -242,7 +194,7 @@ create_group() {
     
     log_info "Creating group: $GROUPNAME..."
     
-    if $SUDO_PREFIX groupadd "$GROUPNAME" 2>/dev/null; then
+    if groupadd "$GROUPNAME" 2>/dev/null; then
         log_info "Group $GROUPNAME created successfully!"
     else
         log_warn "Group $GROUPNAME might already exist"
@@ -257,7 +209,7 @@ add_user_to_group() {
     
     log_info "Adding user $USERNAME to group $GROUPNAME..."
     
-    if $SUDO_PREFIX usermod -aG "$GROUPNAME" "$USERNAME"; then
+    if usermod -aG "$GROUPNAME" "$USERNAME"; then
         log_info "User $USERNAME added to group $GROUPNAME!"
     else
         log_error "Failed to add user to group"
@@ -279,7 +231,7 @@ update_ca_cert() {
     log_info "Certificate installed to system CA store"
     
     log_info "Updating CA certificate database..."
-    if ! $SUDO_PREFIX $CA_UPDATE; then
+    if ! $CA_UPDATE; then
         log_error "Failed to update CA certificates"
     fi
     
@@ -289,15 +241,15 @@ update_ca_cert() {
 install_compression() {
     log_info "Installing zip and unzip..."
     detect_os
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL zip unzip || log_error "Failed to install packages"
+    $PKG_UPDATE || true
+    $PKG_INSTALL zip unzip || log_error "Failed to install packages"
     log_info "zip and unzip installed successfully!"
 }
 
 uninstall_compression() {
     log_info "Uninstalling zip and unzip..."
     detect_os
-    $SUDO_PREFIX $PKG_UNINSTALL zip unzip || log_error "Failed to uninstall packages"
+    $PKG_UNINSTALL zip unzip || log_error "Failed to uninstall packages"
     log_info "zip and unzip uninstalled successfully!"
 }
 

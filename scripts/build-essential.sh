@@ -4,83 +4,17 @@
 # Install, update, uninstall, and configure build-essential on all Linux distributions
 
 set -e
-
-
-# Check if we need sudo
-if [[ $EUID -ne 0 ]]; then
-    SUDO_PREFIX="sudo"
-else
-    SUDO_PREFIX=""
-fi
-
-
-# Parse action from first parameter
-ACTION="${1%%,*}"
-
-# Color codes for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'
-
-# Log informational messages with green checkmark
-log_info() {
-    printf "${GREEN}✓${NC} %s\n" "$1"
-}
-
-# Log error messages with red X and exit
-log_error() {
-    printf "${RED}✗${NC} %s\n" "$1"
-    exit 1
-}
-
-# Detect operating system and set appropriate package manager commands
-detect_os() {
-    source /etc/os-release || log_error "Cannot detect OS"
-    
-    case "${ID,,}" in
-        ubuntu|debian|raspbian|linuxmint|pop)
-            PKG_UPDATE="apt-get update"
-            PKG_INSTALL="apt-get install -y"
-            PKG_UNINSTALL="apt-get remove -y"
-            PKG="build-essential"
-            ;;
-        fedora|rhel|centos|rocky|alma)
-            PKG_UPDATE="dnf check-update || true"
-            PKG_INSTALL="dnf groupinstall -y"
-            PKG_UNINSTALL="dnf groupremove -y"
-            PKG="'Development Tools'"
-            ;;
-        arch|archarm|manjaro|endeavouros)
-            PKG_UPDATE="pacman -Sy"
-            PKG_INSTALL="pacman -S --noconfirm"
-            PKG_UNINSTALL="pacman -R --noconfirm"
-            PKG="base-devel"
-            ;;
-        opensuse*|sles)
-            PKG_UPDATE="zypper refresh"
-            PKG_INSTALL="zypper install -y -t pattern"
-            PKG_UNINSTALL="zypper remove -y -t pattern"
-            PKG="devel_basis"
-            ;;
-        alpine)
-            PKG_UPDATE="apk update"
-            PKG_INSTALL="apk add"
-            PKG_UNINSTALL="apk del"
-            PKG="build-base"
-            ;;
-        *)
-            log_error "Unsupported distribution"
-            ;;
-    esac
-}
+source "$(dirname "$0")/../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 
 # Install build-essential tools
 install_build_essential() {
     log_info "Installing build-essential..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed"
+    $PKG_UPDATE || true
+    $PKG_INSTALL $PKG || log_error "Failed"
     
     log_info "build-essential installed!"
 }
@@ -90,8 +24,8 @@ update_build_essential() {
     log_info "Updating build-essential..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL $PKG || log_error "Failed"
+    $PKG_UPDATE || true
+    $PKG_INSTALL $PKG || log_error "Failed"
     
     log_info "build-essential updated!"
 }
@@ -101,7 +35,7 @@ uninstall_build_essential() {
     log_info "Uninstalling build-essential..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UNINSTALL $PKG || log_error "Failed"
+    $PKG_UNINSTALL $PKG || log_error "Failed"
     
     log_info "build-essential uninstalled!"
 }

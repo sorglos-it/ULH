@@ -4,101 +4,19 @@
 # Install, update, uninstall, and configure locate for all Linux distributions
 
 set -e
-
-
-# Check if we need sudo
-if [[ $EUID -ne 0 ]]; then
-    SUDO_PREFIX="sudo"
-else
-    SUDO_PREFIX=""
-fi
-
-
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        [[ -n "$key" ]] && export "$key=$val"
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log_info() {
-    printf "${GREEN}✓${NC} %s\n" "$1"
-}
-
-log_error() {
-    printf "${RED}✗${NC} %s\n" "$1"
-    exit 1
-}
-
-# Detect OS and package manager
-detect_os() {
-    if [[ -f /etc/os-release ]]; then
-        source /etc/os-release
-        OS_DISTRO="${ID,,}"
-    else
-        log_error "Cannot detect OS"
-    fi
-    
-    case "$OS_DISTRO" in
-        ubuntu|debian|raspbian|linuxmint|pop)
-            PKG_UPDATE="apt-get update"
-            PKG_INSTALL="apt-get install -y"
-            PKG_UNINSTALL="apt-get remove -y"
-            LOCATE_PKG="plocate"
-            DB_PATH="/var/lib/plocate/plocate.db"
-            ;;
-        fedora|rhel|centos|rocky|alma)
-            PKG_UPDATE="dnf check-update || true"
-            PKG_INSTALL="dnf install -y"
-            PKG_UNINSTALL="dnf remove -y"
-            LOCATE_PKG="mlocate"
-            DB_PATH="/var/lib/mlocate/mlocate.db"
-            ;;
-        arch|archarm|manjaro|endeavouros)
-            PKG_UPDATE="pacman -Sy"
-            PKG_INSTALL="pacman -S --noconfirm"
-            PKG_UNINSTALL="pacman -R --noconfirm"
-            LOCATE_PKG="plocate"
-            DB_PATH="/var/lib/plocate/plocate.db"
-            ;;
-        opensuse*|sles)
-            PKG_UPDATE="zypper refresh"
-            PKG_INSTALL="zypper install -y"
-            PKG_UNINSTALL="zypper remove -y"
-            LOCATE_PKG="mlocate"
-            DB_PATH="/var/lib/mlocate/mlocate.db"
-            ;;
-        alpine)
-            PKG_UPDATE="apk update"
-            PKG_INSTALL="apk add"
-            PKG_UNINSTALL="apk del"
-            LOCATE_PKG="mlocate"
-            DB_PATH="/var/lib/mlocate/mlocate.db"
-            ;;
-        *)
-            log_error "Unsupported distribution: $OS_DISTRO"
-            ;;
-    esac
-}
+source "$(dirname "$0")/../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 
 install_locate() {
     log_info "Installing locate package..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL $LOCATE_PKG || log_error "Failed to install $LOCATE_PKG"
+    $PKG_UPDATE || true
+    $PKG_INSTALL $LOCATE_PKG || log_error "Failed to install $LOCATE_PKG"
     
     log_info "Building locate database (this may take a moment)..."
-    $SUDO_PREFIX updatedb || log_error "Failed to build locate database"
+    updatedb || log_error "Failed to build locate database"
     
     log_info "locate installed and database initialized successfully!"
     locate --version 2>/dev/null || locate --help 2>/dev/null | head -2
@@ -108,7 +26,7 @@ update_locate() {
     log_info "Updating locate database..."
     detect_os
     
-    $SUDO_PREFIX updatedb || log_error "Failed to update locate database"
+    updatedb || log_error "Failed to update locate database"
     
     log_info "locate database updated successfully!"
     
@@ -129,11 +47,11 @@ uninstall_locate() {
     # Confirm (from CONFIRM parameter)
     CONFIRM="${CONFIRM:-no}"
     
-    $SUDO_PREFIX $PKG_UNINSTALL $LOCATE_PKG || log_error "Failed to uninstall $LOCATE_PKG"
+    $PKG_UNINSTALL $LOCATE_PKG || log_error "Failed to uninstall $LOCATE_PKG"
     
     if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
         log_info "Removing database files..."
-        $SUDO_PREFIX rm -f "$DB_PATH" 2>/dev/null || true
+        rm -f "$DB_PATH" 2>/dev/null || true
     fi
     
     log_info "locate uninstalled successfully!"
@@ -163,8 +81,8 @@ configure_locate() {
     printf "  locate -S                    - Show database statistics\n"
     
     printf "\n${YELLOW}Manual Database Update:${NC}\n"
-    printf "  $SUDO_PREFIX updatedb                - Rebuild entire database\n"
-    printf "  $SUDO_PREFIX updatedb --prune-bind-mounts=no  - Include bind mounts\n"
+    printf "  updatedb                - Rebuild entire database\n"
+    printf "  updatedb --prune-bind-mounts=no  - Include bind mounts\n"
     
     printf "\n${YELLOW}Configuration Files:${NC}\n"
     if [[ -d /etc/updatedb.conf.d ]]; then

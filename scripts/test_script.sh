@@ -5,25 +5,6 @@
 # Parameters come as comma-separated string: action,VAR1=val1,VAR2=val2,...
 # ============================================================================
 
-# Parse comma-separated parameter string
-# First parameter is the action, rest are variable assignments
-FULL_PARAMS="$1"
-
-# Extract action (everything before first comma)
-ACTION="${FULL_PARAMS%%,*}"
-
-# Extract remaining parameters (everything after first comma)
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-# Parse variable assignments and export them
-# Convert commas to newlines, then parse each line
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        if [[ -n "$key" ]]; then
-            export "$key=$val"
-        fi
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
 
 # ============================================================================
 # Display parsed information

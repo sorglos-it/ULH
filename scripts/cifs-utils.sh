@@ -4,88 +4,16 @@
 # Install CIFS utilities to mount and manage SMB file shares from Windows and Samba servers
 
 set -e
-
-
-# Check if we need sudo
-if [[ $EUID -ne 0 ]]; then
-    SUDO_PREFIX="sudo"
-else
-    SUDO_PREFIX=""
-fi
-
-
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        [[ -n "$key" ]] && export "$key=$val"
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log_info() {
-    printf "${GREEN}✓${NC} %s\n" "$1"
-}
-
-log_error() {
-    printf "${RED}✗${NC} %s\n" "$1"
-    exit 1
-}
-
-# Detect OS and package manager
-detect_os() {
-    if [[ -f /etc/os-release ]]; then
-        source /etc/os-release
-        OS_DISTRO="${ID,,}"
-    else
-        log_error "Cannot detect OS"
-    fi
-    
-    case "$OS_DISTRO" in
-        ubuntu|debian|raspbian|linuxmint|pop)
-            PKG_UPDATE="apt-get update"
-            PKG_INSTALL="apt-get install -y"
-            PKG_UNINSTALL="apt-get remove -y"
-            ;;
-        fedora|rhel|centos|rocky|alma)
-            PKG_UPDATE="dnf check-update || true"
-            PKG_INSTALL="dnf install -y"
-            PKG_UNINSTALL="dnf remove -y"
-            ;;
-        arch|archarm|manjaro|endeavouros)
-            PKG_UPDATE="pacman -Sy"
-            PKG_INSTALL="pacman -S --noconfirm"
-            PKG_UNINSTALL="pacman -R --noconfirm"
-            ;;
-        opensuse*|sles)
-            PKG_UPDATE="zypper refresh"
-            PKG_INSTALL="zypper install -y"
-            PKG_UNINSTALL="zypper remove -y"
-            ;;
-        alpine)
-            PKG_UPDATE="apk update"
-            PKG_INSTALL="apk add"
-            PKG_UNINSTALL="apk del"
-            ;;
-        *)
-            log_error "Unsupported distribution: $OS_DISTRO"
-            ;;
-    esac
-}
+source "$(dirname "$0")/../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 
 install_cifs() {
     log_info "Installing cifs-utils..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL cifs-utils || log_error "Failed to install cifs-utils"
+    $PKG_UPDATE || true
+    $PKG_INSTALL cifs-utils || log_error "Failed to install cifs-utils"
     
     log_info "cifs-utils installed successfully!"
     mount.cifs --version 2>/dev/null || log_info "mount.cifs is ready for use"
@@ -95,8 +23,8 @@ update_cifs() {
     log_info "Updating cifs-utils..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL cifs-utils || log_error "Failed to update cifs-utils"
+    $PKG_UPDATE || true
+    $PKG_INSTALL cifs-utils || log_error "Failed to update cifs-utils"
     
     log_info "cifs-utils updated successfully!"
     mount.cifs --version 2>/dev/null || log_info "mount.cifs is ready for use"
@@ -113,13 +41,13 @@ uninstall_cifs() {
         if [[ "$response" =~ ^[Yy] ]]; then
             log_info "Unmounting CIFS shares..."
             mount | grep "type cifs" | awk '{print $3}' | while read -r mount_point; do
-                $SUDO_PREFIX umount "$mount_point" || log_error "Failed to unmount $mount_point"
+                umount "$mount_point" || log_error "Failed to unmount $mount_point"
                 log_info "Unmounted: $mount_point"
             done
         fi
     fi
     
-    $SUDO_PREFIX $PKG_UNINSTALL cifs-utils || log_error "Failed to uninstall cifs-utils"
+    $PKG_UNINSTALL cifs-utils || log_error "Failed to uninstall cifs-utils"
     
     log_info "cifs-utils uninstalled successfully!"
 }
@@ -171,11 +99,11 @@ mount_smb() {
     
     # Create mount point directory
     log_info "Creating mount point directory..."
-    $SUDO_PREFIX mkdir -p "$MOUNT_POINT" || log_error "Failed to create mount point"
+    mkdir -p "$MOUNT_POINT" || log_error "Failed to create mount point"
     
     # Create credentials directory
     log_info "Creating credentials directory..."
-    $SUDO_PREFIX mkdir -p /etc/samba/ || log_error "Failed to create credentials directory"
+    mkdir -p /etc/samba/ || log_error "Failed to create credentials directory"
     
     # Create credentials file
     log_info "Creating credentials file..."
@@ -186,15 +114,15 @@ mount_smb() {
     } | tee "$CREDS_FILE" > /dev/null || log_error "Failed to create credentials file"
     
     # Secure credentials file
-    $SUDO_PREFIX chmod 400 "$CREDS_FILE" || log_error "Failed to secure credentials file"
+    chmod 400 "$CREDS_FILE" || log_error "Failed to secure credentials file"
     
     # Backup fstab before modifying
     log_info "Backing up /etc/fstab..."
-    $SUDO_PREFIX cp /etc/fstab "/etc/fstab.backup.$(date +%s)" || log_error "Failed to backup fstab"
+    cp /etc/fstab "/etc/fstab.backup.$(date +%s)" || log_error "Failed to backup fstab"
     
     # Mount the share
     log_info "Mounting SMB share..."
-    if $SUDO_PREFIX mount -t cifs -o rw,vers=3.0,credentials="$CREDS_FILE",uid=$(id -u),gid=$(id -g) "//$SERVER/$SHARE" "$MOUNT_POINT"; then
+    if mount -t cifs -o rw,vers=3.0,credentials="$CREDS_FILE",uid=$(id -u),gid=$(id -g) "//$SERVER/$SHARE" "$MOUNT_POINT"; then
         log_info "SMB share mounted successfully!"
     else
         log_error "Failed to mount SMB share. Check credentials and server availability."

@@ -4,94 +4,13 @@
 # Install, update, uninstall, and configure Samba for all Linux distributions
 
 set -e
-
-
-# Check if we need sudo
-if [[ $EUID -ne 0 ]]; then
-    SUDO_PREFIX="sudo"
-else
-    SUDO_PREFIX=""
-fi
-
-
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        [[ -n "$key" ]] && export "$key=$val"
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
+source "$(dirname "$0")/../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 # Samba configuration paths
 SMB_CONF="/etc/samba/smb.conf"
 SMB_CONF_BACKUP="/etc/samba/smb.conf.backup.$(date +%Y%m%d_%H%M%S)"
 
-log_info() {
-    printf "${GREEN}✓${NC} %s\n" "$1"
-}
-
-log_error() {
-    printf "${RED}✗${NC} %s\n" "$1"
-    exit 1
-}
-
-log_warn() {
-    printf "${YELLOW}⚠${NC} %s\n" "$1"
-}
-
-log_section() {
-    printf "\n${BLUE}→${NC} %s\n" "$1"
-}
-
-# Detect OS and package manager
-detect_os() {
-    if [[ -f /etc/os-release ]]; then
-        source /etc/os-release
-        OS_DISTRO="${ID,,}"
-    else
-        log_error "Cannot detect OS"
-    fi
-    
-    case "$OS_DISTRO" in
-        ubuntu|debian|raspbian|linuxmint|pop)
-            PKG_UPDATE="apt-get update"
-            PKG_INSTALL="apt-get install -y"
-            PKG_UNINSTALL="apt-get remove -y"
-            ;;
-        fedora|rhel|centos|rocky|alma)
-            PKG_UPDATE="dnf check-update || true"
-            PKG_INSTALL="dnf install -y"
-            PKG_UNINSTALL="dnf remove -y"
-            ;;
-        arch|archarm|manjaro|endeavouros)
-            PKG_UPDATE="pacman -Sy"
-            PKG_INSTALL="pacman -S --noconfirm"
-            PKG_UNINSTALL="pacman -R --noconfirm"
-            ;;
-        opensuse*|sles)
-            PKG_UPDATE="zypper refresh"
-            PKG_INSTALL="zypper install -y"
-            PKG_UNINSTALL="zypper remove -y"
-            ;;
-        alpine)
-            PKG_UPDATE="apk update"
-            PKG_INSTALL="apk add"
-            PKG_UNINSTALL="apk del"
-            ;;
-        *)
-            log_error "Unsupported distribution: $OS_DISTRO"
-            ;;
-    esac
-}
 
 # Prompt for user input with default value
 prompt_input() {
@@ -138,13 +57,13 @@ install_samba() {
     log_section "Installing Samba..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL samba samba-client || log_error "Failed to install Samba"
+    $PKG_UPDATE || true
+    $PKG_INSTALL samba samba-client || log_error "Failed to install Samba"
     
     # Backup original smb.conf
     if [[ -f "$SMB_CONF" ]]; then
         log_info "Backing up original smb.conf to $SMB_CONF_BACKUP"
-        $SUDO_PREFIX cp "$SMB_CONF" "$SMB_CONF_BACKUP"
+        cp "$SMB_CONF" "$SMB_CONF_BACKUP"
     fi
     
     # Create initial basic configuration
@@ -153,8 +72,8 @@ install_samba() {
     
     # Enable and start services
     log_info "Enabling and starting Samba services..."
-    $SUDO_PREFIX systemctl enable smbd nmbd 2>/dev/null || true
-    $SUDO_PREFIX systemctl start smbd nmbd || log_error "Failed to start Samba services"
+    systemctl enable smbd nmbd 2>/dev/null || true
+    systemctl start smbd nmbd || log_error "Failed to start Samba services"
     
     log_info "Samba installed and configured successfully!"
     log_info "Configuration file: $SMB_CONF"
@@ -195,18 +114,18 @@ update_samba() {
     log_section "Updating Samba..."
     detect_os
     
-    $SUDO_PREFIX $PKG_UPDATE || true
-    $SUDO_PREFIX $PKG_INSTALL samba samba-client || log_error "Failed to update Samba"
+    $PKG_UPDATE || true
+    $PKG_INSTALL samba samba-client || log_error "Failed to update Samba"
     
     # Validate configuration
     if command -v testparm &> /dev/null; then
         log_info "Validating smb.conf..."
-        $SUDO_PREFIX testparm -s "$SMB_CONF" > /dev/null 2>&1 || log_error "Configuration validation failed"
+        testparm -s "$SMB_CONF" > /dev/null 2>&1 || log_error "Configuration validation failed"
     fi
     
     # Restart services
     log_info "Restarting Samba services..."
-    $SUDO_PREFIX systemctl restart smbd nmbd || log_error "Failed to restart services"
+    systemctl restart smbd nmbd || log_error "Failed to restart services"
     
     log_info "Samba updated successfully!"
     smbd --version | head -1
@@ -225,17 +144,17 @@ uninstall_samba() {
     
     # Stop services
     log_info "Stopping Samba services..."
-    $SUDO_PREFIX systemctl stop smbd nmbd 2>/dev/null || true
-    $SUDO_PREFIX systemctl disable smbd nmbd 2>/dev/null || true
+    systemctl stop smbd nmbd 2>/dev/null || true
+    systemctl disable smbd nmbd 2>/dev/null || true
     
     # Remove packages
     detect_os
     log_info "Removing Samba packages..."
-    $SUDO_PREFIX $PKG_UNINSTALL samba samba-client || log_error "Failed to uninstall Samba"
+    $PKG_UNINSTALL samba samba-client || log_error "Failed to uninstall Samba"
     
     if [[ "$keep_config" == "no" ]] && [[ -f "$SMB_CONF" ]]; then
         log_info "Removing configuration files..."
-        $SUDO_PREFIX rm -f "$SMB_CONF"
+        rm -f "$SMB_CONF"
     fi
     
     log_info "Samba uninstalled successfully!"
@@ -247,7 +166,7 @@ configure_samba() {
     # Backup current config
     if [[ -f "$SMB_CONF" ]]; then
         log_info "Backing up current smb.conf"
-        $SUDO_PREFIX cp "$SMB_CONF" "${SMB_CONF}.bak"
+        cp "$SMB_CONF" "${SMB_CONF}.bak"
     fi
     
     # Use parameters from config.yaml or defaults
@@ -292,7 +211,7 @@ EOF
     # Validate configuration
     if command -v testparm &> /dev/null; then
         log_info "Validating configuration..."
-        if $SUDO_PREFIX testparm -s "$SMB_CONF" > /dev/null 2>&1; then
+        if testparm -s "$SMB_CONF" > /dev/null 2>&1; then
             log_info "Configuration is valid"
         else
             log_error "Configuration validation failed - configuration not applied"
@@ -301,7 +220,7 @@ EOF
     
     # Restart services
     log_info "Restarting Samba services..."
-    $SUDO_PREFIX systemctl restart smbd nmbd || log_error "Failed to restart services"
+    systemctl restart smbd nmbd || log_error "Failed to restart services"
     
     log_info "Samba configuration updated successfully!"
 }
@@ -330,7 +249,7 @@ add_share() {
     # Create directory if needed
     if [[ ! -d "$share_path" ]]; then
         log_info "Creating directory: $share_path"
-        $SUDO_PREFIX mkdir -p "$share_path" || log_error "Failed to create directory"
+        mkdir -p "$share_path" || log_error "Failed to create directory"
     fi
     
     # Set ownership and permissions
@@ -338,8 +257,8 @@ add_share() {
     local group=$(prompt_input "Directory group" "root")
     
     log_info "Setting ownership and permissions..."
-    $SUDO_PREFIX chown "$owner:$group" "$share_path" || log_error "Failed to set owner"
-    $SUDO_PREFIX chmod "$create_mask" "$share_path" || log_error "Failed to set permissions"
+    chown "$owner:$group" "$share_path" || log_error "Failed to set owner"
+    chmod "$create_mask" "$share_path" || log_error "Failed to set permissions"
     
     # Convert yes/no to Yes/No for smb.conf
     [[ "$writeable" == "yes" ]] && writeable="Yes" || writeable="No"
@@ -363,14 +282,14 @@ EOF
     # Validate configuration
     if command -v testparm &> /dev/null; then
         log_info "Validating configuration..."
-        if ! $SUDO_PREFIX testparm -s "$SMB_CONF" > /dev/null 2>&1; then
+        if ! testparm -s "$SMB_CONF" > /dev/null 2>&1; then
             log_error "Configuration validation failed - reverting"
         fi
     fi
     
     # Restart services
     log_info "Restarting Samba services..."
-    $SUDO_PREFIX systemctl restart smbd nmbd || log_error "Failed to restart services"
+    systemctl restart smbd nmbd || log_error "Failed to restart services"
     
     log_info "Share '$share_name' added successfully!"
     log_info "Path: $share_path"
@@ -424,12 +343,12 @@ smbuser_add() {
     # Check if system user exists, create if not
     if ! id "$username" &>/dev/null; then
         log_info "Creating system user: $username"
-        $SUDO_PREFIX useradd -m -s /nologin "$username" || log_error "Failed to create user"
+        useradd -m -s /nologin "$username" || log_error "Failed to create user"
     fi
     
     # Add to Samba with password
     log_info "Adding user to Samba..."
-    echo -e "$password\n$password" | $SUDO_PREFIX smbpasswd -a -s "$username" || log_error "Failed to add Samba user"
+    echo -e "$password\n$password" | smbpasswd -a -s "$username" || log_error "Failed to add Samba user"
     
     log_info "User '$username' added to Samba successfully!"
 }
@@ -447,7 +366,7 @@ smbuser_delete() {
     
     # Remove from Samba
     log_info "Removing user from Samba..."
-    $SUDO_PREFIX smbpasswd -x "$username" || log_error "Failed to delete Samba user"
+    smbpasswd -x "$username" || log_error "Failed to delete Samba user"
     
     log_info "User '$username' removed from Samba successfully!"
 }
@@ -476,7 +395,7 @@ smbuser_change_password() {
     
     # Update password
     log_info "Updating Samba password for '$username'..."
-    echo -e "$password\n$password" | $SUDO_PREFIX smbpasswd -a -s "$username" || log_error "Failed to update password"
+    echo -e "$password\n$password" | smbpasswd -a -s "$username" || log_error "Failed to update password"
     
     log_info "Password updated successfully!"
 }
@@ -486,7 +405,7 @@ smbuser_list() {
     
     if command -v pdbedit &> /dev/null; then
         log_info "Current Samba users:"
-        $SUDO_PREFIX pdbedit -L -v 2>/dev/null || log_warn "No Samba users found or pdbedit error"
+        pdbedit -L -v 2>/dev/null || log_warn "No Samba users found or pdbedit error"
     else
         log_warn "pdbedit not available - cannot list users"
     fi
