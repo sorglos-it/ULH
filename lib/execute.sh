@@ -265,7 +265,9 @@ execute_custom_repo_action() {
     # Get action details
     local aname=$(yq_eval ".scripts.$script_name.actions[$action_index].name" "$custom_yaml" 2>/dev/null)
     local parameter=$(yq_eval ".scripts.$script_name.actions[$action_index].parameter" "$custom_yaml" 2>/dev/null)
-    local needs_sudo=$(yq_eval ".scripts.$script_name.needs_sudo // false" "$custom_yaml" 2>/dev/null)
+    # Check if sudo field exists (presence-based)
+    local needs_sudo=$(yq_eval ".scripts.$script_name.sudo // empty" "$custom_yaml" 2>/dev/null)
+    [[ -n "$needs_sudo" && "$needs_sudo" != "null" ]] && needs_sudo="true" || needs_sudo="false"
     local prompt_count=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts | length" "$custom_yaml" 2>/dev/null)
     [[ -z "$prompt_count" || "$prompt_count" == "null" ]] && prompt_count=0
     
