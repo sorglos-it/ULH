@@ -1,6 +1,9 @@
 #!/bin/bash
 # ulh - YAML Parser (wraps bundled yq)
 
+# Load colors from centralized library
+source "${BASH_SOURCE%/*}/colors.sh"
+
 # Locate architecture-specific yq binary
 _init_yq() {
     local yqdir="${ulh_DIR}/lib/yq"

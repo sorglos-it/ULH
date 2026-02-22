@@ -3,8 +3,8 @@
 # ULH Bootstrap Library - Common initialization and utilities for all scripts
 # Source this file at the start of each script: source "$(dirname "$0")/../lib/bootstrap.sh"
 
-# Load colors first
-source "$(dirname "$0")/colors.sh"
+# Load colors from centralized library
+source "${BASH_SOURCE%/*}/colors.sh"
 
 # ============================================================
 # PARAMETER PARSING

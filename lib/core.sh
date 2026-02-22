@@ -2,7 +2,7 @@
 # ulh - Core Library: Colors, OS detection, debug logging, utilities
 
 # Load colors from centralized library
-source "$(dirname "$0")/colors.sh"
+source "${BASH_SOURCE%/*}/colors.sh"
 
 DEBUG=${DEBUG:-false}
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 # ulh - Script Execution Engine (prompts, validation, execution)
 
-# Load colors
-source "$(dirname "$0")/colors.sh"
+# Load colors from centralized library
+source "${BASH_SOURCE%/*}/colors.sh"
 
 # Get correct yq binary for current architecture
 _get_yq() {

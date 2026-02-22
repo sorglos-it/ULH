@@ -2,6 +2,9 @@
 # repos.sh - Repository Management for Custom Scripts
 # Handles cloning, pulling, and merging custom script repositories
 
+# Load colors from centralized library
+source "${BASH_SOURCE%/*}/colors.sh"
+
 # Get correct yq binary for current architecture
 _get_yq() {
     if [[ -z "$_YQ_CACHE" ]]; then

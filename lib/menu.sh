@@ -2,7 +2,7 @@
 # ulh - Menu Display & Navigation
 
 # Load colors from centralized library
-source "$(dirname "$0")/colors.sh"
+source "${BASH_SOURCE%/*}/colors.sh"
 
 # Global context tracking
 CONTEXT_FROM="none"  # "none" or "repo"
@@ -35,7 +35,7 @@ menu_header() {
     local title="$1"
     local version="${2:-}"
     
-    echo "+==============================================================================+"
+    separator_dots
     
     if [[ -n "$version" ]]; then
         # With version: | title[padding] VERSION: version |
@@ -48,7 +48,7 @@ menu_header() {
         printf "| %s%*s|\n" "$title" $(( 77 - ${#title} )) ""
     fi
     
-    echo "+==============================================================================+"
+    separator_dots
     echo "|"
 }
 
@@ -57,7 +57,7 @@ menu_footer() {
     local system_info="${OS_DISTRO} (${OS_FAMILY}) · v${OS_VERSION}"
     
     echo "|"
-    echo "+==============================================================================+"
+    separator_dots
     
     if [[ $show_back -eq 1 ]]; then
         # Back button: |  b) Back (10 chars) + padding + | = 80
@@ -70,7 +70,7 @@ menu_footer() {
     local padding=$(( 80 - len ))
     printf "|  q) Quit%*s %s |\n" $padding "" "$system_info"
     
-    echo "+==============================================================================+"
+    separator_dots
 }
 
 menu_error() { echo ""; echo "  ❌ $1"; echo ""; read -rp "  Press Enter..."; }
@@ -91,8 +91,6 @@ menu_prompt_yesno() {
     done
     [[ "$a" =~ ^[yY] ]] && echo "yes" || echo "no"
 }
-
-separator() { echo "──────────────────────────────────────────────────────────────────────────────"; }
 
 # ============================================================================
 # Helper Functions
