@@ -159,17 +159,8 @@ print_usage() {
     echo ""
     echo "Usage:"
     
-    # Find config.yaml
-    local config_file=""
-    local search_dir="$(pwd)"
-    
-    while [[ "$search_dir" != "/" ]]; do
-        if [[ -f "$search_dir/config.yaml" ]]; then
-            config_file="$search_dir/config.yaml"
-            break
-        fi
-        search_dir="$(dirname "$search_dir")"
-    done
+    # config.yaml is always ../config.yaml relative to lib/
+    local config_file="${BASH_SOURCE%/*}/../config.yaml"
     
     if [[ -f "$config_file" ]]; then
         # Find yq binary
