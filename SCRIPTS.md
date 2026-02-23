@@ -1,52 +1,31 @@
 # ulh Scripts Reference
 
-**v0.5 | Total: 93 scripts**
+**v0.5 | Total: 93 scripts | 16 categories**
 
-## Backup Tools
+## Table of Contents
 
-| Script | Description |
-|--------|-------------|
-| `borgbackup` | Backup and archival tool |
-| `restic` | Backup program |
+- [Essential Tools](#essential-tools)
+- [Text Editors](#text-editors)
+- [Shells & Terminals](#shells--terminals)
+- [Web Servers](#web-servers)
+- [Databases](#databases)
+- [Container & Virtualization](#container--virtualization)
+- [Programming Languages](#programming-languages)
+- [Development Tools](#development-tools)
+- [System Utilities](#system-utilities)
+- [Backup & Sync](#backup--sync)
+- [Monitoring & Logging](#monitoring--logging)
+- [Networking](#networking)
+- [System Management](#system-management)
+- [Package Managers](#package-managers)
+- [Security & Sandboxing](#security--sandboxing)
+- [Multimedia](#multimedia)
 
-## Container Tools
-
-| Script | Description |
-|--------|-------------|
-| `flatpak` | Application containerization |
-| `podman` | Container runtime |
-| `vagrant` | Infrastructure automation |
-
-## Containerization & VM
-
-| Script | Description |
-|--------|-------------|
-| `docker` | Docker container runtime |
-| `docker-compose` | Docker Compose multi-container orchestration |
-| `portainer` | Portainer container management UI |
-| `proxmox` | Proxmox guest agent and container management |
-
-## Database
-
-| Script | Description |
-|--------|-------------|
-| `mariadb` | MariaDB database server |
-| `mysql` | MySQL database server |
-| `postgres` | PostgreSQL database server |
-
-## Development Tools
-
-| Script | Description |
-|--------|-------------|
-| `bun` | JavaScript runtime and package manager |
-| `cmake` | Build system generator |
-| `deno` | JavaScript/TypeScript runtime |
-| `git-lfs` | Git Large File Storage |
-| `lazygit` | Simple git UI |
-| `openjdk` | Java platform |
-| `rust` | Systems programming language |
+---
 
 ## Essential Tools
+
+*Core utilities for system administration*
 
 | Script | Description |
 |--------|-------------|
@@ -56,66 +35,101 @@
 | `htop` | System resource monitor |
 | `jq` | JSON query processor |
 | `locate` | Fast file search using indexed database |
-| `nano` | Simple text editor |
+| `rsync` | File transfer utility |
 | `screen` | Terminal multiplexer |
 | `tmux` | Terminal multiplexer |
-| `vim` | Advanced text editor |
 | `wget` | HTTP/FTP download utility |
 
-## Logging & Monitoring
+## Text Editors
+
+*Text editors and code editors*
 
 | Script | Description |
 |--------|-------------|
-| `fail2ban` | Brute-force attack protection |
-| `logrotate` | Log rotation utility |
-| `rsyslog` | System logging daemon |
-| `syslog-ng` | Advanced system logging |
+| `emacs` | Advanced text editor |
+| `helix` | Post-modern text editor |
+| `micro` | Terminal text editor |
+| `nano` | Simple text editor |
+| `neovim` | Vim-based editor |
+| `vim` | Advanced text editor |
 
-## Networking
+## Shells & Terminals
 
-| Script | Description |
-|--------|-------------|
-| `adguard-home` | AdGuard Home DNS ad-blocking service |
-| `bind-utils` | DNS tools (dig, nslookup, host) |
-| `cifs-utils` | Mount and manage SMB/CIFS network shares |
-| `net-tools` | Network utilities (ifconfig, netstat) |
-| `openssh` | SSH server and client |
-| `openvpn` | OpenVPN tunneling protocol |
-| `pihole` | Pi-hole DNS ad-blocking service |
-| `samba` | Network file sharing with Samba/SMB |
-| `ufw` | Uncomplicated Firewall |
-| `wireguard` | Modern VPN protocol |
-
-## Programming Languages
-
-| Script | Description |
-|--------|-------------|
-| `golang` | Go programming language |
-| `nodejs` | Node.js runtime and npm |
-| `perl` | Perl runtime and modules |
-| `php` | PHP runtime and CLI |
-| `python` | Python 3 runtime and pip |
-| `ruby` | Ruby runtime and gem |
-
-## Shells
+*Shell environments and terminal tools*
 
 | Script | Description |
 |--------|-------------|
 | `fish` | User-friendly shell |
 | `oh-my-zsh` | Zsh framework |
+| `starship` | Shell prompt |
+| `zellij` | Terminal multiplexer |
 | `zsh` | Z shell |
 
-## System Management
+## Web Servers
+
+*HTTP/HTTPS web servers*
 
 | Script | Description |
 |--------|-------------|
-| `debian` | Debian system management |
-| `linux` | Network, DNS, users, groups configuration |
-| `pikvm-v3` | PiKVM v3 appliance management |
-| `remotely` | Remotely - open-source remote desktop and support software |
-| `ubuntu` | Ubuntu system management |
+| `apache` | Apache HTTP Server |
+| `nginx` | Nginx HTTP Server |
 
-## System Tools
+## Databases
+
+*Database management systems*
+
+| Script | Description |
+|--------|-------------|
+| `mariadb` | MariaDB database server |
+| `mysql` | MySQL database server |
+| `postgres` | PostgreSQL database server |
+
+## Container & Virtualization
+
+*Container and VM technologies*
+
+| Script | Description |
+|--------|-------------|
+| `docker` | Docker container runtime |
+| `docker-compose` | Docker Compose multi-container orchestration |
+| `flatpak` | Application containerization |
+| `kubectl` | Kubernetes CLI |
+| `podman` | Container runtime |
+| `portainer` | Portainer container management UI |
+| `proxmox` | Proxmox guest agent and container management |
+| `vagrant` | Infrastructure automation |
+
+## Programming Languages
+
+*Language runtimes and environments*
+
+| Script | Description |
+|--------|-------------|
+| `bun` | JavaScript runtime and package manager |
+| `deno` | JavaScript/TypeScript runtime |
+| `golang` | Go programming language |
+| `nodejs` | Node.js runtime and npm |
+| `openjdk` | Java platform |
+| `perl` | Perl runtime and modules |
+| `php` | PHP runtime and CLI |
+| `python` | Python 3 runtime and pip |
+| `ruby` | Ruby runtime and gem |
+| `rust` | Systems programming language |
+
+## Development Tools
+
+*Development and debugging tools*
+
+| Script | Description |
+|--------|-------------|
+| `cmake` | Build system generator |
+| `git-lfs` | Git Large File Storage |
+| `imhex` | Hex editor and analyzer |
+| `lazygit` | Simple git UI |
+
+## System Utilities
+
+*System information and file tools*
 
 | Script | Description |
 |--------|-------------|
@@ -126,42 +140,91 @@
 | `eza` | Modern ls replacement |
 | `fastfetch` | System information tool |
 | `fd` | Find alternative |
-| `ffmpeg` | Multimedia framework |
-| `firejail` | Application sandboxing |
 | `fzf` | Fuzzy finder |
-| `gamemode` | Performance optimizer |
-| `gnupg` | Encryption and signing |
-| `imhex` | Hex editor and analyzer |
-| `kubectl` | Kubernetes CLI |
 | `ncdu` | Disk usage analyzer |
-| `nmap` | Network scanner |
-| `npm` | Node Package Manager |
-| `pnpm` | Fast npm alternative |
 | `ranger` | Terminal file manager |
 | `ripgrep` | Fast grep alternative |
-| `rsync` | File transfer utility |
-| `starship` | Shell prompt |
 | `superfile` | Terminal file manager |
 | `tldr` | Simplified man pages |
-| `uv` | Fast Python installer |
-| `yarn` | JavaScript package manager |
 | `yazi` | Terminal file manager |
-| `zellij` | Terminal multiplexer |
 | `zoxide` | Smart cd command |
 
-## Text Editors
+## Backup & Sync
+
+*Backup and file synchronization*
 
 | Script | Description |
 |--------|-------------|
-| `emacs` | Advanced text editor |
-| `helix` | Post-modern text editor |
-| `micro` | Terminal text editor |
-| `neovim` | Vim-based editor |
+| `borgbackup` | Backup and archival tool |
+| `restic` | Backup program |
 
-## Web Servers
+## Monitoring & Logging
+
+*System monitoring and log management*
 
 | Script | Description |
 |--------|-------------|
-| `apache` | Apache HTTP Server |
-| `nginx` | Nginx HTTP Server |
+| `fail2ban` | Brute-force attack protection |
+| `logrotate` | Log rotation utility |
+| `rsyslog` | System logging daemon |
+| `syslog-ng` | Advanced system logging |
+
+## Networking
+
+*Network tools and utilities*
+
+| Script | Description |
+|--------|-------------|
+| `adguard-home` | AdGuard Home DNS ad-blocking service |
+| `bind-utils` | DNS tools (dig, nslookup, host) |
+| `cifs-utils` | Mount and manage SMB/CIFS network shares |
+| `net-tools` | Network utilities (ifconfig, netstat) |
+| `nmap` | Network scanner |
+| `openssh` | SSH server and client |
+| `openvpn` | OpenVPN tunneling protocol |
+| `pihole` | Pi-hole DNS ad-blocking service |
+| `samba` | Network file sharing with Samba/SMB |
+| `ufw` | Uncomplicated Firewall |
+| `wireguard` | Modern VPN protocol |
+
+## System Management
+
+*System configuration and management*
+
+| Script | Description |
+|--------|-------------|
+| `debian` | Debian system management |
+| `linux` | Network, DNS, users, groups configuration |
+| `pikvm-v3` | PiKVM v3 appliance management |
+| `remotely` | Remotely - open-source remote desktop and support software |
+| `ubuntu` | Ubuntu system management |
+
+## Package Managers
+
+*Package and dependency managers*
+
+| Script | Description |
+|--------|-------------|
+| `npm` | Node Package Manager |
+| `pnpm` | Fast npm alternative |
+| `uv` | Fast Python installer |
+| `yarn` | JavaScript package manager |
+
+## Security & Sandboxing
+
+*Security and sandboxing tools*
+
+| Script | Description |
+|--------|-------------|
+| `firejail` | Application sandboxing |
+| `gamemode` | Performance optimizer |
+| `gnupg` | Encryption and signing |
+
+## Multimedia
+
+*Media processing and conversion*
+
+| Script | Description |
+|--------|-------------|
+| `ffmpeg` | Multimedia framework |
 

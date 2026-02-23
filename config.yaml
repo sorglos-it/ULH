@@ -1,20 +1,36 @@
 categories:
   Essential Tools:
-    description: System utilities and tools
+    description: Core utilities for system administration
+  Text Editors:
+    description: Text editors and code editors
+  Shells & Terminals:
+    description: Shell environments and terminal tools
   Web Servers:
     description: HTTP/HTTPS web servers
-  Database:
+  Databases:
     description: Database management systems
-  Containerization & VM:
-    description: Container, orchestration, and VM management tools
+  Container & Virtualization:
+    description: Container and VM technologies
   Programming Languages:
-    description: Development language runtimes
-  Logging & Monitoring:
-    description: System logging and monitoring
+    description: Language runtimes and environments
+  Development Tools:
+    description: Development and debugging tools
+  System Utilities:
+    description: System information and file tools
+  Backup & Sync:
+    description: Backup and file synchronization
+  Monitoring & Logging:
+    description: System monitoring and log management
   Networking:
-    description: Network tools and VPN
+    description: Network tools and utilities
   System Management:
     description: System configuration and management
+  Package Managers:
+    description: Package and dependency managers
+  Security & Sandboxing:
+    description: Security and sandboxing tools
+  Multimedia:
+    description: Media processing and conversion
 scripts:
   curl:
     description: HTTP requests utility
@@ -90,7 +106,7 @@ scripts:
         default: ''
   vim:
     description: Advanced text editor
-    category: Essential Tools
+    category: Text Editors
     file: vim.sh
     os_family:
     - debian
@@ -113,7 +129,7 @@ scripts:
       description: Configure vim
   nano:
     description: Simple text editor
-    category: Essential Tools
+    category: Text Editors
     file: nano.sh
     os_family:
     - debian
@@ -575,7 +591,7 @@ scripts:
         default: /var/www/html
   mariadb:
     description: MariaDB database server
-    category: Database
+    category: Databases
     file: mariadb.sh
     sudo: null
     os_family:
@@ -618,7 +634,7 @@ scripts:
         default: 127.0.0.1
   postgres:
     description: PostgreSQL database server
-    category: Database
+    category: Databases
     file: postgres.sh
     sudo: null
     os_family:
@@ -642,7 +658,7 @@ scripts:
       description: Configure PostgreSQL
   mysql:
     description: MySQL database server
-    category: Database
+    category: Databases
     file: mysql.sh
     sudo: null
     os_family:
@@ -666,7 +682,7 @@ scripts:
       description: Configure MySQL
   docker:
     description: Docker container runtime
-    category: Containerization & VM
+    category: Container & Virtualization
     file: docker.sh
     sudo: null
     os_family:
@@ -704,7 +720,7 @@ scripts:
         default: json-file
   portainer:
     description: Portainer container management UI
-    category: Containerization & VM
+    category: Container & Virtualization
     file: portainer.sh
     sudo: null
     os_family:
@@ -725,7 +741,7 @@ scripts:
       description: Uninstall Portainer
   proxmox:
     description: Proxmox guest agent and container management
-    category: Containerization & VM
+    category: Container & Virtualization
     file: proxmox.sh
     sudo: null
     os_only: proxmox
@@ -813,7 +829,7 @@ scripts:
         default: ''
   docker-compose:
     description: Docker Compose multi-container orchestration
-    category: Containerization & VM
+    category: Container & Virtualization
     file: docker-compose.sh
     sudo: null
     os_family:
@@ -962,7 +978,7 @@ scripts:
       description: Uninstall Perl
   rsyslog:
     description: System logging daemon
-    category: Logging & Monitoring
+    category: Monitoring & Logging
     file: rsyslog.sh
     sudo: null
     os_family:
@@ -986,7 +1002,7 @@ scripts:
       description: Configure rsyslog
   syslog-ng:
     description: Advanced system logging
-    category: Logging & Monitoring
+    category: Monitoring & Logging
     file: syslog-ng.sh
     sudo: null
     os_family:
@@ -1010,7 +1026,7 @@ scripts:
       description: Configure syslog-ng
   fail2ban:
     description: Brute-force attack protection
-    category: Logging & Monitoring
+    category: Monitoring & Logging
     file: fail2ban.sh
     sudo: null
     os_family:
@@ -1034,7 +1050,7 @@ scripts:
       description: Configure fail2ban
   logrotate:
     description: Log rotation utility
-    category: Logging & Monitoring
+    category: Monitoring & Logging
     file: logrotate.sh
     sudo: null
     os_family:
@@ -1545,7 +1561,7 @@ scripts:
         default: ''
   borgbackup:
     description: Backup and archival tool
-    category: Backup Tools
+    category: Backup & Sync
     file: borgbackup.sh
     os_family:
     - debian
@@ -1565,7 +1581,7 @@ scripts:
       description: Uninstall BorgBackup
   bun:
     description: JavaScript runtime and package manager
-    category: Development Tools
+    category: Programming Languages
     file: bun.sh
     os_family:
     - debian
@@ -1605,7 +1621,7 @@ scripts:
       description: Uninstall CMake
   clamav:
     description: Antivirus engine
-    category: System Tools
+    category: System Utilities
     file: clamav.sh
     os_family:
     - debian
@@ -1625,7 +1641,7 @@ scripts:
       description: Uninstall ClamAV
   deno:
     description: JavaScript/TypeScript runtime
-    category: Development Tools
+    category: Programming Languages
     file: deno.sh
     os_family:
     - debian
@@ -1665,7 +1681,7 @@ scripts:
       description: Uninstall Emacs
   ffmpeg:
     description: Multimedia framework
-    category: System Tools
+    category: Multimedia
     file: ffmpeg.sh
     os_family:
     - debian
@@ -1685,7 +1701,7 @@ scripts:
       description: Uninstall FFmpeg
   firejail:
     description: Application sandboxing
-    category: System Tools
+    category: Security & Sandboxing
     file: firejail.sh
     os_family:
     - debian
@@ -1705,7 +1721,7 @@ scripts:
       description: Uninstall Firejail
   fish:
     description: User-friendly shell
-    category: Shells
+    category: Shells & Terminals
     file: fish.sh
     os_family:
     - debian
@@ -1725,7 +1741,7 @@ scripts:
       description: Uninstall Fish
   flatpak:
     description: Application containerization
-    category: Container Tools
+    category: Container & Virtualization
     file: flatpak.sh
     os_family:
     - debian
@@ -1745,7 +1761,7 @@ scripts:
       description: Uninstall Flatpak
   gamemode:
     description: Performance optimizer
-    category: System Tools
+    category: Security & Sandboxing
     file: gamemode.sh
     os_family:
     - debian
@@ -1785,7 +1801,7 @@ scripts:
       description: Uninstall Git LFS
   gnupg:
     description: Encryption and signing
-    category: System Tools
+    category: Security & Sandboxing
     file: gnupg.sh
     os_family:
     - debian
@@ -1825,7 +1841,7 @@ scripts:
       description: Uninstall Helix
   imhex:
     description: Hex editor and analyzer
-    category: System Tools
+    category: Development Tools
     file: imhex.sh
     os_family:
     - debian
@@ -1905,7 +1921,7 @@ scripts:
       description: Uninstall Neovim
   nmap:
     description: Network scanner
-    category: System Tools
+    category: Networking
     file: nmap.sh
     os_family:
     - debian
@@ -1925,7 +1941,7 @@ scripts:
       description: Uninstall Nmap
   oh-my-zsh:
     description: Zsh framework
-    category: Shells
+    category: Shells & Terminals
     file: oh-my-zsh.sh
     os_family:
     - debian
@@ -1945,7 +1961,7 @@ scripts:
       description: Uninstall Oh My Zsh
   openjdk:
     description: Java platform
-    category: Development Tools
+    category: Programming Languages
     file: openjdk.sh
     os_family:
     - debian
@@ -1965,7 +1981,7 @@ scripts:
       description: Uninstall OpenJDK
   podman:
     description: Container runtime
-    category: Container Tools
+    category: Container & Virtualization
     file: podman.sh
     os_family:
     - debian
@@ -1985,7 +2001,7 @@ scripts:
       description: Uninstall Podman
   restic:
     description: Backup program
-    category: Backup Tools
+    category: Backup & Sync
     file: restic.sh
     os_family:
     - debian
@@ -2005,7 +2021,7 @@ scripts:
       description: Uninstall Restic
   rust:
     description: Systems programming language
-    category: Development Tools
+    category: Programming Languages
     file: rust.sh
     os_family:
     - debian
@@ -2025,7 +2041,7 @@ scripts:
       description: Uninstall Rust
   starship:
     description: Shell prompt
-    category: System Tools
+    category: Shells & Terminals
     file: starship.sh
     os_family:
     - debian
@@ -2045,7 +2061,7 @@ scripts:
       description: Uninstall Starship
   superfile:
     description: Terminal file manager
-    category: System Tools
+    category: System Utilities
     file: superfile.sh
     os_family:
     - debian
@@ -2065,7 +2081,7 @@ scripts:
       description: Uninstall Superfile
   vagrant:
     description: Infrastructure automation
-    category: Container Tools
+    category: Container & Virtualization
     file: vagrant.sh
     os_family:
     - debian
@@ -2085,7 +2101,7 @@ scripts:
       description: Uninstall Vagrant
   zellij:
     description: Terminal multiplexer
-    category: System Tools
+    category: Shells & Terminals
     file: zellij.sh
     os_family:
     - debian
@@ -2105,7 +2121,7 @@ scripts:
       description: Uninstall Zellij
   zsh:
     description: Z shell
-    category: Shells
+    category: Shells & Terminals
     file: zsh.sh
     os_family:
     - debian
@@ -2125,7 +2141,7 @@ scripts:
       description: Uninstall Zsh
   aria2:
     description: Download utility
-    category: System Tools
+    category: System Utilities
     file: aria2.sh
     os_family:
     - debian
@@ -2145,7 +2161,7 @@ scripts:
       description: Uninstall aria2
   bat:
     description: Cat with syntax highlighting
-    category: System Tools
+    category: System Utilities
     file: bat.sh
     os_family:
     - debian
@@ -2165,7 +2181,7 @@ scripts:
       description: Uninstall bat
   btop:
     description: System monitor
-    category: System Tools
+    category: System Utilities
     file: btop.sh
     os_family:
     - debian
@@ -2185,7 +2201,7 @@ scripts:
       description: Uninstall btop
   eza:
     description: Modern ls replacement
-    category: System Tools
+    category: System Utilities
     file: eza.sh
     os_family:
     - debian
@@ -2205,7 +2221,7 @@ scripts:
       description: Uninstall eza
   fastfetch:
     description: System information tool
-    category: System Tools
+    category: System Utilities
     file: fastfetch.sh
     os_family:
     - debian
@@ -2225,7 +2241,7 @@ scripts:
       description: Uninstall fastfetch
   fd:
     description: Find alternative
-    category: System Tools
+    category: System Utilities
     file: fd.sh
     os_family:
     - debian
@@ -2245,7 +2261,7 @@ scripts:
       description: Uninstall fd
   fzf:
     description: Fuzzy finder
-    category: System Tools
+    category: System Utilities
     file: fzf.sh
     os_family:
     - debian
@@ -2265,7 +2281,7 @@ scripts:
       description: Uninstall fzf
   kubectl:
     description: Kubernetes CLI
-    category: System Tools
+    category: Container & Virtualization
     file: kubectl.sh
     os_family:
     - debian
@@ -2285,7 +2301,7 @@ scripts:
       description: Uninstall kubectl
   ncdu:
     description: Disk usage analyzer
-    category: System Tools
+    category: System Utilities
     file: ncdu.sh
     os_family:
     - debian
@@ -2305,7 +2321,7 @@ scripts:
       description: Uninstall ncdu
   npm:
     description: Node Package Manager
-    category: System Tools
+    category: Package Managers
     file: npm.sh
     os_family:
     - debian
@@ -2325,7 +2341,7 @@ scripts:
       description: Uninstall npm
   pnpm:
     description: Fast npm alternative
-    category: System Tools
+    category: Package Managers
     file: pnpm.sh
     os_family:
     - debian
@@ -2345,7 +2361,7 @@ scripts:
       description: Uninstall pnpm
   ranger:
     description: Terminal file manager
-    category: System Tools
+    category: System Utilities
     file: ranger.sh
     os_family:
     - debian
@@ -2365,7 +2381,7 @@ scripts:
       description: Uninstall ranger
   ripgrep:
     description: Fast grep alternative
-    category: System Tools
+    category: System Utilities
     file: ripgrep.sh
     os_family:
     - debian
@@ -2385,7 +2401,7 @@ scripts:
       description: Uninstall ripgrep
   rsync:
     description: File transfer utility
-    category: System Tools
+    category: Essential Tools
     file: rsync.sh
     os_family:
     - debian
@@ -2405,7 +2421,7 @@ scripts:
       description: Uninstall rsync
   tldr:
     description: Simplified man pages
-    category: System Tools
+    category: System Utilities
     file: tldr.sh
     os_family:
     - debian
@@ -2425,7 +2441,7 @@ scripts:
       description: Uninstall tldr
   uv:
     description: Fast Python installer
-    category: System Tools
+    category: Package Managers
     file: uv.sh
     os_family:
     - debian
@@ -2445,7 +2461,7 @@ scripts:
       description: Uninstall uv
   yarn:
     description: JavaScript package manager
-    category: System Tools
+    category: Package Managers
     file: yarn.sh
     os_family:
     - debian
@@ -2465,7 +2481,7 @@ scripts:
       description: Uninstall yarn
   yazi:
     description: Terminal file manager
-    category: System Tools
+    category: System Utilities
     file: yazi.sh
     os_family:
     - debian
@@ -2485,7 +2501,7 @@ scripts:
       description: Uninstall yazi
   zoxide:
     description: Smart cd command
-    category: System Tools
+    category: System Utilities
     file: zoxide.sh
     os_family:
     - debian
