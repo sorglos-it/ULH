@@ -181,58 +181,33 @@ scripts:
 
 ### What It Does
 
-The `custom/answer.yaml` file provides **default values for prompts** and enables **per-script automation** via the `autoscript` flag.
+The `custom/answer.yaml` file provides **default values for prompts** and enables **per-action automation** via the `autoscript` flag.
 
 **Two modes:**
 1. **Interactive mode** (default) - User sees all prompts, can press ENTER for defaults
 2. **Autoscript mode** - Prompts skipped, script executes automatically with defaults
-
-### How It Works
-
-#### Interactive Mode (Default)
-
-When running a script **without autoscript field**:
-
-```
-Git username? [testuser]: 
-  → Press ENTER       → uses "testuser"
-  → Type "berry"      → uses "berry"
-```
-
-**Behavior:**
-- User still sees ALL prompts
-- User can override any default by typing
-- Defaults are suggestions, not mandatory
-- User always in control
-
-#### Autoscript Mode
-
-When running a script **with autoscript field present** (presence-based):
-
-```
-Autoscript mode: executing 'install' automatically
-(no prompts shown)
-[script runs with defaults]
-```
-
-**Behavior:**
-- NO prompts shown
-- Values from answer.yaml used directly
-- Script executes non-interactively
-- Graceful fallback: if answers missing → shows prompts anyway
 
 ### Structure
 
 ```yaml
 scripts:
   <script_name>:
-    autoscript:                    # Optional: field presence = enable automation
-    config:
-      - default: "value1"          # Prompt answers (array)
-      - default: "value2"
+    <action_name>:                 # Action key (e.g., "config", "install")
+      autoscript: true             # Optional: enable automation for this action
+      answers:                     # Prompt answers (array)
+        - default: "value1"        # Answer to prompt 1
+        - default: "value2"        # Answer to prompt 2
 ```
 
-**Note:** The `autoscript:` field uses **presence-based checking** — just the field presence enables automation, no value needed.
+**OR for interactive-only (no automation):**
+
+```yaml
+scripts:
+  <script_name>:
+    <action_name>:
+      - default: "value1"          # Interactive answers (direct array)
+      - default: "value2"
+```
 
 ### Examples
 
@@ -254,51 +229,52 @@ Git email? [me@example.com]:
   (Press ENTER for default, or type new value)
 ```
 
-#### Example 2: Autoscript (No Prompts)
+#### Example 2: Autoscript on One Action (No Prompts)
 
 ```yaml
 scripts:
   ubuntu:
-    autoscript:                     # Enable automation (presence-based)
-    config:
-      - default: "yes"              # Ubuntu Pro answer
+    install:
+      - default: "no"               # Interactive
+    pro:
+      autoscript: true              # Automated (this action only!)
+      answers:
+        - default: "token123"
 ```
 
 **Usage:**
 ```
-(no prompts shown)
-Autoscript mode: executing 'install' automatically
-[script runs with "yes"]
+ubuntu → install → shows prompts (interactive)
+ubuntu → pro → no prompts (automated)
 ```
 
-#### Example 3: Mixed (Some Interactive, Some Autoscript)
+#### Example 3: Multiple Actions, Mixed Modes
 
 ```yaml
 scripts:
-  git:                              # Interactive (no autoscript field)
+  docker:
+    install:
+      - default: "yes"              # Interactive
     config:
-      - default: "myuser"
-      - default: "me@example.com"
-
-  docker:                           # Autoscript (autoscript field present)
-    autoscript:
+      autoscript: true              # Automated
+      answers:
+        - default: "dockeruser"
+  
+  postgres:
     config:
-      - default: "dockeruser"
-
-  mariadb:                          # Interactive (no autoscript field)
-    config:
-      - default: ""                 # No default, user must type
+      - default: "mydb"
+      - default: ""                 # User must type (no default)
 ```
 
 ### Important Notes
 
-- **Script names:** Must match `config.yaml` exactly (case-sensitive)
-- **Array indexing:** YAML arrays are 0-based (first prompt = index 0)
+- **Script/action names:** Must match config.yaml exactly (case-sensitive)
+- **Action name:** Use the `parameter` value from config.yaml actions
 - **Quote values:** Always use `"quotes"` around defaults
 - **Empty default:** Use `default: ""` if user must type (no suggestion)
 - **Fallback:** If answer.yaml missing/invalid → uses config.yaml defaults
-- **Graceful fallback:** If autoscript field present but answers missing → shows prompts anyway
-- **YAML validation:** Invalid YAML silently falls back to config.yaml defaults
+- **Graceful fallback:** If autoscript present but answers missing → shows prompts anyway
+- **Per-action:** Each action can have independent automation
 
 ### When to Use Each Mode
 
@@ -308,7 +284,7 @@ scripts:
 - User wants to override defaults
 - Good for: ad-hoc tasks
 
-**Autoscript (autoscript field present):**
+**Autoscript (autoscript: true on action):**
 - CI/CD pipelines
 - Batch operations
 - Repeated deployments
@@ -324,12 +300,13 @@ scripts:
        - default: "corp-user"       # User can override
    ```
 
-2. **Use autoscript for automation** (add autoscript field)
+2. **Use autoscript for repetitive actions** (add autoscript: true)
    ```yaml
    linux:
-     autoscript:                    # Field presence enables automation
-     config:
-       - default: "yes"
+     install:
+       autoscript: true             # Automate just the install
+       answers:
+         - default: "yes"
    ```
 
 3. **Provide empty defaults for sensitive data**
@@ -341,8 +318,8 @@ scripts:
    ```
 
 4. **Test before enabling autoscript**
-   - First run as interactive (without autoscript field) to verify defaults work
-   - Then add `autoscript:` field once confident
+   - First run as interactive (without autoscript) to verify defaults work
+   - Then add `autoscript: true` once confident
    - Keep interactive for development/testing
 
 ---
@@ -356,11 +333,12 @@ scripts:
 ```bash
 mkdir my-scripts
 cd my-scripts
-cat > custom.yaml << 'EOF'
+
+cat > config.yaml << 'EOF'
 scripts:
   backup:
     description: "Backup utility"
-    path: "scripts/backup.sh"
+    path: "backup.sh"
     
     actions:
       - name: "run"
@@ -374,9 +352,20 @@ scripts:
 EOF
 
 mkdir -p scripts
+cat > scripts/backup.sh << 'EOF'
+#!/bin/bash
+# Your backup script here
+BACKUP_DIR="${BACKUP_DIR:-/backups}"
+echo "Backing up to: $BACKUP_DIR"
+EOF
+
+chmod +x scripts/backup.sh
+git init
+git add .
+git commit -m "Initial commit"
 ```
 
-2. **Edit custom/repo.yaml:**
+2. **Edit ulh's custom/repo.yaml:**
 
 ```yaml
 repositories:
@@ -385,10 +374,13 @@ repositories:
     url: "https://github.com/user/my-scripts.git"
     path: "my-scripts"
     auth_method: "none"
-    enabled:
+    enabled:              # Show in menu
+    auto_update:          # Auto-pull on startup (optional)
 ```
 
 3. **ulh handles the rest** - Auto-clone, sync, execute
+
+**Note:** Custom repos use `config.yaml` (not custom.yaml), same as main ulh structure.
 
 ### Authentication Methods
 
@@ -749,125 +741,94 @@ execute_custom_repo_action  # Run custom repo script
 
 ---
 
-## Advanced Topics
+## Answer.yaml + Autoscript Details
 
-### Answer.yaml Feature Implementation
+### Per-Action Autoscript (v0.5)
 
-The `custom/answer.yaml` file provides **default values for interactive prompts** and optional **per-script automation** via the `autoscript` flag.
-
-#### Implementation Validation
-
-✅ **Feature Summary:**
-- Default values implemented and working
-- Per-script autoscript flag with presence-based syntax
-- Comprehensive test coverage (8/8 tests pass)
-- Graceful fallback behavior (interactive if answers missing)
-- Full backward compatibility (no breaking changes)
-
-#### Key Functions
-
-**`_load_answers()`**
-- Loads answer.yaml once per session (cached)
-- Validates YAML syntax with `yq`
-- Gracefully handles missing/invalid files
-
-**`_get_answer_default(script_name, prompt_index)`**
-- Retrieves default value for a specific prompt
-- Returns empty string if not found (falls back to config.yaml)
-- Used during interactive prompt display
-
-**`_get_script_autoscript(script_name)`**
-- Checks if script has `autoscript` field **present** (presence-based checking)
-- Returns 0 if field exists, 1 if not
-- Field presence alone = automation enabled (no value needed)
-
-**`_has_all_answers(script_name, prompt_count)`**
-- Verifies all answers are present for a script
-- Returns 0 if complete, 1 if missing any
-- Enables graceful fallback to interactive mode
-
-**`_prompt_by_type(question, type, default, variable)`**
-- Always shows interactive prompt
-- Shows default in brackets: `Question? [default]: `
-- Validates input (yes/no, number, text types)
-- Allows ENTER for default or type to override
-
-#### Test Coverage (All Passing)
-
-1. ✅ Valid answer.yaml with defaults
-2. ✅ Missing answer.yaml (graceful fallback)
-3. ✅ Invalid YAML syntax (graceful fallback)
-4. ✅ Partial defaults (some fields missing)
-5. ✅ Exact name matching (case-sensitive)
-6. ✅ Custom repository scripts (same syntax)
-7. ✅ Autoscript mode detection
-8. ✅ Graceful fallback when answers missing (autoscript but incomplete)
-
-#### Code Quality
-
-✅ **Syntax Validation**: All functions pass `bash -n`
-✅ **YAML Validation**: Tested with `yq` eval
-✅ **Backward Compatibility**: No breaking changes to existing scripts
-✅ **Performance**: <10ms per session load
-✅ **Error Handling**: Comprehensive with graceful fallbacks
-
-#### Security Considerations
-
-- **Sensitive Data**: Users can omit defaults for passwords
-- **Example**: Use `default: ""` to force user input for sensitive values
-- **Best Practice**: Never store credentials in answer.yaml
-- **Use Environment Variables**: For API keys and tokens instead
-
-#### Example: Complete Workflow
+Autoscript is now **per-action**, not per-script. Each action can be independently automated:
 
 ```yaml
 scripts:
-  # Interactive mode (user sees all prompts)
-  git:
-    config:
-      - default: "corp-user"
-      - default: "corp@example.com"
-
-  # Autoscript mode (no prompts, automation enabled)
-  linux:
-    autoscript:                 # Field presence = automation
-    config:
-      - default: "yes"
-
-  # Mixed (some interactive, some automated)
-  docker:
-    autoscript:
-    config:
-      - default: "dockeruser"
-
-  postgres:
-    config:
-      - default: "proddb"
-      - default: ""              # User must type password!
+  ubuntu:
+    install:                     # Interactive action
+      - default: "no"
+    pro:                         # Automated action
+      autoscript: true
+      answers:
+        - default: "token123"
 ```
 
-**Execution:**
-1. Git → Shows prompts with defaults, user can override
-2. Linux → No prompts, runs automatically
-3. Docker → Autoscript for docker, fallback to interactive if answers missing
-4. PostgreSQL → Shows all prompts (no autoscript), password required
+**Key:** `autoscript: true` on the **action level**, not the script level.
 
-#### Troubleshooting
+### Automation Logic
 
-**Defaults not showing?**
-- Check: `custom/answer.yaml` exists
-- Check: Script/action names match config.yaml exactly (case-sensitive)
-- Check: YAML syntax is valid (use `yq eval 'keys' custom/answer.yaml`)
+1. **Check:** Is `autoscript: true` set for this action?
+2. **If yes:** Are all required answers present in `.answers[]`?
+   - **All present:** Skip prompts, run automatically
+   - **Any missing:** Show interactive prompts (graceful fallback)
+3. **If no:** Always show interactive prompts
 
-**Autoscript not working?**
-- Check: `autoscript:` field is present (not the value, just the presence)
-- Check: All required defaults are present (no missing prompts)
-- Debug: View parsed YAML with `yq eval '.' custom/answer.yaml`
+### Function Reference
 
-**Invalid YAML error?**
-- ulh silently falls back to config.yaml defaults
-- Check YAML with: `yq eval 'keys' custom/answer.yaml`
-- If error, fix syntax and retry
+**`load_answers()`**
+- Loads answer.yaml once per session (cached)
+- Derives path from `ulh_DIR` or BASH_SOURCE fallback
+- Validates YAML syntax with yq
+- Returns 0 if loaded, 1 if missing/invalid
+
+**`get_action_autoscript(script_name, action_name)`**
+- Checks if `.scripts.${script}.${action}.autoscript` == true
+- Returns 0 if true, 1 if false/missing
+- Used to enable/disable automation for specific action
+
+**`get_answer_default(script_name, action_name, prompt_index)`**
+- Retrieves `.scripts.${script}.${action}.answers[index].default`
+- Fallback: tries old format `.scripts.${script}.${action}[index].default`
+- Returns empty string if not found
+- Used by both interactive and autoscript modes
+
+**`has_all_answers(script_name, action_name, prompt_count)`**
+- Verifies all `prompt_count` answers exist
+- Returns 0 if complete, 1 if any missing
+- Enables fallback to interactive when autoscript incomplete
+
+**`prompt_by_type(question, type, default, autoscript_mode)`**
+- If autoscript + default present: return default directly
+- Else: show interactive prompt with `[default]` shown
+- Validates: yes/no, number, text, required/optional
+- Returns user input or default
+
+### Works With Custom Repos
+
+Custom repositories use the **same answer.yaml** as main ulh:
+
+```yaml
+scripts:
+  hello:                  # Custom repo script
+    run:
+      autoscript: true
+      answers:
+        - default: "World"
+```
+
+**Automatic:** Load answers → detect OS → execute script. Same as system scripts.
+
+### Troubleshooting
+
+**Defaults not loading?**
+- Check: `.scripts.${script}.${action}` path exists
+- Check: Script/action names match config.yaml (case-sensitive)
+- Check: YAML valid: `yq eval 'keys' custom/answer.yaml`
+
+**Autoscript not triggering?**
+- Check: `autoscript: true` (not just `autoscript:`)
+- Check: All answers present for all prompts
+- Check: Action name matches config.yaml parameter value
+
+**Falls back to interactive?**
+- Expected: If answers are incomplete
+- Intentional: Graceful degradation instead of failure
+- Solution: Add missing answers to `answers:` array
 
 ---
 

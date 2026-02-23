@@ -25,7 +25,8 @@ bash ulh.sh
 - **Multi-Distribution** - Debian, Ubuntu, Red Hat, Arch, SUSE, Alpine, Proxmox
 - **45 Scripts** - Network, system management, web servers, databases, languages, tools
 - **Auto-Updates** - Self-updates on startup with transparent restart
-- **Custom Repos** - Clone your own script repositories with git authentication
+- **Custom Repos** - Clone your own script repositories with git authentication (SSH, Token, Basic Auth)
+- **Per-Action Automation** - answer.yaml enables automated execution for specific script actions
 - **Interactive Menu** - Clean, intuitive box-based CLI interface
 - **All Distros** - Every script supports all 5 major distribution families
 - **Zero Dependencies** - Just bash, git, and standard Linux tools
@@ -53,9 +54,27 @@ Menu flow:
 
 See **[SCRIPTS.md](SCRIPTS.md)** for complete reference.
 
+## ⚙️ Automation with answer.yaml
+
+Define defaults and enable per-action automation:
+
+```yaml
+# custom/answer.yaml
+scripts:
+  ubuntu:
+    install:
+      - default: "no"               # Interactive: user sees prompt
+    pro:
+      autoscript: true              # Automated: no prompts
+      answers:
+        - default: "token123"
+```
+
+Works for both system and custom repo scripts. See **[DOCS.md](DOCS.md#automation)** for details.
+
 ## 🔧 Custom Repositories
 
-Add your own scripts with git authentication (SSH, Token, Basic Auth):
+Add your own script repositories with git authentication:
 
 ```yaml
 # custom/repo.yaml
@@ -65,10 +84,13 @@ repositories:
     url: "git@github.com:user/my-scripts.git"
     path: "my-scripts"
     auth_method: "ssh"
-    enabled:
+    enabled:              # Show in menu
+    auto_update:          # Auto-pull on startup
 ```
 
-See **[DOCS.md](DOCS.md#custom-repositories)** for setup.
+**Authentication Methods**: SSH (with custom/keys/), HTTPS Token, Basic Auth, or none.
+
+See **[DOCS.md#custom-repositories](DOCS.md#custom-repositories)** for complete setup guide.
 
 ## 🏗️ Architecture
 
