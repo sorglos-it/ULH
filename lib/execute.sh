@@ -29,7 +29,11 @@ yq_eval() {
 # Load and cache answer.yaml file
 load_answers() {
     if [[ -z "$_ANSWERS_CACHE" ]]; then
-        local answers_file="${ulh_DIR}/custom/answer.yaml"
+        # Try ulh_DIR first, then derive from BASH_SOURCE if not available
+        local base_dir="${ulh_DIR}"
+        [[ -z "$base_dir" ]] && base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+        local answers_file="${base_dir}/custom/answer.yaml"
+        
         if [[ -f "$answers_file" ]]; then
             # Validate YAML syntax
             if yq_eval 'keys' "$answers_file" &>/dev/null; then
@@ -45,21 +49,25 @@ load_answers() {
     [[ "$_ANSWERS_CACHE" != "none" && "$_ANSWERS_CACHE" != "invalid" ]]
 }
 
-# Get per-script autoscript flag from answer.yaml (presence check)
-# Args: script_name
-# Returns: 0 (autoscript field present) or 1 (autoscript field not present)
-# Note: Checks for field PRESENCE, not value. autoscript: (no value) = enabled
+# Get autoscript flag for an action from answer.yaml
+# Args: script_name, action_name
+# Returns: 0 (autoscript enabled) or 1 (autoscript disabled/not present)
+# Note: Checks if autoscript field is present and truthy
 get_action_autoscript() {
     local script_name="$1"
     local action_name="$2"
     
     if load_answers; then
-        # Use 'has' to check if field exists (works with null values)
-        # If the field exists (presence check), return 0; otherwise return 1
-        local has_autoscript=$(yq_eval ".scripts.${script_name}.${action_name} | has(\"autoscript\")" "$_ANSWERS_CACHE" 2>/dev/null)
-        [[ "$has_autoscript" == "true" ]] && return 0 || return 1
+        # Check if autoscript field exists and is truthy
+        local autoscript_value=$(yq_eval ".scripts.${script_name}.${action_name}.autoscript // \"false\"" "$_ANSWERS_CACHE" 2>/dev/null)
+        
+        # Treat as enabled if value is: true, yes, 1, or any non-empty/non-null value
+        case "$autoscript_value" in
+            true|yes|1) return 0 ;;  # Autoscript enabled
+            *) return 1 ;;           # Autoscript disabled
+        esac
     fi
-    return 1  # Default to interactive mode (autoscript field not present)
+    return 1  # Default to interactive mode
 }
 
 # Check if all required answers are present for a script action
@@ -82,8 +90,16 @@ get_answer_default() {
     local script_name="$1" action_name="$2" prompt_index="$3"
     
     if load_answers; then
-        local answer=$(yq_eval ".scripts.${script_name}.${action_name}[${prompt_index}].default // \"\"" "$_ANSWERS_CACHE" 2>/dev/null)
-        echo "$answer"
+        # Try new format first: .scripts.${script}.${action}.answers[index]
+        local answer=$(yq_eval ".scripts.${script_name}.${action_name}.answers[${prompt_index}].default // \"\"" "$_ANSWERS_CACHE" 2>/dev/null)
+        
+        # Fallback: old format (direct array) .scripts.${script}.${action}[index]
+        if [[ -z "$answer" || "$answer" == "null" ]]; then
+            answer=$(yq_eval ".scripts.${script_name}.${action_name}[${prompt_index}].default // \"\"" "$_ANSWERS_CACHE" 2>/dev/null)
+        fi
+        
+        # Only echo if not null/empty
+        [[ "$answer" != "null" ]] && echo "$answer"
     fi
 }
 
