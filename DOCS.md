@@ -2,15 +2,18 @@
 
 Complete guide to ulh v0.5 architecture, configuration, and development.
 
+**96 scripts across 16 categories** | Multi-distro support | Per-action automation
+
 ## Table of Contents
 
 1. [Architecture](#architecture)
 2. [Installation](#installation)
 3. [Configuration](#configuration)
-4. [Custom Repositories](#custom-repositories)
-5. [Script Development](#script-development)
-6. [Menu System](#menu-system)
-7. [Troubleshooting](#troubleshooting)
+4. [Answer File (answer.yaml)](#answer-file-answeryaml)
+5. [Custom Repositories](#custom-repositories)
+6. [Script Development](#script-development)
+7. [Menu System](#menu-system)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -30,32 +33,42 @@ ulh prioritizes simplicity, consistency, and maintainability:
 
 ```
 ulh/
-├── ulh.sh              # Main entry (945 lines, auto-update + repo init)
-├── lib/                  # 7 focused libraries
-│   ├── core.sh          # OS detection, logging, utilities
-│   ├── colors.sh        # ANSI color definitions
-│   ├── yaml.sh          # YAML parsing via yq binary
-│   ├── menu.sh          # Menu display + navigation
-│   ├── execute.sh       # Script execution engine
-│   └── repos.sh         # Repository sync + management
-├── scripts/             # 45 system management scripts
-│   ├── curl.sh, wget.sh, git.sh, vim.sh, nano.sh, htop.sh, tmux.sh, screen.sh,
-│   │   build-essential.sh, jq.sh, locate.sh (essential tools)
-│   ├── apache.sh, nginx.sh (web servers)
-│   ├── mariadb.sh, postgres.sh, mysql.sh (databases)
-│   ├── docker.sh, portainer.sh, docker-compose.sh (containers)
-│   ├── nodejs.sh, python.sh, ruby.sh, golang.sh, php.sh, perl.sh (languages)
-│   ├── rsyslog.sh, syslog-ng.sh, fail2ban.sh, logrotate.sh (logging & monitoring)
-│   ├── openssh.sh, net-tools.sh, bind-utils.sh, wireguard.sh, openvpn.sh, ufw.sh, pihole.sh, adguard-home.sh (networking)
-│   ├── linux.sh, ubuntu.sh, debian.sh, proxmox.sh (guest agent + VM/LXC management), pikvm-v3.sh (system management)
-│   └── _template.sh (reference template for new scripts)
-├── custom/              # User repositories (git-ignored except repo.yaml)
-│   ├── repo.yaml        # Repository configuration
-│   ├── keys/            # SSH keys (.gitignore protected)
-│   └── [custom-repos]/  # Cloned repositories
-├── config.yaml          # System scripts configuration
-├── README.md            # Quick start guide
-└── SCRIPTS.md           # Script reference table
+├── ulh.sh              # Main entry (auto-update + repo init)
+├── lib/                # 7 focused libraries
+│   ├── bootstrap.sh    # Parameter parsing, OS detection, logging, print_usage()
+│   ├── colors.sh       # Centralized ANSI color definitions
+│   ├── core.sh         # OS convenience functions
+│   ├── execute.sh      # Script execution engine with autoscript support
+│   ├── menu.sh         # Menu display + navigation
+│   ├── repos.sh        # Repository sync + management
+│   └── yaml.sh         # YAML parsing via yq binary
+├── scripts/            # 96 total scripts (49 system + 47 CLI tools)
+│   └── Multiple categories:
+│       ├── Essential Tools (10)
+│       ├── Text Editors (6)
+│       ├── Shells & Terminals (5)
+│       ├── Web Servers (2)
+│       ├── Databases (3)
+│       ├── Container & Virtualization (8)
+│       ├── Programming Languages (10)
+│       ├── Development Tools (4)
+│       ├── System Utilities (15)
+│       ├── Backup & Sync (3)
+│       ├── Monitoring & Logging (4)
+│       ├── Networking (11)
+│       ├── System Management (5)
+│       ├── Package Managers (4)
+│       ├── Security & Sandboxing (3)
+│       └── Multimedia (1)
+├── custom/             # User repositories (git-ignored except repo.yaml)
+│   ├── repo.yaml       # Repository configuration
+│   ├── answer.yaml     # Script defaults + automation config
+│   ├── keys/           # SSH keys (.gitignore protected)
+│   └── [custom-repos]/ # Cloned repositories
+├── config.yaml         # System scripts configuration (96 scripts)
+├── README.md           # Quick start guide
+├── SCRIPTS.md          # Script reference table (all 96 scripts)
+└── DOCS.md             # This file
 ```
 
 ### Execution Flow
