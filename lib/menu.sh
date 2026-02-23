@@ -211,24 +211,24 @@ menu_show_custom_repo() {
     menu_clear
     menu_header "Custom: $repo_display_name"
     
-    # Load custom.yaml from repo
-    if [[ ! -f "$repo_path/custom.yaml" ]]; then
-        echo "|  No custom.yaml found in $repo_path"
+    # Load config.yaml from repo (custom repos have their own config.yaml)
+    if [[ ! -f "$repo_path/config.yaml" ]]; then
+        echo "|  No config.yaml found in $repo_path"
         menu_footer 1
         return 1
     fi
     
-    # Get scripts from this repo's custom.yaml
+    # Get scripts from this repo's config.yaml
     local -a scripts=()
     while IFS= read -r script_name; do
         [[ -n "$script_name" ]] && scripts+=("$script_name")
-    done <<< "$(yq_eval ".scripts | keys | .[]" "$repo_path/custom.yaml" 2>/dev/null)"
+    done <<< "$(yq_eval ".scripts | keys | .[]" "$repo_path/config.yaml" 2>/dev/null)"
     
     if (( ${#scripts[@]} == 0 )); then
         echo "|  No scripts available in this repository."
     else
         local i=1; for s in "${scripts[@]}"; do 
-            local desc=$(yq_eval ".scripts.$s.description" "$repo_path/custom.yaml" 2>/dev/null)
+            local desc=$(yq_eval ".scripts.$s.description" "$repo_path/config.yaml" 2>/dev/null)
             printf "|  %2d) %-20s - %s\n" $i "$s" "$desc"
             ((i++))
         done
@@ -246,17 +246,17 @@ menu_show_custom_repo_actions() {
     menu_clear
     menu_header "Custom: $repo_display_name - $script_name"
     
-    # Get actions from repo's custom.yaml
+    # Get actions from repo's config.yaml
     local count
-    count=$(yq_eval ".scripts.$script_name.actions | length" "$repo_path/custom.yaml" 2>/dev/null)
+    count=$(yq_eval ".scripts.$script_name.actions | length" "$repo_path/config.yaml" 2>/dev/null)
     [[ -z "$count" || "$count" == "null" ]] && count=0
     
     if (( count == 0 )); then 
         echo "  No actions."
     else 
         for ((i=0; i<count; i++)); do
-            local n=$(yq_eval ".scripts.$script_name.actions[$i].name" "$repo_path/custom.yaml" 2>/dev/null)
-            local d=$(yq_eval ".scripts.$script_name.actions[$i].description" "$repo_path/custom.yaml" 2>/dev/null)
+            local n=$(yq_eval ".scripts.$script_name.actions[$i].name" "$repo_path/config.yaml" 2>/dev/null)
+            local d=$(yq_eval ".scripts.$script_name.actions[$i].description" "$repo_path/config.yaml" 2>/dev/null)
             [[ -n "$d" && "$d" != "null" ]] && printf "|  %2d) %-20s - %s\n" $((i+1)) "$n" "$d" || printf "|  %2d) %s\n" $((i+1)) "$n"
         done
     fi
@@ -368,11 +368,11 @@ menu_custom_repo_scripts() {
     while true; do
         menu_show_custom_repo "$repo_name" "$repo_path" || return
         
-        # Get scripts from repo's custom.yaml
+        # Get scripts from repo's config.yaml
         local -a scripts=()
         while IFS= read -r script_name; do
             [[ -n "$script_name" ]] && scripts+=("$script_name")
-        done <<< "$(yq_eval ".scripts | keys | .[]" "$repo_path/custom.yaml" 2>/dev/null)"
+        done <<< "$(yq_eval ".scripts | keys | .[]" "$repo_path/config.yaml" 2>/dev/null)"
         
         local max=${#scripts[@]}
         echo ""; local input; read -rp "  Choose: " input || return
@@ -396,9 +396,9 @@ menu_custom_repo_actions() {
     while true; do
         menu_show_custom_repo_actions "$repo_name" "$repo_path" "$script_name"
         
-        # Get actions from repo's custom.yaml
+        # Get actions from repo's config.yaml
         local count
-        count=$(yq_eval ".scripts.$script_name.actions | length" "$repo_path/custom.yaml" 2>/dev/null)
+        count=$(yq_eval ".scripts.$script_name.actions | length" "$repo_path/config.yaml" 2>/dev/null)
         [[ -z "$count" || "$count" == "null" ]] && count=0
         
         echo ""; local input; read -rp "  Choose: " input || return
