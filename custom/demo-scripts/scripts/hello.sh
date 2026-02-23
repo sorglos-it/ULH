@@ -3,21 +3,10 @@
 # hello - Hello World Demo Script
 # Simple greeting demonstration script with customizable name parameter
 
-ACTION="${1:-run}"
-
-# Parse comma-separated parameters
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-# Parse variables
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        if [[ -n "$key" ]]; then
-            export "$key=$val"
-        fi
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
+set -e
+source "$(dirname "$0")/../../../lib/bootstrap.sh"
+# Script entscheidet selbst wann geparst werden soll:
+parse_parameters "$1"
 
 # Default value if not set
 NAME="${NAME:-World}"
@@ -31,10 +20,9 @@ case "$ACTION" in
         echo ""
         echo "This is a demo custom script from the demo-scripts repository!"
         echo ""
+        sleep 10
         exit 0
         ;;
     *)
-        echo "Unknown action: $ACTION" >&2
-        exit 1
-        ;;
+        print_usage hello && exit 1
 esac

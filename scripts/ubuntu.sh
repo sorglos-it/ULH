@@ -23,7 +23,7 @@ update_ubuntu() {
 # Attach Ubuntu Pro subscription
 attach_pro() {
     log_info "Attaching Ubuntu Pro..."
-    
+
     # Verify Pro key is provided
     [[ -z "$KEY" ]] && log_error "Pro key not set"
     

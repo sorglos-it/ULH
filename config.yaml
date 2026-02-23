@@ -478,7 +478,7 @@ scripts:
           - question: "Virtual host name?"
             variable: "VHOST_NAME"
             type: "text"
-            default: ""
+            default: "www.example.com"
           - question: "Document root?"
             variable: "VHOST_ROOT"
             type: "text"

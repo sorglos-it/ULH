@@ -24,7 +24,7 @@ repositories:
     url: ""  # Leave empty for local-only; set to git URL to enable cloning/pulling
     path: "demo-scripts"
     auth_method: "none"
-
+    #enabled:
   # Example 1: SSH with custom/keys/ (recommended)
   # enabled: + auto_update: = show in menu + auto-pull at startup
   # See DOCS.md for SSH setup instructions
