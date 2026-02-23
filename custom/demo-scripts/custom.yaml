@@ -4,7 +4,7 @@
 scripts:
   hello:
     description: "Simple Hello World demo"
-    path: "scripts/hello.sh"
+    path: "hello.sh"
     
     actions:
       - name: "run"
@@ -18,7 +18,7 @@ scripts:
 
   system-info:
     description: "Display system information"
-    path: "scripts/system-info.sh"
+    path: "system-info.sh"
     
     actions:
       - name: "show"
@@ -33,7 +33,7 @@ scripts:
 
   file-backup:
     description: "Simple file backup utility"
-    path: "scripts/file-backup.sh"
+    path: "file-backup.sh"
     
     actions:
       - name: "backup"

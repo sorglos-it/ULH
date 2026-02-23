@@ -9,11 +9,15 @@ source "${BASH_SOURCE%/*}/colors.sh"
 get_yq() {
     if [[ -z "$_YQ_CACHE" ]]; then
         local arch=$(uname -m)
+        local yq_dir="${ulh_DIR}/lib/yq"
+        # Fallback: try to find yq from script location
+        [[ -z "$ulh_DIR" ]] && yq_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib/yq"
+        
         case "$arch" in
-            x86_64) _YQ_CACHE="${ulh_DIR}/lib/yq/yq-amd64" ;;
-            aarch64) _YQ_CACHE="${ulh_DIR}/lib/yq/yq-arm64" ;;
-            armv7l) _YQ_CACHE="${ulh_DIR}/lib/yq/yq-arm" ;;
-            i686) _YQ_CACHE="${ulh_DIR}/lib/yq/yq-386" ;;
+            x86_64) _YQ_CACHE="${yq_dir}/yq-amd64" ;;
+            aarch64) _YQ_CACHE="${yq_dir}/yq-arm64" ;;
+            armv7l) _YQ_CACHE="${yq_dir}/yq-arm" ;;
+            i686) _YQ_CACHE="${yq_dir}/yq-386" ;;
             *) _YQ_CACHE="yq" ;;  # Fallback to PATH
         esac
         [[ -x "$_YQ_CACHE" ]] || chmod +x "$_YQ_CACHE" 2>/dev/null
@@ -70,11 +74,9 @@ repo_sync_one() {
     local repo_config="$1"
     local repo_name="$2"
     
-    local enabled url path auth_method auto_update
+    local url path auth_method
     
-    # Get config (absence = not enabled/not auto-updating)
-    enabled=$(yq_eval ".repositories.$repo_name.enabled" "$repo_config" 2>/dev/null)
-    auto_update=$(yq_eval ".repositories.$repo_name.auto_update" "$repo_config" 2>/dev/null)
+    # Get config
     url=$(yq_eval ".repositories.$repo_name.url" "$repo_config" 2>/dev/null)
     path=$(yq_eval ".repositories.$repo_name.path" "$repo_config" 2>/dev/null)
     auth_method=$(yq_eval ".repositories.$repo_name.auth_method // none" "$repo_config" 2>/dev/null)
@@ -84,15 +86,18 @@ repo_sync_one() {
         return 0
     fi
     
-    # Resolve path - automatically prefix with custom/
+    # Resolve path - automatically prefix with custom/ (get base dir from repo_config)
     if [[ "$path" != /* ]]; then
-        path="${ulh_DIR}/custom/${path}"
+        local base_dir=$(dirname "$(dirname "$repo_config")")
+        path="${base_dir}/custom/${path}"
     fi
     
     # Step 1: If repo exists, handle auto_update
     if [[ -d "$path" ]]; then
-        # Check if auto_update field exists (presence-based)
-        if [[ -d "$path/.git" && -n "$auto_update" && "$auto_update" != "null" && -n "$url" ]]; then
+        # Check if auto_update field exists (using has())
+        local has_auto_update
+        has_auto_update=$(yq_eval ".repositories.$repo_name | has(\"auto_update\")" "$repo_config" 2>/dev/null)
+        if [[ -d "$path/.git" && "$has_auto_update" == "true" && -n "$url" ]]; then
             # It's a git repo and auto_update is enabled → pull updates
             repo_pull "$repo_name" "$url" "$path" "$auth_method" "$repo_config"
         fi
@@ -101,8 +106,10 @@ repo_sync_one() {
     fi
     
     # Step 2: Repo doesn't exist locally
-    # Only try to clone if enabled field exists (presence-based) AND url is non-empty
-    if [[ -z "$enabled" || "$enabled" == "null" ]]; then
+    # Only try to clone if enabled field exists (using has())
+    local has_enabled
+    has_enabled=$(yq_eval ".repositories.$repo_name | has(\"enabled\")" "$repo_config" 2>/dev/null)
+    if [[ "$has_enabled" != "true" ]]; then
         # enabled field not present: ignore this repo completely (no clone, not in menu)
         return 0
     fi
@@ -296,7 +303,12 @@ repo_resolve_ssh_key() {
     fi
     
     # Relative filename - try custom/keys/ first, then ~/.ssh/
-    local key_in_custom="${ulh_DIR}/custom/keys/${ssh_key}"
+    # Note: This is called from clone/pull context; use HOME/.openclaw if available
+    local key_in_custom="${HOME}/.openclaw/workspace/ulh/custom/keys/${ssh_key}"
+    if [[ ! -f "$key_in_custom" ]]; then
+        # Fallback: try relative to current script location
+        key_in_custom="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/custom/keys/${ssh_key}"
+    fi
     if [[ -f "$key_in_custom" ]]; then
         echo "$key_in_custom"
         return 0
@@ -326,11 +338,10 @@ repo_list_enabled() {
     
     while IFS= read -r repo_name; do
         [[ -z "$repo_name" ]] && continue
-        # Check if enabled field exists (presence-based)
-        # If field is present (even with empty value), repo is enabled
-        local enabled
-        enabled=$(yq_eval ".repositories.$repo_name.enabled" "$repo_config" 2>/dev/null)
-        if [[ -n "$enabled" && "$enabled" != "null" ]]; then
+        # Check if enabled field exists (presence-based) using has()
+        local has_enabled
+        has_enabled=$(yq_eval ".repositories.$repo_name | has(\"enabled\")" "$repo_config" 2>/dev/null)
+        if [[ "$has_enabled" == "true" ]]; then
             echo "$repo_name"
         fi
     done <<< "$repo_names"
@@ -357,13 +368,17 @@ repo_get_path() {
     [[ ! -f "$repo_config" ]] && repo_config="${repo_config%/}/custom/repo.yaml"
     [[ ! -f "$repo_config" ]] && repo_config="${repo_config}/custom/repo.yaml"
     
+    # Call yq directly (not via yq_eval wrapper)
+    local yq=$(get_yq)
     local path
-    path=$(yq_eval ".repositories.$repo_id.path" "$repo_config" 2>/dev/null)
+    path=$("$yq" eval ".repositories.$repo_id.path" "$repo_config" 2>/dev/null)
     
     if [[ "$path" == /* ]]; then
         echo "$path"
     else
-        echo "${ulh_DIR}/custom/${path}"
+        # Get base directory from repo_config path: /path/to/ulh/custom/repo.yaml -> /path/to/ulh
+        local base_dir=$(dirname "$(dirname "$repo_config")")
+        echo "${base_dir}/custom/${path}"
     fi
 }
 
