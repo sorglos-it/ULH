@@ -260,7 +260,12 @@ execute_custom_repo_action() {
     local script_file=$(yq_eval ".scripts.$script_name.path" "$custom_yaml" 2>/dev/null)
     local script_path="$repo_path/$script_file"
     
-    [[ ! -f "$script_path" ]] && { menu_error "Script not found: $script_path"; return 1; }
+    # Fallback: if script not found, try scripts/ subdirectory (like main ulh scripts structure)
+    if [[ ! -f "$script_path" ]]; then
+        script_path="$repo_path/scripts/$script_file"
+    fi
+    
+    [[ ! -f "$script_path" ]] && { menu_error "Script not found: $repo_path/$script_file or $repo_path/scripts/$script_file"; return 1; }
     [[ ! -x "$script_path" ]] && chmod +x "$script_path" 2>/dev/null
     
     # Get action details
