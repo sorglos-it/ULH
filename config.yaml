@@ -214,7 +214,7 @@ scripts:
     description: SSH server and client
     category: Networking
     file: openssh.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -447,7 +447,7 @@ scripts:
     description: Development tools and compilers
     category: Essential Tools
     file: build-essential.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -488,7 +488,7 @@ scripts:
     description: Fast file search using indexed database
     category: Essential Tools
     file: locate.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -517,7 +517,7 @@ scripts:
     description: Apache HTTP Server
     category: Web Servers
     file: apache.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -555,7 +555,7 @@ scripts:
     description: Nginx HTTP Server
     category: Web Servers
     file: nginx.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -593,7 +593,7 @@ scripts:
     description: MariaDB database server
     category: Databases
     file: mariadb.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -636,7 +636,7 @@ scripts:
     description: PostgreSQL database server
     category: Databases
     file: postgres.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -660,7 +660,7 @@ scripts:
     description: MySQL database server
     category: Databases
     file: mysql.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -684,7 +684,7 @@ scripts:
     description: Docker container runtime
     category: Container & Virtualization
     file: docker.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -722,7 +722,7 @@ scripts:
     description: Portainer container management UI
     category: Container & Virtualization
     file: portainer.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -743,7 +743,7 @@ scripts:
     description: Proxmox guest agent and container management
     category: Container & Virtualization
     file: proxmox.sh
-    sudo: null
+    sudo:
     os_only: proxmox
     actions:
     - name: install
@@ -831,7 +831,7 @@ scripts:
     description: Docker Compose multi-container orchestration
     category: Container & Virtualization
     file: docker-compose.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -980,7 +980,7 @@ scripts:
     description: System logging daemon
     category: Monitoring & Logging
     file: rsyslog.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1004,7 +1004,7 @@ scripts:
     description: Advanced system logging
     category: Monitoring & Logging
     file: syslog-ng.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1028,7 +1028,7 @@ scripts:
     description: Brute-force attack protection
     category: Monitoring & Logging
     file: fail2ban.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1052,7 +1052,7 @@ scripts:
     description: Log rotation utility
     category: Monitoring & Logging
     file: logrotate.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1099,7 +1099,7 @@ scripts:
     description: Modern VPN protocol
     category: Networking
     file: wireguard.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1123,7 +1123,7 @@ scripts:
     description: OpenVPN tunneling protocol
     category: Networking
     file: openvpn.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1147,7 +1147,7 @@ scripts:
     description: Uncomplicated Firewall
     category: Networking
     file: ufw.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1188,7 +1188,7 @@ scripts:
     description: Pi-hole DNS ad-blocking service
     category: Networking
     file: pihole.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1221,7 +1221,7 @@ scripts:
     description: AdGuard Home DNS ad-blocking service
     category: Networking
     file: adguard-home.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1254,7 +1254,7 @@ scripts:
     description: Network file sharing with Samba/SMB
     category: Networking
     file: samba.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1317,7 +1317,7 @@ scripts:
     description: Mount and manage SMB/CIFS network shares
     category: Networking
     file: cifs-utils.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1341,7 +1341,7 @@ scripts:
     description: Network, DNS, users, groups configuration
     category: System Management
     file: linux.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat
@@ -1455,7 +1455,7 @@ scripts:
     description: Ubuntu system management
     category: System Management
     file: ubuntu.sh
-    sudo: null
+    sudo:
     os_only: ubuntu
     actions:
     - name: update
@@ -1476,7 +1476,7 @@ scripts:
     description: Debian system management
     category: System Management
     file: debian.sh
-    sudo: null
+    sudo:
     os_only: debian
     actions:
     - name: update
@@ -1489,7 +1489,7 @@ scripts:
     description: PiKVM v3 appliance management
     category: System Management
     file: pikvm-v3.sh
-    sudo: null
+    sudo:
     os_only: arch
     actions:
     - name: update
@@ -1511,7 +1511,7 @@ scripts:
     description: Remotely - open-source remote desktop and support software
     category: System Management
     file: remotely.sh
-    sudo: null
+    sudo:
     os_family:
     - debian
     - redhat

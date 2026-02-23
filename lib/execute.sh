@@ -151,7 +151,11 @@ prompt_by_type() {
 execute_action() {
     local script="$1" action_index="$2"
     local script_path=$(yaml_script_path "$script")
-    local needs_sudo=$(yaml_info "$script" "needs_sudo")
+    # Check if sudo field exists (presence-based) using has()
+    local base_dir="${ulh_DIR}"
+    [[ -z "$base_dir" ]] && base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    local needs_sudo=$(yq_eval ".scripts.${script} | has(\"sudo\")" "${base_dir}/config.yaml" 2>/dev/null)
+    [[ "$needs_sudo" == "true" ]] && needs_sudo="true" || needs_sudo="false"
     local parameter=$(yaml_action_param "$script" "$action_index")
     local aname=$(yaml_action_name "$script" "$action_index")
 
