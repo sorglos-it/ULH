@@ -251,9 +251,10 @@ execute_custom_repo_action() {
     local script_name="$3"
     local action_index="$4"
     
-    local custom_yaml="$repo_path/custom.yaml"
+    # Custom repos have their own config.yaml (not custom.yaml)
+    local custom_yaml="$repo_path/config.yaml"
     
-    [[ ! -f "$custom_yaml" ]] && { menu_error "custom.yaml not found in $repo_path"; return 1; }
+    [[ ! -f "$custom_yaml" ]] && { menu_error "config.yaml not found in $repo_path"; return 1; }
     
     # Get script path from repo
     local script_file=$(yq_eval ".scripts.$script_name.path" "$custom_yaml" 2>/dev/null)
@@ -265,9 +266,9 @@ execute_custom_repo_action() {
     # Get action details
     local aname=$(yq_eval ".scripts.$script_name.actions[$action_index].name" "$custom_yaml" 2>/dev/null)
     local parameter=$(yq_eval ".scripts.$script_name.actions[$action_index].parameter" "$custom_yaml" 2>/dev/null)
-    # Check if sudo field exists (presence-based)
-    local needs_sudo=$(yq_eval ".scripts.$script_name.sudo // empty" "$custom_yaml" 2>/dev/null)
-    [[ -n "$needs_sudo" && "$needs_sudo" != "null" ]] && needs_sudo="true" || needs_sudo="false"
+    # Check if sudo field exists (presence-based) using has()
+    local needs_sudo=$(yq_eval ".scripts.$script_name | has(\"sudo\")" "$custom_yaml" 2>/dev/null)
+    [[ "$needs_sudo" == "true" ]] && needs_sudo="true" || needs_sudo="false"
     local prompt_count=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts | length" "$custom_yaml" 2>/dev/null)
     [[ -z "$prompt_count" || "$prompt_count" == "null" ]] && prompt_count=0
     

@@ -159,9 +159,9 @@ print_usage() {
     echo ""
     echo "Usage:"
     
-    # Try config.yaml first, fallback to custom.yaml (for custom repo scripts)
+    # For custom repo scripts: config.yaml is in the repo directory
+    # For main scripts: config.yaml is in ../lib/../config.yaml
     local config_file="${BASH_SOURCE%/*}/../config.yaml"
-    [[ ! -f "$config_file" ]] && config_file="${BASH_SOURCE%/*}/../custom.yaml"
     
     if [[ -f "$config_file" ]]; then
         # Find yq binary

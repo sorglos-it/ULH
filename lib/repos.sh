@@ -386,12 +386,13 @@ repo_get_path() {
 repo_has_scripts() {
     local repo_path="$1"
     
-    if [[ ! -f "$repo_path/custom.yaml" ]]; then
+    # Custom repos have their own config.yaml (not custom.yaml)
+    if [[ ! -f "$repo_path/config.yaml" ]]; then
         return 1
     fi
     
     # Try to get script count
     local count
-    count=$(yq_eval ".scripts | length" "$repo_path/custom.yaml" 2>/dev/null)
+    count=$(yq_eval ".scripts | length" "$repo_path/config.yaml" 2>/dev/null)
     [[ -n "$count" && "$count" != "null" && "$count" -gt 0 ]]
 }
