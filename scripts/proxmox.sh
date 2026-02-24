@@ -36,10 +36,9 @@ install_guest_agent() {
             ;;
     esac
     
-    # Enable and start service
+    # Start service (suppress SysV sync warnings from systemd)
     if command -v systemctl &>/dev/null; then
-        systemctl enable qemu-guest-agent || true
-        systemctl start qemu-guest-agent || true
+        systemctl start qemu-guest-agent 2>/dev/null || true
     fi
     
     log_info "qemu-guest-agent installed successfully!"
@@ -74,6 +73,11 @@ update_guest_agent() {
             ;;
     esac
     
+    # Restart service
+    if command -v systemctl &>/dev/null; then
+        systemctl restart qemu-guest-agent 2>/dev/null || true
+    fi
+    
     log_info "qemu-guest-agent updated successfully!"
 }
 
@@ -85,8 +89,8 @@ uninstall_guest_agent() {
     
     # Stop service first
     if command -v systemctl &>/dev/null; then
-        systemctl stop qemu-guest-agent || true
-        systemctl disable qemu-guest-agent || true
+        systemctl stop qemu-guest-agent 2>/dev/null || true
+        systemctl disable qemu-guest-agent 2>/dev/null || true
     fi
     
     case "$PKG_TYPE" in
