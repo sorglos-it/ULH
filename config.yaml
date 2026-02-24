@@ -1559,6 +1559,47 @@ scripts:
         variable: NEW_ORG
         type: text
         default: ''
+  tigervnc:
+    description: TigerVNC remote desktop server
+    category: System Management
+    file: tigervnc.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install TigerVNC
+    - name: update
+      parameter: update
+      description: Update TigerVNC
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall TigerVNC
+    - name: config
+      parameter: config
+      description: Configure TigerVNC server
+      prompts:
+      - question: VNC display number (e.g., 1 for :1, default 1)
+        variable: VNC_DISPLAY
+        type: number
+        default: '1'
+      - question: VNC username (which user runs the server)
+        variable: VNC_USER
+        type: text
+        default: ''
+      - question: Screen resolution (e.g., 1920x1080)
+        variable: VNC_GEOMETRY
+        type: text
+        default: '1920x1080'
+      - question: Desktop session (lxde, kde, gnome, xfce, etc., empty for default)
+        variable: VNC_SESSION
+        type: text
+        default: ''
   borgbackup:
     description: Backup and archival tool
     category: Backup & Sync
