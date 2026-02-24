@@ -139,8 +139,8 @@ prompt_by_type() {
                 printf "  %b%s%b\n" "$C_RED" "Please enter a valid number" "$C_RESET" >&2
                 ;;
             *)
-                if [[ -n "$answer" ]]; then break; fi
-                printf "  %b%s%b\n" "$C_RED" "Cannot be empty" "$C_RESET" >&2
+                # Text type: accept answer as-is (empty is allowed if default was empty)
+                break
                 ;;
         esac
     done
