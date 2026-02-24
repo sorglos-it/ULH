@@ -106,6 +106,8 @@ get_scripts() {
     while IFS= read -r s; do
         [[ -n "$s" ]] && yaml_os_compatible "$s" "$OS_DISTRO" "$OS_FAMILY" && [[ -f "$(yaml_script_path "$s")" ]] && ref+=("$s")
     done <<< "$src"
+    # Sort alphabetically
+    IFS=$'\n' read -d '' -r -a ref < <(printf '%s\n' "${ref[@]}" | sort) || true
 }
 
 has_custom_scripts() {
