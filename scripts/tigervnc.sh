@@ -15,7 +15,12 @@ install_tigervnc() {
 
     case "$PKG_TYPE" in
         deb)
-            $PKG_INSTALL tigervnc-standalone-server tigervnc-common || log_error "Failed to install TigerVNC"
+            # Remove conflicting old tigervncserver package first if present
+            log_info "Removing old tigervncserver package if present..."
+            apt-get remove -y tigervncserver 2>/dev/null || true
+            
+            # Now install new packages
+            $PKG_INSTALL tigervnc-standalone-server tigervnc-common tigervnc-tools || log_error "Failed to install TigerVNC"
             ;;
         rpm)
             $PKG_INSTALL tigervnc-server || log_error "Failed to install TigerVNC"
@@ -46,7 +51,12 @@ update_tigervnc() {
 
     case "$PKG_TYPE" in
         deb)
-            $PKG_INSTALL tigervnc-standalone-server tigervnc-common || log_error "Failed to update"
+            # Remove conflicting old tigervncserver package first if present
+            log_info "Removing old tigervncserver package if present..."
+            apt-get remove -y tigervncserver 2>/dev/null || true
+            
+            # Now update packages
+            $PKG_INSTALL tigervnc-standalone-server tigervnc-common tigervnc-tools || log_error "Failed to update"
             ;;
         rpm)
             $PKG_INSTALL tigervnc-server || log_error "Failed to update"
@@ -80,7 +90,8 @@ uninstall_tigervnc() {
 
     case "$PKG_TYPE" in
         deb)
-            $PKG_UNINSTALL tigervnc-standalone-server tigervnc-common 2>/dev/null || true
+            # Remove both new and old packages
+            $PKG_UNINSTALL tigervnc-standalone-server tigervnc-common tigervnc-tools tigervncserver 2>/dev/null || true
             ;;
         rpm)
             $PKG_UNINSTALL tigervnc-server 2>/dev/null || true
