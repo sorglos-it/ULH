@@ -1799,6 +1799,27 @@ scripts:
     - name: uninstall
       parameter: uninstall
       description: Uninstall Git LFS
+  step-ca:
+    description: Private Certificate Authority
+    category: Security & Sandboxing
+    file: step-ca.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install step-ca and step-cli
+    - name: update
+      parameter: update
+      description: Update step-ca and step-cli
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall step-ca and step-cli
   gnupg:
     description: Encryption and signing
     category: Security & Sandboxing
