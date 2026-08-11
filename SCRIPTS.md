@@ -1,6 +1,6 @@
 # ulh Scripts Reference
 
-**v0.5 | Total: 94 scripts | 16 categories**
+**v0.5 | Total: 96 scripts | 16 categories**
 
 ## Table of Contents
 
@@ -197,7 +197,8 @@
 | `linux` | Network, DNS, users, groups configuration |
 | `pikvm-v3` | PiKVM v3 appliance management |
 | `remotely` | Remotely - open-source remote desktop and support software |
-| `spoolman` | Spoolman filament database - detect, backup, uninstall |
+| `spoolman` | Spoolman filament spool management (standalone or Docker) |
+| `tigervnc` | TigerVNC remote desktop server |
 | `ubuntu` | Ubuntu system management |
 
 ## Package Managers
@@ -220,6 +221,7 @@
 | `firejail` | Application sandboxing |
 | `gamemode` | Performance optimizer |
 | `gnupg` | Encryption and signing |
+| `step-ca` | Private Certificate Authority |
 
 ## Multimedia
 

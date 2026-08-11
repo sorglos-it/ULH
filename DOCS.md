@@ -42,7 +42,7 @@ ulh/
 │   ├── menu.sh         # Menu display + navigation
 │   ├── repos.sh        # Repository sync + management
 │   └── yaml.sh         # YAML parsing via yq binary
-├── scripts/            # 96 total scripts (49 system + 47 CLI tools)
+├── scripts/            # 96 scripts, one file per program
 │   └── Multiple categories:
 │       ├── Essential Tools (10)
 │       ├── Text Editors (6)
@@ -53,12 +53,12 @@ ulh/
 │       ├── Programming Languages (10)
 │       ├── Development Tools (4)
 │       ├── System Utilities (15)
-│       ├── Backup & Sync (3)
+│       ├── Backup & Sync (2)
 │       ├── Monitoring & Logging (4)
 │       ├── Networking (11)
-│       ├── System Management (5)
+│       ├── System Management (7)
 │       ├── Package Managers (4)
-│       ├── Security & Sandboxing (3)
+│       ├── Security & Sandboxing (4)
 │       └── Multimedia (1)
 ├── custom/             # User repositories (git-ignored except repo.yaml)
 │   ├── repo.yaml       # Repository configuration
@@ -68,8 +68,13 @@ ulh/
 ├── config.yaml         # System scripts configuration (96 scripts)
 ├── README.md           # Quick start guide
 ├── SCRIPTS.md          # Script reference table (all 96 scripts)
+├── TREE.md             # File map: path, actions, sudo and distros per script
 └── DOCS.md             # This file
 ```
+
+**Looking for a specific script?** [TREE.md](TREE.md) lists every script with its
+file path, available actions, sudo requirement and supported distributions, plus a
+grep cheat sheet for finding things from the shell.
 
 ### Execution Flow
 
@@ -646,7 +651,18 @@ All menus use consistent 80-character box formatting:
 **ulh Scripts Menu**
 - Shows: Categories (Essential Tools, Databases, etc.)
 - Context-aware: Back button only if coming from repo selector
-- Actions: Select category → show scripts
+- Actions: Select category → show scripts, or `s` / `/term` → search
+
+**Search** (repository selector, category list and script list)
+- Trigger: `s` for a prompt, or type `/term` directly at any `Choose:` prompt
+- Matches: script name + description + category, case-insensitive substring
+- Filtered: only scripts compatible with the running distro and present on disk
+- Result: pick a number → jumps straight into that script's action menu
+- Inside the results: `s` starts a new search, `b` returns to the previous menu
+- Implementation: `get_search_results()` zips the three yq lists
+  (`yaml_scripts`, `yaml_all_descriptions`, `yaml_all_categories`) and filters in
+  bash - no per-script yq calls, the OS check runs only for hits
+- Scope: system scripts from config.yaml (custom repo scripts are not indexed)
 
 **Script Menu**
 - Shows: Scripts in selected category with descriptions
@@ -724,8 +740,11 @@ detect_os()            # Sets OS_DISTRO, PKG_* variables
 
 ```bash
 menu_header "Title"                # Unified 80-char header
-menu_footer 0|1                    # Footer (0=no back, 1=with back)
+menu_footer 0|1 [0|1]              # Footer (back button, search hint)
 menu_clear                         # Clear terminal
+menu_search "term"                 # Result list -> jumps into menu_actions
+menu_ask_search                    # Prompts for a term, then menu_search
+get_search_results results "term"  # Fills array with "name|description|category"
 ```
 
 ### Repository Functions (lib/repos.sh)
@@ -749,7 +768,7 @@ execute_custom_repo_action  # Run custom repo script
 ## Support
 
 - **GitHub Issues**: https://github.com/sorglos-it/ulh/issues
-- **Documentation**: See README.md + SCRIPTS.md
+- **Documentation**: See README.md + SCRIPTS.md + TREE.md
 - **Script Examples**: Check scripts/ directory
 
 ---
@@ -845,4 +864,4 @@ scripts:
 
 ---
 
-**Last Updated:** 2026-02-20 | **Version:** 0.5
+**Last Updated:** 2026-08-11 | **Version:** 0.5
