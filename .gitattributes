@@ -1,0 +1,13 @@
+# ulh is a Linux tool - every text file must stay LF, even in a Windows
+# working copy. Without this a copy/rsync deploy from Windows produces
+# "/bin/bash^M: bad interpreter" on the target machine.
+* text=auto eol=lf
+
+*.sh    text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.md    text eol=lf
+LICENSE text eol=lf
+
+# bundled yq binaries - never touch these
+lib/yq/* binary
