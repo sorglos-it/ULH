@@ -470,157 +470,104 @@ cp scripts/_template.sh scripts/my-script.sh
 
 ### Complete Example
 
+Every script in `scripts/` follows this shape. `bootstrap.sh` supplies
+`parse_parameters`, the `log_*` helpers, `detect_os` with the `PKG_*` variables,
+`command_exists` and `print_usage` - never reimplement those locally.
+
 ```bash
 #!/bin/bash
 
 # my-script.sh - Custom web server
-# Supports: install, update, uninstall, config
+# Install, update, uninstall and configure it on all Linux distributions
 
 set -e
-
-FULL_PARAMS="$1"
-ACTION="${FULL_PARAMS%%,*}"
-PARAMS_REST="${FULL_PARAMS#*,}"
-
-# Parse parameters
-if [[ -n "$PARAMS_REST" && "$PARAMS_REST" != "$FULL_PARAMS" ]]; then
-    while IFS='=' read -r key val; do
-        [[ -n "$key" ]] && export "$key=$val"
-    done <<< "${PARAMS_REST//,/$'\n'}"
-fi
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'
-
-log_info() {
-    printf "${GREEN}✓${NC} %s\n" "$1"
-}
-
-log_error() {
-    printf "${RED}✗${NC} %s\n" "$1"
-    exit 1
-}
-
-# Detect OS and set package manager
-detect_os() {
-    source /etc/os-release || log_error "Cannot detect OS"
-    OS_DISTRO="${ID,,}"
-    
-    case "$OS_DISTRO" in
-        ubuntu|debian|raspbian|linuxmint|pop)
-            PKG_UPDATE="apt-get update"
-            PKG_INSTALL="apt-get install -y"
-            PKG_UNINSTALL="apt-get remove -y"
-            SVC="nginx"
-            ;;
-        fedora|rhel|centos|rocky|alma)
-            PKG_UPDATE="dnf check-update || true"
-            PKG_INSTALL="dnf install -y"
-            PKG_UNINSTALL="dnf remove -y"
-            SVC="nginx"
-            ;;
-        arch|archarm|manjaro|endeavouros)
-            PKG_UPDATE="pacman -Sy"
-            PKG_INSTALL="pacman -S --noconfirm"
-            PKG_UNINSTALL="pacman -R --noconfirm"
-            SVC="nginx"
-            ;;
-        opensuse*|sles)
-            PKG_UPDATE="zypper refresh"
-            PKG_INSTALL="zypper install -y"
-            PKG_UNINSTALL="zypper remove -y"
-            SVC="nginx"
-            ;;
-        alpine)
-            PKG_UPDATE="apk update"
-            PKG_INSTALL="apk add"
-            PKG_UNINSTALL="apk del"
-            SVC="nginx"
-            ;;
-        *)
-            log_error "Unsupported distribution: $OS_DISTRO"
-            ;;
-    esac
-}
+source "$(dirname "$0")/../lib/bootstrap.sh"
+parse_parameters "$1"
 
 install_web_server() {
     log_info "Installing web server..."
     detect_os
-    
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL nginx || log_error "Failed to install"
-    
-    sudo systemctl enable $SVC
-    sudo systemctl start $SVC
-    
+
+    $PKG_UPDATE || true
+    $PKG_INSTALL nginx || log_error "Failed to install"
+
+    systemctl enable nginx
+    systemctl start nginx
+
     log_info "Web server installed!"
 }
 
 update_web_server() {
     log_info "Updating web server..."
     detect_os
-    
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL nginx || log_error "Failed to update"
-    sudo systemctl restart $SVC
-    
+
+    $PKG_UPDATE || true
+    $PKG_INSTALL nginx || log_error "Failed to update"
+    systemctl restart nginx
+
     log_info "Web server updated!"
 }
 
 uninstall_web_server() {
-    log_info "Uninstalling web server..."
+    log_warn "Uninstalling web server..."
     detect_os
-    
-    sudo systemctl stop $SVC || true
-    sudo systemctl disable $SVC || true
-    sudo $PKG_UNINSTALL nginx || log_error "Failed to uninstall"
-    
+
+    systemctl stop nginx || true
+    systemctl disable nginx || true
+    $PKG_UNINSTALL nginx || log_error "Failed to uninstall"
+
     log_info "Web server uninstalled!"
 }
 
 configure_web_server() {
     log_info "Configuring web server..."
-    detect_os
-    
-    [[ -z "$PORT" ]] && PORT="80"
-    
+
+    # variables come from the prompts defined in config.yaml
+    PORT="${PORT:-80}"
     log_info "Port: $PORT"
-    log_info "Edit /etc/nginx/nginx.conf and restart service"
-    sudo systemctl restart $SVC
-    
+
+    systemctl restart nginx
     log_info "Configuration updated!"
 }
 
 case "$ACTION" in
-    install)
-        install_web_server
-        ;;
-    update)
-        update_web_server
-        ;;
-    uninstall)
-        uninstall_web_server
-        ;;
-    config)
-        configure_web_server
-        ;;
-    *)
-        log_error "Unknown action: $ACTION"
-        exit 1
-        ;;
+    install)   install_web_server ;;
+    update)    update_web_server ;;
+    uninstall) uninstall_web_server ;;
+    config)    configure_web_server ;;
+    *)         print_usage my-script && exit 1 ;;
 esac
 ```
 
+**Note on `sudo`:** scripts with `sudo:` in config.yaml already run as root, so
+call `systemctl` and the package manager directly - no `sudo` prefix inside the
+script.
+
+**Note on nested `case` blocks:** if a function contains its own `case` (an
+interactive submenu, an architecture switch), it has a `*)` branch of its own.
+When editing the action dispatcher at the bottom of a file, make sure you are
+looking at the last `case "$ACTION"` block - a search-and-replace that grabs the
+first `*)` in the file will silently eat everything between the two. That is
+exactly how `ufw.sh` and `docker-compose.sh` lost half their code in 0668654.
+
 ### Guidelines
 
-1. **Use `detect_os()`** - Always detect, don't hardcode package managers
-2. **Support all 5 families** - Debian, Red Hat, Arch, SUSE, Alpine
-3. **Proper error handling** - Use `log_error` to exit cleanly
-4. **Service management** - Enable and start services where applicable
-5. **Parse parameters** - Use the template's parsing logic
-6. **Clean formatting** - Indent properly, use descriptive variable names
-7. **Test syntax** - Run `bash -n script.sh` before committing
+1. **Source bootstrap.sh** - Never reimplement logging, parsing or OS detection
+2. **Use `detect_os()`** - Always detect, don't hardcode package managers
+3. **Support all 5 families** - Debian, Red Hat, Arch, SUSE, Alpine
+4. **Proper error handling** - Use `log_error` to exit cleanly
+5. **Service management** - Enable and start services where applicable
+6. **Unknown action** - End the dispatcher with `print_usage <name> && exit 1`
+7. **Keep config.yaml in sync** - Every action in the script needs an entry, and
+   every entry needs a matching branch in the `case`
+8. **Clean formatting** - Indent properly, use descriptive variable names
+9. **Test syntax** - Run `bash -n script.sh` before committing
+
+Quick check that every script still dispatches what config.yaml advertises:
+
+```bash
+for f in scripts/*.sh; do bash -n "$f" || echo "BROKEN: $f"; done
+```
 
 ---
 
@@ -675,6 +622,21 @@ All menus use consistent 80-character box formatting:
 ---
 
 ## Troubleshooting
+
+### `/bin/bash^M: bad interpreter`
+
+**Cause:**
+The files carry CRLF line endings. This happens when ulh is copied to the target
+machine from a Windows working copy (SMB, SCP, rsync) instead of being cloned.
+`.gitattributes` pins everything to LF, so a `git clone` is never affected.
+
+**Solution:**
+```bash
+find ~/ulh -type f \( -name '*.sh' -o -name '*.yaml' -o -name '*.md' \) \
+    -exec sed -i 's/\r$//' {} +
+```
+Leaves `lib/yq/` alone - those are binaries and must not be touched. Better:
+re-clone, which also restores the `.git` directory the auto-update needs.
 
 ### Scripts fail to run
 
