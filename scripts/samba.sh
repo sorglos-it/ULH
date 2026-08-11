@@ -314,7 +314,7 @@ smbuser_menu() {
             4) smbuser_list ;;
             5) return ;;
             *)
-        print_usage samba log_warn "Invalid option" ;;
+                log_warn "Invalid option" ;;
         esac
     done
 }

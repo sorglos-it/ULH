@@ -52,5 +52,5 @@ case "$ACTION" in
     uninstall) uninstall_vim ;;
     config) configure_vim ;;
     *)
-        print_usage vim log_error "Unknown action: $ACTION" ;;
+        print_usage vim && exit 1 ;;
 esac

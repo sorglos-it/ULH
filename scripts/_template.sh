@@ -64,7 +64,8 @@ case "$ACTION" in
         configure_package
         ;;
     *)
-        log_error "Unknown action: $ACTION"
-        exit 1
+        # Prints the actions and their parameters from config.yaml.
+        # Pass the script name explicitly if the file gets renamed.
+        print_usage && exit 1
         ;;
 esac

@@ -51,5 +51,5 @@ case "$ACTION" in
     uninstall) uninstall_git ;;
     config) configure_git ;;
     *)
-        print_usage git log_error "Unknown action: $ACTION" ;;
+        print_usage git && exit 1 ;;
 esac
