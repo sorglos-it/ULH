@@ -1567,6 +1567,86 @@ scripts:
         variable: NEW_ORG
         type: text
         default: ''
+  spoolman:
+    description: Spoolman filament spool management (standalone or Docker)
+    category: System Management
+    file: spoolman.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Spoolman
+      prompts:
+      - question: Install method (standalone or docker)
+        variable: INSTALL_METHOD
+        type: text
+        default: standalone
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+      - question: Web UI port
+        variable: SPOOLMAN_PORT
+        type: number
+        default: '7912'
+      - question: Timezone for the Docker container (empty = detect from system)
+        variable: SPOOLMAN_TZ
+        type: text
+        default: ''
+    - name: update
+      parameter: update
+      description: Update Spoolman to the latest release
+      prompts:
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+      - question: Create a backup before updating? (yes/no)
+        variable: DO_BACKUP
+        type: yes/no
+        default: 'yes'
+    - name: detect
+      parameter: detect
+      description: Detect an existing installation (read-only)
+      prompts:
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+    - name: backup
+      parameter: backup
+      description: Back up database, .env, units and compose files
+      prompts:
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Spoolman (standalone, /opt and Docker)
+      prompts:
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+      - question: Create a backup before removing? (yes/no)
+        variable: DO_BACKUP
+        type: yes/no
+        default: 'yes'
+      - question: Also delete database and data directories? (yes/no)
+        variable: PURGE
+        type: yes/no
+        default: 'no'
+      - question: Comment out [spoolman] sections in moonraker.conf? (yes/no)
+        variable: CLEAN_MOONRAKER
+        type: yes/no
+        default: 'no'
   tigervnc:
     description: TigerVNC remote desktop server
     category: System Management
