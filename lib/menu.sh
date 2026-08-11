@@ -54,11 +54,17 @@ menu_header() {
 
 menu_footer() {
     local show_back=$1
+    local show_search=${2:-0}
     local system_info="${OS_DISTRO} (${OS_FAMILY}) · v${OS_VERSION}"
-    
+
     echo "|"
     separator_dots
-    
+
+    if [[ $show_search -eq 1 ]]; then
+        # Search button: |  s) Search  (or /term) (24 chars) + padding + | = 80
+        printf "|  s) Search  (or /term)%*s|\n" 55 ""
+    fi
+
     if [[ $show_back -eq 1 ]]; then
         # Back button: |  b) Back (10 chars) + padding + | = 80
         printf "|  b) Back%*s|\n" 69 ""
@@ -110,6 +116,31 @@ get_scripts() {
     IFS=$'\n' read -d '' -r -a ref < <(printf '%s\n' "${ref[@]}" | sort) || true
 }
 
+# Search all ulh scripts by name, description and category.
+# Fills the array named by $1 with "name|description|category" entries.
+get_search_results() {
+    local -n ref=$1; ref=(); local term="$2"
+    local -a names descs cats
+    mapfile -t names < <(yaml_scripts)
+    mapfile -t descs < <(yaml_all_descriptions)
+    mapfile -t cats  < <(yaml_all_categories)
+
+    local i n d c hay
+    local needle="${term,,}"
+    for i in "${!names[@]}"; do
+        n="${names[$i]}"
+        [[ -n "$n" ]] || continue
+        d="${descs[$i]}"; [[ "$d" == "null" ]] && d=""
+        c="${cats[$i]}";  [[ "$c" == "null" ]] && c=""
+        # substring match without forking (case-insensitive, no regex surprises),
+        # the expensive OS check runs only for hits
+        hay="${n} ${d} ${c}"
+        [[ "${hay,,}" == *"$needle"* ]] || continue
+        yaml_os_compatible "$n" "$OS_DISTRO" "$OS_FAMILY" || continue
+        [[ -f "$(yaml_script_path "$n")" ]] && ref+=("${n}|${d}|${c}")
+    done
+}
+
 has_custom_scripts() {
     [[ -f "${ulh_DIR}/custom.yaml" ]] || return 1
     yaml_load "custom"
@@ -144,7 +175,7 @@ menu_show_repositories() {
         ((i++))
     done <<< "$repo_names"
     
-    menu_footer 0
+    menu_footer 0 1
 }
 
 # Show ulh system scripts (categories)
@@ -164,9 +195,9 @@ menu_show_main() {
     
     # Show back button only if coming from repo menu
     if [[ "$CONTEXT_FROM" == "repo" ]]; then
-        menu_footer 1
+        menu_footer 1 1
     else
-        menu_footer 0
+        menu_footer 0 1
     fi
 }
 
@@ -182,7 +213,30 @@ menu_show_category() {
             ((i++))
         done
     fi
-    menu_footer 1
+    menu_footer 1 1
+}
+
+menu_show_search() {
+    local term="$1"; shift
+    menu_clear
+    menu_header "Search: $term"
+    if (( $# == 0 )); then
+        echo "|  No matches for \"$term\"."
+        echo "|"
+        echo "|  Searched: script name, description and category."
+    else
+        # columns: 2 + 16 + 26 + 28 = 78 chars, so the box stays at 80
+        local i=1 e n d c
+        for e in "$@"; do
+            n="${e%%|*}"; d="${e#*|}"; c="${d#*|}"; d="${d%%|*}"
+            if (( ${#n} > 16 )); then n="${n:0:14}.."; fi
+            if (( ${#c} > 26 )); then c="${c:0:24}.."; fi
+            if (( ${#d} > 28 )); then d="${d:0:26}.."; fi
+            printf "|  %2d) %-16s %-26s %s\n" $i "$n" "$c" "$d"
+            ((i++))
+        done
+    fi
+    menu_footer 1 1
 }
 
 menu_show_actions() {
@@ -303,6 +357,8 @@ menu_repositories() {
         echo ""; local input; read -rp "  Choose: " input || exit 0
         case "$input" in
             q|Q) echo "  Goodbye!"; exit 0 ;;
+            s|S) menu_ask_search ;;
+            /*) menu_search "${input#/}" ;;
             [0-9]*)
                 if menu_valid_num "$input" $max; then
                     local choice="${choices[$((input-1))]}"
@@ -327,6 +383,8 @@ menu_ulh_scripts() {
         case "$input" in
             q|Q) exit 0 ;;
             b|B) CONTEXT_FROM="none"; return ;;
+            s|S) menu_ask_search ;;
+            /*) menu_search "${input#/}" ;;
             [0-9]*) menu_valid_num "$input" $max && menu_category "${cats[$((input-1))]}" || menu_error "Invalid (1-$max)" ;;
             "") ;; *) menu_error "Invalid input" ;;
         esac
@@ -340,7 +398,51 @@ menu_category() {
         echo ""; local input; read -rp "  Choose: " input || return
         case "$input" in
             q|Q) exit 0 ;; b|B) return ;;
+            s|S) menu_ask_search ;;
+            /*) menu_search "${input#/}" ;;
             [0-9]*) menu_valid_num "$input" $max && menu_actions "${scripts[$((input-1))]}" || menu_error "Invalid (1-$max)" ;;
+            "") ;; *) menu_error "Invalid input" ;;
+        esac
+    done
+}
+
+# Ask for a search term, then show the results. Returns without searching
+# if the user just presses Enter.
+menu_ask_search() {
+    local term
+    echo ""
+    read -rp "  Search (name, description, category): " term || return 0
+    [[ -n "$term" ]] || return 0
+    menu_search "$term"
+}
+
+# Search results: pick a number to jump straight into that script's actions
+menu_search() {
+    local term="$1"
+    [[ -n "$term" ]] || return 0
+
+    while true; do
+        local -a results; get_search_results results "$term"
+        menu_show_search "$term" "${results[@]}"
+        local max=${#results[@]}
+
+        echo ""; local input; read -rp "  Choose: " input || return
+        case "$input" in
+            q|Q) exit 0 ;;
+            b|B) return ;;
+            s|S)
+                local new_term
+                echo ""; read -rp "  Search: " new_term || return
+                [[ -n "$new_term" ]] && term="$new_term"
+                ;;
+            /*)
+                [[ -n "${input#/}" ]] && term="${input#/}"
+                ;;
+            [0-9]*)
+                if (( max > 0 )) && menu_valid_num "$input" $max; then
+                    local entry="${results[$((input-1))]}"
+                    menu_actions "${entry%%|*}"
+                else menu_error "Invalid (1-$max)"; fi ;;
             "") ;; *) menu_error "Invalid input" ;;
         esac
     done

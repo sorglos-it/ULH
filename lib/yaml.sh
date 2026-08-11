@@ -45,6 +45,11 @@ yaml_categories()  { yq_list '[.scripts[].category] | unique | .[]'; }
 yaml_scripts()     { yq_list '.scripts | keys | .[]'; }
 yaml_scripts_by_cat() { yq_list ".scripts | to_entries | map(select(.value.category == \"${1}\")) | .[].key"; }
 
+# Search index: descriptions and categories in the same order as yaml_scripts,
+# so the three lists can be zipped by index (one yq call each instead of 3x96)
+yaml_all_descriptions() { yq_list '[.scripts[].description] | .[]'; }
+yaml_all_categories()   { yq_list '[.scripts[].category] | .[]'; }
+
 # Script info
 yaml_info()        { yq_get ".scripts.${1}.${2}"; }
 yaml_script_path() {
